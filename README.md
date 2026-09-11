@@ -1,30 +1,100 @@
-## Last Updated on: 17/06/2026 5:30PM IST
+# ReRo-Net: Learning Resampling Robust Coronary Artery Calcium (CAC) Segmentation with Spectral Operator Networks
 
-### Branch: `PrediCT/segmentation_rajat`
+ReRo-Net is an end-to-end deep learning framework designed for the precise segmentation of Coronary Artery Calcium (CAC) lesions from cardiac CT scans. By utilizing Spectral Operator Networks, the model ensures high robustness and invariance to image resampling artifacts, providing stable and clinically relevant results.
 
-**CAC Scores** were not present in the DICOM or XML files directly, so calculated them from area and HU values using a custom script. Resampling will also shift scores slightly so need to decide whether to recalculate from binary masks post-resample.
+## 🏗️ Architecture
 
-**Masks**: each patient now has a binary mask and a multilabel mask (RCA, LCA, etc. from XML labels). Unknown artery labels are marked as `5`. Found a bug where `fillPoly` inflates mask area slightly beyond the actual annotation, needs fixing.
+![Architecture](Support_Images/model.png)
 
-**Resampling**: going with `0.375 × 0.375 × 3` mm voxel spacing. Having uniform spacing for the long term goal of the PrediCT Project is important. Analysis from Aditya's Radiomics project confirms results are invariant to spacing, but we will still maintain this throughout the project.
+## 🚀 Quick Start Guide
 
-**789 patients total**: only a subset has segmentation masks and/or calcium scores. Open question: patients without segmentation files — true negatives or just unannotated? Marking them as 0 could mislead the model if deposits exist but weren't annotated. Needs investigation — other papers do not include unannotated samples at all.
+### 1. Dataset Preparation (Stanford COCA)
+The project uses the public **Stanford COCA Dataset**.
+- **Download**: Obtain the dataset from the [Stanford AIMI Portal](https://stanfordaimi.azurewebsites.net/datasets/e8ca74dc-8dd4-4340-815a-60b41f6cb2aa).
+- **Processing**: Use the scripts in the `COCA_Scripts/` directory to prepare the data.
+  - Configure your output directory in `COCA_pipeline.py`.
+  - Run the pipeline to combine DICOM slices into 3D volumes, generate masks, and resample to uniform voxel spacing:
+    ```bash
+    python COCA_Scripts/COCA_pipeline.py
+    ```
+  - This produces the `data_canonical` directory required for training.
 
-**Old COCA scripts** fail for 2 patients (`b41d81f0bd53`, `ca1a9ce04bbd`) — both have 2 DICOM series that combine into just 1 Z-slice (internal IDs 763 and 135). XML exists but no calcium score for patient IDs 268 and 135.
+### 2. Environment Setup
+All core implementation and training scripts are located in the `Segmentation/` folder.
+```bash
+# It is recommended to use a virtual environment
+python -m venv myenv
+#source venv/bin/activate  # Linux/Mac
+ venv\Scripts\activate   # Windows
 
-**pre_process.py** has been configured to generate ROI masks, which can be cached for faster inference. These masks will be used in the pipeline for ROI cropping and as an input channel. Also splits the dataset into train (0.7) / val (0.15) / test (0.15). Ablation studies planned, stay tuned.
+pip install -r Segementation/requirements.txt
+```
 
-**dataset.py** has been configured to include CoordConv channels, Heart ROI masks, Dual HU Windowing for both Calcium and Soft Tissue, and Persistent Caching to speed up training.
+### 3. Model Training
+To train a new experiment, use the `train.py` script. The experiment name will be used to create a dedicated folder in the `runs/` directory for checkpoints and logs.
+```bash
+python train.py <experiment_name>
+```
 
-**All global variables and hyperparameters can be tuned from `config.py**
+### 4. Evaluation & Metrics
+Evaluate the model on the test split to compute voxel-wise Dice, plaque-wise F1, and Agatston scores:
+```bash
+python eval.py <experiment_name> --split test
+```
 
-Ablation flags: `HEART_MASK_FLAG`, `ADD_HEART_MASK_CHANNEL`, `ADD_COORD_CHANNELS`, 'DUAL_HU_WINDOWING'
+#### Resampling Robustness
+To specifically calculate evaluation metrics on resampled samples and verify the model's invariance to resolution changes, run:
+```bash
+python resampled_eval.py
+```
 
-**Cited Papers** — Refer to `cited_papers.md` for more info.
-- [Standardization of Coronary Artery Calcification Scoring](https://www.jacc.org/doi/10.1016/j.jcmg.2022.02.026)
-- [An Intriguing Failing of Convolutional Neural Networks and the CoordConv Solution](https://papers.nips.cc/paper_files/paper/2018/file/60106888f8977b71e1f15db7bc9a88d1-Paper.pdf)
-- [Fourier Neural Operator for Parametric Partial Differential Equations](https://arxiv.org/pdf/2010.08895)
+## 🛠️ Advanced Features
+
+### End-to-End Inference (`wrapper.py`)
+The `wrapper.py` script provides a high-level interface for deploying the model on new, unseen NIfTI scans. It encapsulates the entire clinical pipeline:
+1. **Heart ROI Detection**: Automatically generates a heart mask using a Lightweight U-Net.
+2. **Preprocessing**: Applies the same transforms used during training.
+3. **Inference**: Performs sliding window inference using the ReRo-Net architecture.
+4. **Post-processing**: Cleans up predictions via lesion-size filtering and ROI masking.
+
+### Qualitative Results
+
+![Qualitative Results](Support_Images/top_3_qualitative.png)
+
+#### Spectral Delta Visualizations
+These images illustrate the 3D spatial activation delta fields ($\delta_c$) across the bottleneck operator, highlighting the impact of coordinate encodings.
+
+| ReRo-Net (Full) | ReRo-Net (w/o CoordConv) |
+| :---: | :---: |
+| ![Full](Support_Images/run_fno.png) | ![No Coord](Support_Images/run_no_coord.png) |
+| *Absolute coordinate encodings (CoordConv) anchor representations to rigid grid planes.* | *Removing CoordConv enables the spectral bottleneck to learn relative, continuously bounded spatial features.* |
+
+
+### Cluster Analysis
+
+![Cluster Analysis](Support_Images/dob_scv.png)
+Visualization of clusters based on features such as RCA and LCA scores, providing insights into the distribution of calcium scores across different coronary artery segments.
+To generate and visualize segmentation results, use the `EDA_EXTRA\Codes` script, which allows for the inspection of qualitative performance across different patients.
+
+## 📦 Reproduction & Results
+All pre-trained models, configuration snapshots, and evaluation logs are stored in the `runs/` folder. You can reproduce the reported results by loading these checkpoints through `eval.py`.
+
+## 📖 Documentation
+For a deep dive into specific components, please refer to the detailed `README.md` files located in each sub-directory:
+- `COCA_Scripts/README.md` — Dataset processing and resampling details.
+- `Segmentation/README.md` — Core architecture, training, and evaluation logic.
+- `Agatston_Script/README.md` — Clinical scoring pipeline.
+- `Utilities/README.md` — Helper scripts and dataset utilities.
 
 ---
 
-*Built as part of [PrediCT](https://ml4sci.org/gsoc/2026/proposal_PREDICT1.html) — ML4SCI x GSoC 2026. All rights reserved.*
+**Note**: This repository was specially designed for anonymous submission(all explict file paths names were anonymized). Due to GitHub's storage limits, the model checkpoints are hosted on Google Drive. 
+**Link**: [https://drive.google.com/drive/folders/108yqEBPiyfMImbNao9bamQDJDLDOe6I4?usp=drive_link]
+
+---
+
+## 👥 Contributors & Acknowledgements
+
+* **Organization:** [ML4SCI](https://ml4sci.org/) ([PrediCT Project](https://ml4sci.org/gsoc/2026/proposal_PREDICT1.html)) — Google Summer of Code ([GSoC](https://summerofcode.withgoogle.com/))
+* **Contributor:** Rajat Nandkumar Shedshyal ([24je0839@iitsm.ac.in](mailto:24je0839@iitsm.ac.in) / [rajatnshedshyal@gmail.com](mailto:rajatnshedshyal@gmail.com))
+* **Mentor:** Kathleen Butler, Sergei Gleyzer

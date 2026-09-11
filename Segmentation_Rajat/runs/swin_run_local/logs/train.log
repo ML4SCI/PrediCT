@@ -1,0 +1,787 @@
+03:26:18 | === train.py | experiment: swin_run_local | device: cuda ===
+03:26:18 | building dataloaders…
+03:26:30 | auto-detected IN_CHANNELS = 5
+03:26:44 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+03:26:44 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+03:31:25 |     [train probs] min=0.0000 mean=0.0269 max=1.0000 | mean_prob@fg=0.9931 mean_prob@bg=0.0187
+03:31:26 |   epoch 000 | train loss 0.3467 | steps 152 | 282.0s | dump=True
+03:35:00 |   epoch 000 | lr 6.000000e-03 | val loss 0.5918 | val dice 0.0065
+03:39:51 |     [train probs] min=0.0000 mean=0.0133 max=1.0000 | mean_prob@fg=0.9937 mean_prob@bg=0.0096
+03:39:52 |   epoch 001 | train loss 0.3086 | steps 152 | 289.5s | dump=False
+03:43:03 |   epoch 001 | lr 1.200000e-02 | val loss 0.5377 | val dice 0.0168
+03:47:47 |     [train probs] min=0.0000 mean=0.0177 max=1.0000 | mean_prob@fg=0.9819 mean_prob@bg=0.0124
+03:47:48 |   epoch 002 | train loss 0.3049 | steps 152 | 283.2s | dump=False
+03:50:57 |   epoch 002 | lr 1.800000e-02 | val loss 0.5277 | val dice 0.0195
+03:55:43 |     [train probs] min=0.0000 mean=0.0145 max=1.0000 | mean_prob@fg=0.9686 mean_prob@bg=0.0096
+03:55:44 |   epoch 003 | train loss 0.2798 | steps 152 | 285.0s | dump=False
+03:58:56 |   epoch 003 | lr 2.400000e-02 | val loss 0.5274 | val dice 0.0207
+04:03:48 |     [train probs] min=0.0000 mean=0.0132 max=1.0000 | mean_prob@fg=0.9903 mean_prob@bg=0.0106
+04:03:49 |   epoch 004 | train loss 0.2861 | steps 152 | 291.0s | dump=False
+04:07:00 |   epoch 004 | lr 3.000000e-02 | val loss 0.5222 | val dice 0.0231
+04:11:45 |     [train probs] min=0.0000 mean=0.0167 max=1.0000 | mean_prob@fg=0.9948 mean_prob@bg=0.0076
+04:11:46 |   epoch 005 | train loss 0.2547 | steps 152 | 283.8s | dump=False
+04:14:55 |   epoch 005 | lr 3.000000e-02 | val loss 0.5259 | val dice 0.0214
+04:19:39 |     [train probs] min=0.0000 mean=0.0117 max=1.0000 | mean_prob@fg=0.9984 mean_prob@bg=0.0052
+04:19:40 |   epoch 006 | train loss 0.2577 | steps 152 | 284.8s | dump=False
+04:22:56 |   epoch 006 | lr 2.999953e-02 | val loss 0.5189 | val dice 0.0285
+04:27:46 |     [train probs] min=0.0000 mean=0.0200 max=1.0000 | mean_prob@fg=0.9918 mean_prob@bg=0.0098
+04:27:47 |   epoch 007 | train loss 0.2392 | steps 152 | 288.1s | dump=False
+04:31:04 |   epoch 007 | lr 2.999810e-02 | val loss 0.5200 | val dice 0.0291
+04:35:47 |     [train probs] min=0.0000 mean=0.0096 max=1.0000 | mean_prob@fg=0.9860 mean_prob@bg=0.0039
+04:35:47 |   epoch 008 | train loss 0.2609 | steps 152 | 281.3s | dump=False
+04:39:03 |   epoch 008 | lr 2.999573e-02 | val loss 0.5249 | val dice 0.0210
+04:43:43 |     [train probs] min=0.0000 mean=0.0135 max=1.0000 | mean_prob@fg=0.9883 mean_prob@bg=0.0061
+04:43:44 |   epoch 009 | train loss 0.2229 | steps 152 | 280.4s | dump=False
+04:47:10 |   epoch 009 | lr 2.999241e-02 | val loss 0.5101 | val dice 0.0353
+04:52:14 |     [train probs] min=0.0000 mean=0.0122 max=1.0000 | mean_prob@fg=0.9933 mean_prob@bg=0.0043
+04:52:15 |   epoch 010 | train loss 0.2417 | steps 152 | 302.5s | dump=True
+04:56:07 |   epoch 010 | lr 2.998814e-02 | val loss 0.5077 | val dice 0.0459
+05:02:01 |     [train probs] min=0.0000 mean=0.0150 max=1.0000 | mean_prob@fg=0.9890 mean_prob@bg=0.0062
+05:02:02 |   epoch 011 | train loss 0.2199 | steps 152 | 352.6s | dump=False
+05:05:38 |   epoch 011 | lr 2.998292e-02 | val loss 0.5130 | val dice 0.0603
+05:11:23 |     [train probs] min=0.0000 mean=0.0136 max=1.0000 | mean_prob@fg=0.9983 mean_prob@bg=0.0054
+05:11:24 |   epoch 012 | train loss 0.2197 | steps 152 | 343.7s | dump=False
+05:14:43 |   epoch 012 | lr 2.997676e-02 | val loss 0.5119 | val dice 0.0355
+05:19:22 |     [train probs] min=0.0000 mean=0.0137 max=1.0000 | mean_prob@fg=0.9825 mean_prob@bg=0.0057
+05:19:23 |   epoch 013 | train loss 0.2230 | steps 152 | 280.4s | dump=False
+05:22:38 |   epoch 013 | lr 2.996965e-02 | val loss 0.5038 | val dice 0.0763
+05:27:17 |     [train probs] min=0.0000 mean=0.0151 max=1.0000 | mean_prob@fg=0.9963 mean_prob@bg=0.0082
+05:27:17 |   epoch 014 | train loss 0.2157 | steps 152 | 277.2s | dump=False
+05:30:29 |   epoch 014 | lr 2.996159e-02 | val loss 0.5315 | val dice 0.0225
+05:35:05 |     [train probs] min=0.0000 mean=0.0065 max=1.0000 | mean_prob@fg=0.9920 mean_prob@bg=0.0030
+05:35:06 |   epoch 015 | train loss 0.2156 | steps 152 | 277.3s | dump=False
+05:38:17 |   epoch 015 | lr 2.995258e-02 | val loss 0.5111 | val dice 0.0384
+05:42:56 |     [train probs] min=0.0000 mean=0.0135 max=1.0000 | mean_prob@fg=0.9955 mean_prob@bg=0.0088
+05:42:56 |   epoch 016 | train loss 0.2127 | steps 152 | 279.2s | dump=False
+05:46:07 |   epoch 016 | lr 2.994263e-02 | val loss 0.5101 | val dice 0.0425
+05:50:46 |     [train probs] min=0.0000 mean=0.0109 max=1.0000 | mean_prob@fg=0.9967 mean_prob@bg=0.0089
+05:50:46 |   epoch 017 | train loss 0.2188 | steps 152 | 279.6s | dump=False
+05:53:56 |   epoch 017 | lr 2.993173e-02 | val loss 0.5464 | val dice 0.0167
+05:58:35 |     [train probs] min=0.0000 mean=0.0149 max=1.0000 | mean_prob@fg=0.9900 mean_prob@bg=0.0058
+05:58:36 |   epoch 018 | train loss 0.2222 | steps 152 | 280.2s | dump=False
+06:01:47 |   epoch 018 | lr 2.991989e-02 | val loss 0.5079 | val dice 0.0367
+06:06:28 |     [train probs] min=0.0000 mean=0.0111 max=1.0000 | mean_prob@fg=0.9561 mean_prob@bg=0.0070
+06:06:29 |   epoch 019 | train loss 0.1996 | steps 152 | 282.0s | dump=False
+06:09:37 |   epoch 019 | lr 2.990711e-02 | val loss 0.5129 | val dice 0.0331
+06:14:21 |     [train probs] min=0.0000 mean=0.0116 max=1.0000 | mean_prob@fg=0.9957 mean_prob@bg=0.0045
+06:14:22 |   epoch 020 | train loss 0.2408 | steps 152 | 285.4s | dump=False
+06:17:33 |   epoch 020 | lr 2.989338e-02 | val loss 0.5222 | val dice 0.0258
+06:22:14 |     [train probs] min=0.0000 mean=0.0121 max=1.0000 | mean_prob@fg=0.9939 mean_prob@bg=0.0076
+06:22:15 |   epoch 021 | train loss 0.1961 | steps 152 | 281.8s | dump=False
+06:25:23 |   epoch 021 | lr 2.987871e-02 | val loss 0.5105 | val dice 0.0387
+06:30:05 |     [train probs] min=0.0000 mean=0.0160 max=1.0000 | mean_prob@fg=0.9556 mean_prob@bg=0.0108
+06:30:05 |   epoch 022 | train loss 0.1928 | steps 152 | 282.0s | dump=False
+06:33:16 |   epoch 022 | lr 2.986310e-02 | val loss 0.5098 | val dice 0.0353
+06:37:59 |     [train probs] min=0.0000 mean=0.0099 max=1.0000 | mean_prob@fg=0.9994 mean_prob@bg=0.0054
+06:37:59 |   epoch 023 | train loss 0.2005 | steps 152 | 282.7s | dump=False
+06:41:09 |   epoch 023 | lr 2.984655e-02 | val loss 0.5220 | val dice 0.0260
+06:45:49 |     [train probs] min=0.0000 mean=0.0169 max=1.0000 | mean_prob@fg=0.9956 mean_prob@bg=0.0060
+06:45:50 |   epoch 024 | train loss 0.1966 | steps 152 | 281.0s | dump=False
+06:49:00 |   epoch 024 | lr 2.982906e-02 | val loss 0.5112 | val dice 0.0330
+06:53:41 |     [train probs] min=0.0000 mean=0.0128 max=1.0000 | mean_prob@fg=0.9813 mean_prob@bg=0.0046
+06:53:41 |   epoch 025 | train loss 0.1939 | steps 152 | 281.1s | dump=False
+06:56:51 |   epoch 025 | lr 2.981063e-02 | val loss 0.5075 | val dice 0.0398
+07:01:33 |     [train probs] min=0.0000 mean=0.0111 max=1.0000 | mean_prob@fg=0.9975 mean_prob@bg=0.0058
+07:01:33 |   epoch 026 | train loss 0.1832 | steps 152 | 281.9s | dump=False
+07:04:43 |   epoch 026 | lr 2.979126e-02 | val loss 0.5116 | val dice 0.0320
+07:09:25 |     [train probs] min=0.0000 mean=0.0094 max=1.0000 | mean_prob@fg=0.9839 mean_prob@bg=0.0034
+07:09:26 |   epoch 027 | train loss 0.1964 | steps 152 | 282.6s | dump=False
+07:12:36 |   epoch 027 | lr 2.977096e-02 | val loss 0.5015 | val dice 0.0500
+07:17:17 |     [train probs] min=0.0000 mean=0.0158 max=1.0000 | mean_prob@fg=0.9965 mean_prob@bg=0.0111
+07:17:18 |   epoch 028 | train loss 0.1963 | steps 152 | 281.9s | dump=False
+07:20:28 |   epoch 028 | lr 2.974973e-02 | val loss 0.5259 | val dice 0.0253
+07:25:09 |     [train probs] min=0.0000 mean=0.0141 max=1.0000 | mean_prob@fg=0.9940 mean_prob@bg=0.0079
+07:25:10 |   epoch 029 | train loss 0.1980 | steps 152 | 281.8s | dump=False
+07:28:21 |   epoch 029 | lr 2.972756e-02 | val loss 0.5093 | val dice 0.0430
+07:33:01 |     [train probs] min=0.0000 mean=0.0077 max=1.0000 | mean_prob@fg=0.9939 mean_prob@bg=0.0026
+07:33:02 |   epoch 030 | train loss 0.1973 | steps 152 | 280.9s | dump=False
+07:36:14 |   epoch 030 | lr 2.970446e-02 | val loss 0.4991 | val dice 0.0846
+07:40:55 |     [train probs] min=0.0000 mean=0.0127 max=1.0000 | mean_prob@fg=0.9989 mean_prob@bg=0.0054
+07:40:55 |   epoch 031 | train loss 0.1930 | steps 152 | 279.8s | dump=False
+07:44:06 |   epoch 031 | lr 2.968043e-02 | val loss 0.5073 | val dice 0.0539
+07:48:48 |     [train probs] min=0.0000 mean=0.0162 max=1.0000 | mean_prob@fg=0.9904 mean_prob@bg=0.0123
+07:48:49 |   epoch 032 | train loss 0.1944 | steps 152 | 283.3s | dump=False
+07:51:59 |   epoch 032 | lr 2.965547e-02 | val loss 0.5017 | val dice 0.0714
+07:56:42 |     [train probs] min=0.0000 mean=0.0081 max=1.0000 | mean_prob@fg=0.9855 mean_prob@bg=0.0058
+07:56:42 |   epoch 033 | train loss 0.1869 | steps 152 | 283.2s | dump=False
+07:59:53 |   epoch 033 | lr 2.962959e-02 | val loss 0.4842 | val dice 0.1212
+08:04:38 |     [train probs] min=0.0000 mean=0.0198 max=1.0000 | mean_prob@fg=0.9915 mean_prob@bg=0.0125
+08:04:38 |   epoch 034 | train loss 0.1814 | steps 152 | 282.9s | dump=False
+08:07:57 |   epoch 034 | lr 2.960277e-02 | val loss 0.4978 | val dice 0.0769
+08:12:42 |     [train probs] min=0.0000 mean=0.0104 max=1.0000 | mean_prob@fg=0.9943 mean_prob@bg=0.0034
+08:12:43 |   epoch 035 | train loss 0.1892 | steps 152 | 285.7s | dump=False
+08:16:01 |   epoch 035 | lr 2.957504e-02 | val loss 0.5030 | val dice 0.0408
+08:20:41 |     [train probs] min=0.0000 mean=0.0120 max=1.0000 | mean_prob@fg=0.9949 mean_prob@bg=0.0041
+08:20:42 |   epoch 036 | train loss 0.2054 | steps 152 | 280.6s | dump=False
+08:23:57 |   epoch 036 | lr 2.954638e-02 | val loss 0.5317 | val dice 0.0202
+08:28:37 |     [train probs] min=0.0000 mean=0.0136 max=1.0000 | mean_prob@fg=0.9934 mean_prob@bg=0.0043
+08:28:38 |   epoch 037 | train loss 0.1912 | steps 152 | 281.1s | dump=False
+08:31:50 |   epoch 037 | lr 2.951681e-02 | val loss 0.5029 | val dice 0.0479
+08:36:29 |     [train probs] min=0.0000 mean=0.0152 max=1.0000 | mean_prob@fg=0.9927 mean_prob@bg=0.0056
+08:36:30 |   epoch 038 | train loss 0.1865 | steps 152 | 279.3s | dump=False
+08:39:44 |   epoch 038 | lr 2.948631e-02 | val loss 0.4977 | val dice 0.0720
+08:44:22 |     [train probs] min=0.0000 mean=0.0118 max=1.0000 | mean_prob@fg=0.9836 mean_prob@bg=0.0045
+08:44:22 |   epoch 039 | train loss 0.1933 | steps 152 | 278.2s | dump=False
+08:47:40 |   epoch 039 | lr 2.945490e-02 | val loss 0.4948 | val dice 0.0642
+08:52:16 |     [train probs] min=0.0000 mean=0.0163 max=1.0000 | mean_prob@fg=0.9913 mean_prob@bg=0.0064
+08:52:16 |   epoch 040 | train loss 0.1823 | steps 152 | 276.0s | dump=False
+08:55:26 |   epoch 040 | lr 2.942257e-02 | val loss 0.4824 | val dice 0.1099
+09:00:01 |     [train probs] min=0.0000 mean=0.0120 max=1.0000 | mean_prob@fg=0.9975 mean_prob@bg=0.0055
+09:00:02 |   epoch 041 | train loss 0.1843 | steps 152 | 275.7s | dump=False
+09:03:17 |   epoch 041 | lr 2.938934e-02 | val loss 0.4810 | val dice 0.0979
+09:08:01 |     [train probs] min=0.0000 mean=0.0106 max=1.0000 | mean_prob@fg=0.9945 mean_prob@bg=0.0026
+09:08:02 |   epoch 042 | train loss 0.1756 | steps 152 | 284.2s | dump=False
+09:11:16 |   epoch 042 | lr 2.935519e-02 | val loss 0.4779 | val dice 0.1224
+09:15:59 |     [train probs] min=0.0000 mean=0.0106 max=1.0000 | mean_prob@fg=0.9621 mean_prob@bg=0.0029
+09:16:00 |   epoch 043 | train loss 0.1875 | steps 152 | 281.5s | dump=False
+09:19:13 |   epoch 043 | lr 2.932013e-02 | val loss 0.4982 | val dice 0.0542
+09:23:53 |     [train probs] min=0.0000 mean=0.0131 max=1.0000 | mean_prob@fg=0.9944 mean_prob@bg=0.0051
+09:23:53 |   epoch 044 | train loss 0.1901 | steps 152 | 280.3s | dump=False
+09:27:11 |   epoch 044 | lr 2.928417e-02 | val loss 0.5105 | val dice 0.0419
+09:31:53 |     [train probs] min=0.0000 mean=0.0115 max=1.0000 | mean_prob@fg=0.9956 mean_prob@bg=0.0045
+09:31:54 |   epoch 045 | train loss 0.1832 | steps 152 | 283.1s | dump=False
+09:35:13 |   epoch 045 | lr 2.924730e-02 | val loss 0.4999 | val dice 0.0679
+09:40:00 |     [train probs] min=0.0000 mean=0.0131 max=1.0000 | mean_prob@fg=0.9934 mean_prob@bg=0.0067
+09:40:01 |   epoch 046 | train loss 0.1634 | steps 152 | 287.5s | dump=False
+09:43:18 |   epoch 046 | lr 2.920953e-02 | val loss 0.4863 | val dice 0.0872
+09:48:06 |     [train probs] min=0.0000 mean=0.0120 max=1.0000 | mean_prob@fg=0.9927 mean_prob@bg=0.0038
+09:48:07 |   epoch 047 | train loss 0.1717 | steps 152 | 288.5s | dump=False
+09:51:16 |   epoch 047 | lr 2.917087e-02 | val loss 0.4927 | val dice 0.0831
+09:55:57 |     [train probs] min=0.0000 mean=0.0191 max=1.0000 | mean_prob@fg=0.9626 mean_prob@bg=0.0132
+09:55:57 |   epoch 048 | train loss 0.1886 | steps 152 | 281.1s | dump=False
+09:59:11 |   epoch 048 | lr 2.913131e-02 | val loss 0.5058 | val dice 0.0481
+10:04:00 |     [train probs] min=0.0000 mean=0.0190 max=1.0000 | mean_prob@fg=0.9982 mean_prob@bg=0.0133
+10:04:00 |   epoch 049 | train loss 0.1911 | steps 152 | 288.9s | dump=False
+10:07:13 |   epoch 049 | lr 2.909085e-02 | val loss 0.5126 | val dice 0.0526
+10:11:55 |     [train probs] min=0.0000 mean=0.0152 max=1.0000 | mean_prob@fg=0.9987 mean_prob@bg=0.0061
+10:11:56 |   epoch 050 | train loss 0.1859 | steps 152 | 282.8s | dump=True
+10:15:07 |   epoch 050 | lr 2.904950e-02 | val loss 0.5259 | val dice 0.0281
+10:19:54 |     [train probs] min=0.0000 mean=0.0165 max=1.0000 | mean_prob@fg=0.9972 mean_prob@bg=0.0059
+10:19:54 |   epoch 051 | train loss 0.1785 | steps 152 | 287.6s | dump=False
+10:23:12 |   epoch 051 | lr 2.900727e-02 | val loss 0.5116 | val dice 0.0434
+10:28:18 |     [train probs] min=0.0000 mean=0.0081 max=1.0000 | mean_prob@fg=0.9938 mean_prob@bg=0.0027
+10:28:19 |   epoch 052 | train loss 0.1880 | steps 152 | 306.2s | dump=False
+10:31:44 |   epoch 052 | lr 2.896414e-02 | val loss 0.4847 | val dice 0.1216
+10:36:35 |     [train probs] min=0.0000 mean=0.0106 max=1.0000 | mean_prob@fg=0.9959 mean_prob@bg=0.0036
+10:36:36 |   epoch 053 | train loss 0.1665 | steps 152 | 291.8s | dump=False
+10:39:51 |   epoch 053 | lr 2.892014e-02 | val loss 0.4882 | val dice 0.0844
+10:44:35 |     [train probs] min=0.0000 mean=0.0107 max=1.0000 | mean_prob@fg=0.9794 mean_prob@bg=0.0038
+10:44:36 |   epoch 054 | train loss 0.1546 | steps 152 | 285.0s | dump=False
+10:47:58 |   epoch 054 | lr 2.887525e-02 | val loss 0.4945 | val dice 0.0842
+10:52:45 |     [train probs] min=0.0000 mean=0.0134 max=1.0000 | mean_prob@fg=0.9632 mean_prob@bg=0.0050
+10:52:46 |   epoch 055 | train loss 0.1788 | steps 152 | 287.7s | dump=False
+10:56:08 |   epoch 055 | lr 2.882949e-02 | val loss 0.5007 | val dice 0.0735
+11:00:54 |     [train probs] min=0.0000 mean=0.0130 max=1.0000 | mean_prob@fg=0.9800 mean_prob@bg=0.0046
+11:00:54 |   epoch 056 | train loss 0.1979 | steps 152 | 286.3s | dump=False
+11:04:19 |   epoch 056 | lr 2.878285e-02 | val loss 0.4919 | val dice 0.1235
+11:09:13 |     [train probs] min=0.0000 mean=0.0107 max=1.0000 | mean_prob@fg=0.9942 mean_prob@bg=0.0035
+11:09:13 |   epoch 057 | train loss 0.1951 | steps 152 | 291.6s | dump=False
+11:12:35 |   epoch 057 | lr 2.873534e-02 | val loss 0.4789 | val dice 0.1598
+11:17:25 |     [train probs] min=0.0000 mean=0.0088 max=1.0000 | mean_prob@fg=0.9968 mean_prob@bg=0.0036
+11:17:25 |   epoch 058 | train loss 0.1791 | steps 152 | 287.9s | dump=False
+11:20:44 |   epoch 058 | lr 2.868696e-02 | val loss 0.4882 | val dice 0.1009
+11:25:24 |     [train probs] min=0.0000 mean=0.0103 max=1.0000 | mean_prob@fg=0.9897 mean_prob@bg=0.0029
+11:25:24 |   epoch 059 | train loss 0.1646 | steps 152 | 280.0s | dump=False
+11:28:43 |   epoch 059 | lr 2.863771e-02 | val loss 0.4660 | val dice 0.2063
+11:33:30 |     [train probs] min=0.0000 mean=0.0101 max=1.0000 | mean_prob@fg=0.9890 mean_prob@bg=0.0055
+11:33:31 |   epoch 060 | train loss 0.2128 | steps 152 | 286.5s | dump=False
+11:37:00 |   epoch 060 | lr 2.858761e-02 | val loss 0.5127 | val dice 0.0588
+11:41:39 |     [train probs] min=0.0000 mean=0.0145 max=1.0000 | mean_prob@fg=0.9889 mean_prob@bg=0.0045
+11:41:39 |   epoch 061 | train loss 0.1643 | steps 152 | 279.2s | dump=False
+11:45:03 |   epoch 061 | lr 2.853664e-02 | val loss 0.4882 | val dice 0.1071
+11:49:53 |     [train probs] min=0.0000 mean=0.0121 max=1.0000 | mean_prob@fg=0.9970 mean_prob@bg=0.0047
+11:49:54 |   epoch 062 | train loss 0.1629 | steps 152 | 290.5s | dump=False
+11:53:13 |   epoch 062 | lr 2.848481e-02 | val loss 0.4921 | val dice 0.0876
+11:57:49 |     [train probs] min=0.0000 mean=0.0122 max=1.0000 | mean_prob@fg=0.9967 mean_prob@bg=0.0050
+11:57:49 |   epoch 063 | train loss 0.1837 | steps 152 | 276.5s | dump=False
+12:01:08 |   epoch 063 | lr 2.843214e-02 | val loss 0.4880 | val dice 0.0879
+12:06:43 |     [train probs] min=0.0000 mean=0.0189 max=1.0000 | mean_prob@fg=0.9934 mean_prob@bg=0.0121
+12:06:44 |   epoch 064 | train loss 0.1596 | steps 152 | 335.7s | dump=False
+12:10:03 |   epoch 064 | lr 2.837861e-02 | val loss 0.4706 | val dice 0.2072
+12:15:13 |     [train probs] min=0.0000 mean=0.0052 max=1.0000 | mean_prob@fg=0.9723 mean_prob@bg=0.0024
+12:15:13 |   epoch 065 | train loss 0.1722 | steps 152 | 308.5s | dump=False
+12:18:50 |   epoch 065 | lr 2.832424e-02 | val loss 0.4761 | val dice 0.1700
+12:23:41 |     [train probs] min=0.0000 mean=0.0084 max=1.0000 | mean_prob@fg=0.9943 mean_prob@bg=0.0033
+12:23:41 |   epoch 066 | train loss 0.1747 | steps 152 | 291.9s | dump=False
+12:27:03 |   epoch 066 | lr 2.826902e-02 | val loss 0.4761 | val dice 0.1114
+12:31:54 |     [train probs] min=0.0000 mean=0.0119 max=1.0000 | mean_prob@fg=0.9931 mean_prob@bg=0.0042
+12:31:54 |   epoch 067 | train loss 0.1574 | steps 152 | 290.8s | dump=False
+12:35:10 |   epoch 067 | lr 2.821297e-02 | val loss 0.4899 | val dice 0.0916
+12:39:57 |     [train probs] min=0.0000 mean=0.0069 max=1.0000 | mean_prob@fg=0.9484 mean_prob@bg=0.0031
+12:39:58 |   epoch 068 | train loss 0.1773 | steps 152 | 288.1s | dump=False
+12:43:20 |   epoch 068 | lr 2.815608e-02 | val loss 0.4684 | val dice 0.1524
+12:48:03 |     [train probs] min=0.0000 mean=0.0133 max=1.0000 | mean_prob@fg=0.9812 mean_prob@bg=0.0098
+12:48:03 |   epoch 069 | train loss 0.1714 | steps 152 | 283.1s | dump=False
+12:51:30 |   epoch 069 | lr 2.809836e-02 | val loss 0.4694 | val dice 0.1510
+12:56:15 |     [train probs] min=0.0000 mean=0.0133 max=1.0000 | mean_prob@fg=0.9883 mean_prob@bg=0.0042
+12:56:15 |   epoch 070 | train loss 0.1528 | steps 152 | 285.1s | dump=False
+12:59:35 |   epoch 070 | lr 2.803980e-02 | val loss 0.4766 | val dice 0.0975
+13:04:35 |     [train probs] min=0.0000 mean=0.0084 max=1.0000 | mean_prob@fg=0.9905 mean_prob@bg=0.0032
+13:04:35 |   epoch 071 | train loss 0.1649 | steps 152 | 300.5s | dump=False
+13:08:04 |   epoch 071 | lr 2.798043e-02 | val loss 0.5108 | val dice 0.0367
+13:12:54 |     [train probs] min=0.0000 mean=0.0099 max=1.0000 | mean_prob@fg=0.9498 mean_prob@bg=0.0037
+13:12:54 |   epoch 072 | train loss 0.1810 | steps 152 | 290.1s | dump=False
+13:16:54 |   epoch 072 | lr 2.792023e-02 | val loss 0.4745 | val dice 0.1940
+13:22:06 |     [train probs] min=0.0000 mean=0.0100 max=1.0000 | mean_prob@fg=0.9849 mean_prob@bg=0.0039
+13:22:07 |   epoch 073 | train loss 0.1839 | steps 152 | 312.8s | dump=False
+13:25:41 |   epoch 073 | lr 2.785922e-02 | val loss 0.4862 | val dice 0.1484
+13:30:58 |     [train probs] min=0.0000 mean=0.0110 max=1.0000 | mean_prob@fg=0.9942 mean_prob@bg=0.0033
+13:30:58 |   epoch 074 | train loss 0.1759 | steps 152 | 317.6s | dump=False
+13:34:22 |   epoch 074 | lr 2.779739e-02 | val loss 0.4868 | val dice 0.1249
+13:39:19 |     [train probs] min=0.0000 mean=0.0104 max=1.0000 | mean_prob@fg=0.9934 mean_prob@bg=0.0027
+13:39:20 |   epoch 075 | train loss 0.1613 | steps 152 | 297.7s | dump=False
+13:42:48 |   epoch 075 | lr 2.773475e-02 | val loss 0.4692 | val dice 0.1930
+13:48:06 |     [train probs] min=0.0000 mean=0.0111 max=1.0000 | mean_prob@fg=0.9793 mean_prob@bg=0.0035
+13:48:07 |   epoch 076 | train loss 0.1574 | steps 152 | 319.0s | dump=False
+13:53:33 |   epoch 076 | lr 2.767131e-02 | val loss 0.4806 | val dice 0.1567
+14:00:07 |     [train probs] min=0.0000 mean=0.0122 max=1.0000 | mean_prob@fg=0.9962 mean_prob@bg=0.0042
+14:00:08 |   epoch 077 | train loss 0.1619 | steps 152 | 394.8s | dump=False
+14:03:31 |   epoch 077 | lr 2.760706e-02 | val loss 0.4721 | val dice 0.1480
+14:08:13 |     [train probs] min=0.0000 mean=0.0080 max=1.0000 | mean_prob@fg=0.9900 mean_prob@bg=0.0028
+14:08:14 |   epoch 078 | train loss 0.1539 | steps 152 | 282.6s | dump=False
+14:11:32 |   epoch 078 | lr 2.754202e-02 | val loss 0.4633 | val dice 0.1992
+14:16:34 |     [train probs] min=0.0000 mean=0.0139 max=1.0000 | mean_prob@fg=0.9950 mean_prob@bg=0.0043
+14:16:35 |   epoch 079 | train loss 0.1667 | steps 152 | 303.0s | dump=False
+14:19:52 |   epoch 079 | lr 2.747619e-02 | val loss 0.4776 | val dice 0.1436
+14:25:04 |     [train probs] min=0.0000 mean=0.0055 max=1.0000 | mean_prob@fg=0.9988 mean_prob@bg=0.0020
+14:25:05 |   epoch 080 | train loss 0.1612 | steps 152 | 312.6s | dump=False
+14:28:46 |   epoch 080 | lr 2.740956e-02 | val loss 0.4703 | val dice 0.1800
+14:33:42 |     [train probs] min=0.0000 mean=0.0052 max=1.0000 | mean_prob@fg=0.9348 mean_prob@bg=0.0016
+14:33:42 |   epoch 081 | train loss 0.1688 | steps 152 | 296.6s | dump=False
+14:37:06 |   epoch 081 | lr 2.734215e-02 | val loss 0.4747 | val dice 0.1494
+14:41:51 |     [train probs] min=0.0000 mean=0.0133 max=1.0000 | mean_prob@fg=0.9899 mean_prob@bg=0.0049
+14:41:51 |   epoch 082 | train loss 0.1855 | steps 152 | 285.0s | dump=False
+14:45:10 |   epoch 082 | lr 2.727396e-02 | val loss 0.4887 | val dice 0.0870
+14:49:49 |     [train probs] min=0.0000 mean=0.0163 max=1.0000 | mean_prob@fg=0.9977 mean_prob@bg=0.0066
+14:49:50 |   epoch 083 | train loss 0.1719 | steps 152 | 279.8s | dump=False
+14:53:12 |   epoch 083 | lr 2.720499e-02 | val loss 0.5084 | val dice 0.0516
+14:57:54 |     [train probs] min=0.0000 mean=0.0094 max=1.0000 | mean_prob@fg=0.9560 mean_prob@bg=0.0025
+14:57:54 |   epoch 084 | train loss 0.1761 | steps 152 | 282.2s | dump=False
+15:01:13 |   epoch 084 | lr 2.713525e-02 | val loss 0.4697 | val dice 0.2000
+15:05:50 |     [train probs] min=0.0000 mean=0.0108 max=1.0000 | mean_prob@fg=0.9795 mean_prob@bg=0.0040
+15:05:50 |   epoch 085 | train loss 0.1687 | steps 152 | 277.3s | dump=False
+15:09:05 |   epoch 085 | lr 2.706475e-02 | val loss 0.4865 | val dice 0.1159
+15:13:43 |     [train probs] min=0.0000 mean=0.0101 max=1.0000 | mean_prob@fg=0.9860 mean_prob@bg=0.0036
+15:13:44 |   epoch 086 | train loss 0.1715 | steps 152 | 278.8s | dump=False
+15:16:59 |   epoch 086 | lr 2.699348e-02 | val loss 0.4523 | val dice 0.2793
+15:21:39 |     [train probs] min=0.0000 mean=0.0138 max=1.0000 | mean_prob@fg=0.9977 mean_prob@bg=0.0038
+15:21:39 |   epoch 087 | train loss 0.1608 | steps 152 | 278.4s | dump=False
+15:24:56 |   epoch 087 | lr 2.692145e-02 | val loss 0.4633 | val dice 0.2247
+15:29:33 |     [train probs] min=0.0000 mean=0.0093 max=1.0000 | mean_prob@fg=0.9588 mean_prob@bg=0.0030
+15:29:34 |   epoch 088 | train loss 0.1652 | steps 152 | 278.1s | dump=False
+15:32:52 |   epoch 088 | lr 2.684867e-02 | val loss 0.4649 | val dice 0.1962
+15:37:32 |     [train probs] min=0.0000 mean=0.0065 max=1.0000 | mean_prob@fg=0.9969 mean_prob@bg=0.0031
+15:37:33 |   epoch 089 | train loss 0.1472 | steps 152 | 280.7s | dump=False
+15:40:50 |   epoch 089 | lr 2.677514e-02 | val loss 0.4521 | val dice 0.2786
+15:45:29 |     [train probs] min=0.0000 mean=0.0104 max=1.0000 | mean_prob@fg=0.9983 mean_prob@bg=0.0039
+15:45:29 |   epoch 090 | train loss 0.1542 | steps 152 | 278.8s | dump=False
+15:48:45 |   epoch 090 | lr 2.670086e-02 | val loss 0.4703 | val dice 0.1715
+15:53:24 |     [train probs] min=0.0000 mean=0.0083 max=1.0000 | mean_prob@fg=0.9839 mean_prob@bg=0.0048
+15:53:25 |   epoch 091 | train loss 0.1621 | steps 152 | 279.3s | dump=False
+15:56:41 |   epoch 091 | lr 2.662584e-02 | val loss 0.4683 | val dice 0.1385
+16:01:20 |     [train probs] min=0.0000 mean=0.0056 max=1.0000 | mean_prob@fg=0.9885 mean_prob@bg=0.0022
+16:01:21 |   epoch 092 | train loss 0.1580 | steps 152 | 280.0s | dump=False
+16:04:37 |   epoch 092 | lr 2.655009e-02 | val loss 0.4608 | val dice 0.1981
+16:09:22 |     [train probs] min=0.0000 mean=0.0065 max=1.0000 | mean_prob@fg=0.9923 mean_prob@bg=0.0026
+16:09:22 |   epoch 093 | train loss 0.1530 | steps 152 | 284.8s | dump=False
+16:12:44 |   epoch 093 | lr 2.647361e-02 | val loss 0.4595 | val dice 0.2041
+16:17:28 |     [train probs] min=0.0000 mean=0.0137 max=1.0000 | mean_prob@fg=0.9938 mean_prob@bg=0.0042
+16:17:28 |   epoch 094 | train loss 0.1597 | steps 152 | 284.6s | dump=False
+16:20:57 |   epoch 094 | lr 2.639640e-02 | val loss 0.4667 | val dice 0.1655
+16:25:46 |     [train probs] min=0.0000 mean=0.0087 max=1.0000 | mean_prob@fg=0.9965 mean_prob@bg=0.0052
+16:25:47 |   epoch 095 | train loss 0.1637 | steps 152 | 289.7s | dump=False
+16:29:13 |   epoch 095 | lr 2.631847e-02 | val loss 0.4583 | val dice 0.1821
+16:34:02 |     [train probs] min=0.0000 mean=0.0055 max=1.0000 | mean_prob@fg=0.9789 mean_prob@bg=0.0022
+16:34:03 |   epoch 096 | train loss 0.1474 | steps 152 | 289.4s | dump=False
+16:37:28 |   epoch 096 | lr 2.623982e-02 | val loss 0.4494 | val dice 0.2759
+16:42:16 |     [train probs] min=0.0000 mean=0.0101 max=1.0000 | mean_prob@fg=0.9944 mean_prob@bg=0.0036
+16:42:16 |   epoch 097 | train loss 0.1584 | steps 152 | 288.5s | dump=False
+16:45:39 |   epoch 097 | lr 2.616047e-02 | val loss 0.4297 | val dice 0.3549
+16:50:27 |     [train probs] min=0.0000 mean=0.0105 max=1.0000 | mean_prob@fg=0.9971 mean_prob@bg=0.0029
+16:50:28 |   epoch 098 | train loss 0.1335 | steps 152 | 286.5s | dump=False
+16:53:50 |   epoch 098 | lr 2.608040e-02 | val loss 0.4537 | val dice 0.2087
+16:58:54 |     [train probs] min=0.0000 mean=0.0087 max=1.0000 | mean_prob@fg=0.9943 mean_prob@bg=0.0022
+16:58:55 |   epoch 099 | train loss 0.1409 | steps 152 | 304.7s | dump=False
+17:00:20 | === train.py | experiment: swin_run_local | device: cuda ===
+17:00:20 | building dataloaders…
+17:00:31 | auto-detected IN_CHANNELS = 5
+17:00:44 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+17:00:44 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+17:00:45 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 98 | Restored best_val_dice: 0.3549 | Current LR: 2.608040e-02
+17:00:45 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+17:02:19 |   epoch 099 | lr 2.599964e-02 | val loss 0.4282 | val dice 0.3120
+17:06:33 |     [train probs] min=0.0000 mean=0.0118 max=1.0000 | mean_prob@fg=0.9937 mean_prob@bg=0.0035
+17:06:33 |   epoch 098 | train loss 0.1503 | steps 152 | 347.8s | dump=False
+17:07:08 |     [train probs] min=0.0000 mean=0.0103 max=1.0000 | mean_prob@fg=0.9637 mean_prob@bg=0.0030
+17:07:08 |   epoch 100 | train loss 0.1723 | steps 152 | 289.0s | dump=True
+17:10:34 |   epoch 100 | lr 2.591818e-02 | val loss 0.4725 | val dice 0.0982
+17:13:22 |   epoch 098 | lr 2.608040e-02 | val loss 0.4559 | val dice 0.2066
+17:15:23 |     [train probs] min=0.0000 mean=0.0091 max=1.0000 | mean_prob@fg=0.9851 mean_prob@bg=0.0029
+17:15:24 |   epoch 101 | train loss 0.1672 | steps 152 | 289.0s | dump=False
+17:18:48 |   epoch 101 | lr 2.583603e-02 | val loss 0.4297 | val dice 0.2480
+17:21:34 |     [train probs] min=0.0000 mean=0.0052 max=1.0000 | mean_prob@fg=0.9912 mean_prob@bg=0.0015
+17:21:35 |   epoch 099 | train loss 0.1499 | steps 152 | 492.3s | dump=False
+17:23:35 |     [train probs] min=0.0000 mean=0.0065 max=1.0000 | mean_prob@fg=0.9939 mean_prob@bg=0.0017
+17:23:36 |   epoch 102 | train loss 0.1598 | steps 152 | 287.1s | dump=False
+17:26:56 |   epoch 102 | lr 2.575320e-02 | val loss 0.3902 | val dice 0.2594
+17:32:23 |     [train probs] min=0.0000 mean=0.0085 max=1.0000 | mean_prob@fg=0.9934 mean_prob@bg=0.0027
+17:32:24 |   epoch 103 | train loss 0.1766 | steps 152 | 328.1s | dump=False
+17:35:07 |   epoch 099 | lr 2.599964e-02 | val loss 0.4358 | val dice 0.2874
+17:40:19 |   epoch 103 | lr 2.566968e-02 | val loss 0.4512 | val dice 0.1594
+17:40:46 |     [train probs] min=0.0000 mean=0.0081 max=1.0000 | mean_prob@fg=0.9952 mean_prob@bg=0.0026
+17:40:46 |   epoch 100 | train loss 0.1529 | steps 152 | 339.9s | dump=True
+17:47:08 |     [train probs] min=0.0000 mean=0.0088 max=1.0000 | mean_prob@fg=0.9901 mean_prob@bg=0.0027
+17:47:09 |   epoch 104 | train loss 0.1545 | steps 152 | 409.9s | dump=False
+17:47:21 |   epoch 100 | lr 2.591818e-02 | val loss 0.4061 | val dice 0.3554
+17:54:47 |     [train probs] min=0.0000 mean=0.0072 max=1.0000 | mean_prob@fg=0.9612 mean_prob@bg=0.0023
+17:54:47 |   epoch 101 | train loss 0.1607 | steps 152 | 444.2s | dump=False
+17:54:54 |   epoch 104 | lr 2.558549e-02 | val loss 0.4323 | val dice 0.1838
+18:01:44 |     [train probs] min=0.0000 mean=0.0101 max=1.0000 | mean_prob@fg=0.9920 mean_prob@bg=0.0033
+18:01:45 |   epoch 105 | train loss 0.1472 | steps 152 | 410.4s | dump=False
+18:04:49 |   epoch 101 | lr 2.583603e-02 | val loss 0.4273 | val dice 0.3244
+18:09:46 |   epoch 105 | lr 2.550063e-02 | val loss 0.3852 | val dice 0.3078
+18:11:48 |     [train probs] min=0.0000 mean=0.0036 max=1.0000 | mean_prob@fg=0.9821 mean_prob@bg=0.0010
+18:11:49 |   epoch 102 | train loss 0.1594 | steps 152 | 420.2s | dump=False
+18:16:22 |     [train probs] min=0.0000 mean=0.0139 max=1.0000 | mean_prob@fg=0.9950 mean_prob@bg=0.0049
+18:16:23 |   epoch 106 | train loss 0.1461 | steps 152 | 396.4s | dump=False
+18:19:55 |   epoch 102 | lr 2.575320e-02 | val loss 0.4062 | val dice 0.3526
+18:24:19 |   epoch 106 | lr 2.541511e-02 | val loss 0.3916 | val dice 0.2797
+18:27:04 |     [train probs] min=0.0000 mean=0.0134 max=1.0000 | mean_prob@fg=0.9956 mean_prob@bg=0.0042
+18:27:04 |   epoch 103 | train loss 0.1601 | steps 152 | 429.0s | dump=False
+18:30:47 |     [train probs] min=0.0000 mean=0.0162 max=1.0000 | mean_prob@fg=0.9926 mean_prob@bg=0.0057
+18:30:48 |   epoch 107 | train loss 0.1587 | steps 152 | 389.1s | dump=False
+18:35:23 |   epoch 103 | lr 2.566968e-02 | val loss 0.3910 | val dice 0.2660
+18:38:43 |   epoch 107 | lr 2.532892e-02 | val loss 0.3748 | val dice 0.2896
+18:41:43 |     [train probs] min=0.0000 mean=0.0091 max=1.0000 | mean_prob@fg=0.9997 mean_prob@bg=0.0026
+18:41:44 |   epoch 104 | train loss 0.1616 | steps 152 | 380.9s | dump=False
+18:45:26 |     [train probs] min=0.0000 mean=0.0072 max=1.0000 | mean_prob@fg=0.9740 mean_prob@bg=0.0022
+18:45:26 |   epoch 108 | train loss 0.1673 | steps 152 | 403.1s | dump=False
+18:50:27 |   epoch 104 | lr 2.558549e-02 | val loss 0.4334 | val dice 0.1734
+18:53:21 |   epoch 108 | lr 2.524209e-02 | val loss 0.3456 | val dice 0.3683
+18:56:47 |     [train probs] min=0.0000 mean=0.0164 max=1.0000 | mean_prob@fg=0.9943 mean_prob@bg=0.0061
+18:56:47 |   epoch 105 | train loss 0.1888 | steps 152 | 380.0s | dump=False
+18:59:50 |     [train probs] min=0.0000 mean=0.0095 max=1.0000 | mean_prob@fg=0.9961 mean_prob@bg=0.0028
+18:59:51 |   epoch 109 | train loss 0.1630 | steps 152 | 387.9s | dump=False
+19:04:41 |   epoch 105 | lr 2.550063e-02 | val loss 0.4224 | val dice 0.2024
+19:07:44 |   epoch 109 | lr 2.515460e-02 | val loss 0.3956 | val dice 0.3053
+19:11:00 |     [train probs] min=0.0000 mean=0.0090 max=1.0000 | mean_prob@fg=0.9948 mean_prob@bg=0.0032
+19:11:01 |   epoch 106 | train loss 0.1638 | steps 152 | 379.1s | dump=False
+19:14:16 |     [train probs] min=0.0000 mean=0.0088 max=1.0000 | mean_prob@fg=0.9950 mean_prob@bg=0.0037
+19:14:17 |   epoch 110 | train loss 0.1659 | steps 152 | 392.6s | dump=False
+19:18:55 |   epoch 106 | lr 2.541511e-02 | val loss 0.4300 | val dice 0.1886
+19:22:12 |   epoch 110 | lr 2.506648e-02 | val loss 0.3401 | val dice 0.3685
+19:25:13 |     [train probs] min=0.0000 mean=0.0112 max=1.0000 | mean_prob@fg=0.9895 mean_prob@bg=0.0038
+19:25:13 |   epoch 107 | train loss 0.1657 | steps 152 | 378.8s | dump=False
+19:28:49 |     [train probs] min=0.0000 mean=0.0080 max=1.0000 | mean_prob@fg=0.9712 mean_prob@bg=0.0023
+19:28:50 |   epoch 111 | train loss 0.1565 | steps 152 | 395.5s | dump=False
+19:33:08 |   epoch 107 | lr 2.532892e-02 | val loss 0.3857 | val dice 0.2801
+19:39:24 |     [train probs] min=0.0000 mean=0.0108 max=1.0000 | mean_prob@fg=0.9979 mean_prob@bg=0.0028
+19:39:24 |   epoch 108 | train loss 0.1672 | steps 152 | 376.1s | dump=False
+19:47:18 |   epoch 108 | lr 2.524209e-02 | val loss 0.3645 | val dice 0.3289
+19:54:25 |     [train probs] min=0.0000 mean=0.0132 max=1.0000 | mean_prob@fg=0.9896 mean_prob@bg=0.0044
+19:54:26 |   epoch 109 | train loss 0.1587 | steps 152 | 428.3s | dump=False
+20:02:20 |   epoch 109 | lr 2.515460e-02 | val loss 0.3592 | val dice 0.3339
+20:08:46 |     [train probs] min=0.0000 mean=0.0112 max=1.0000 | mean_prob@fg=0.9964 mean_prob@bg=0.0030
+20:08:46 |   epoch 110 | train loss 0.1486 | steps 152 | 386.1s | dump=False
+20:16:39 |   epoch 110 | lr 2.506648e-02 | val loss 0.3830 | val dice 0.2718
+20:23:12 |     [train probs] min=0.0000 mean=0.0124 max=1.0000 | mean_prob@fg=0.9922 mean_prob@bg=0.0044
+20:23:13 |   epoch 111 | train loss 0.1623 | steps 152 | 393.3s | dump=False
+20:31:07 |   epoch 111 | lr 2.497771e-02 | val loss 0.3899 | val dice 0.2653
+20:37:27 |     [train probs] min=0.0000 mean=0.0099 max=1.0000 | mean_prob@fg=0.9879 mean_prob@bg=0.0030
+20:37:27 |   epoch 112 | train loss 0.1349 | steps 152 | 380.6s | dump=False
+20:45:22 |   epoch 112 | lr 2.488832e-02 | val loss 0.3645 | val dice 0.2926
+20:51:43 |     [train probs] min=0.0000 mean=0.0048 max=1.0000 | mean_prob@fg=0.9866 mean_prob@bg=0.0013
+20:51:43 |   epoch 113 | train loss 0.1469 | steps 152 | 381.3s | dump=False
+20:59:35 | === train.py | experiment: swin_run_local | device: cuda ===
+20:59:35 | building dataloaders…
+20:59:40 |   epoch 113 | lr 2.479830e-02 | val loss 0.3112 | val dice 0.4157
+20:59:44 | auto-detected IN_CHANNELS = 5
+20:59:58 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+20:59:58 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+21:00:00 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 114 | Restored best_val_dice: 0.4157 | Current LR: 2.470766e-02
+21:00:00 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+21:06:06 |     [train probs] min=0.0000 mean=0.0108 max=1.0000 | mean_prob@fg=0.9925 mean_prob@bg=0.0061
+21:06:07 |   epoch 114 | train loss 0.1755 | steps 152 | 384.9s | dump=False
+21:14:12 |   epoch 114 | lr 2.470766e-02 | val loss 0.4325 | val dice 0.1566
+21:20:33 |     [train probs] min=0.0000 mean=0.0031 max=1.0000 | mean_prob@fg=0.9693 mean_prob@bg=0.0012
+21:20:34 |   epoch 115 | train loss 0.1411 | steps 152 | 381.5s | dump=False
+21:28:30 |   epoch 115 | lr 2.461640e-02 | val loss 0.3248 | val dice 0.3844
+21:30:46 | === train.py | experiment: swin_run_local | device: cuda ===
+21:30:46 | building dataloaders…
+21:30:56 | auto-detected IN_CHANNELS = 5
+21:31:12 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+21:31:12 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+21:31:13 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 114 | Restored best_val_dice: 0.4157 | Current LR: 2.470766e-02
+21:31:13 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+21:34:53 |     [train probs] min=0.0000 mean=0.0128 max=1.0000 | mean_prob@fg=0.9689 mean_prob@bg=0.0039
+21:34:54 |   epoch 116 | train loss 0.1741 | steps 152 | 383.9s | dump=False
+21:36:57 |     [train probs] min=0.0000 mean=0.0121 max=1.0000 | mean_prob@fg=0.9913 mean_prob@bg=0.0038
+21:36:58 |   epoch 114 | train loss 0.1538 | steps 152 | 345.0s | dump=False
+21:42:50 |   epoch 116 | lr 2.452454e-02 | val loss 0.3863 | val dice 0.2378
+21:44:23 |   epoch 114 | lr 2.470766e-02 | val loss 0.3645 | val dice 0.2917
+21:49:16 |     [train probs] min=0.0000 mean=0.0053 max=1.0000 | mean_prob@fg=0.9917 mean_prob@bg=0.0015
+21:49:17 |     [train probs] min=0.0000 mean=0.0073 max=1.0000 | mean_prob@fg=0.9738 mean_prob@bg=0.0031
+21:49:17 |   epoch 115 | train loss 0.1404 | steps 152 | 294.3s | dump=False
+21:49:17 |   epoch 117 | train loss 0.1427 | steps 152 | 387.1s | dump=False
+21:52:26 |   epoch 115 | lr 2.461640e-02 | val loss 0.3380 | val dice 0.3532
+21:56:48 |     [train probs] min=0.0000 mean=0.0084 max=1.0000 | mean_prob@fg=0.9949 mean_prob@bg=0.0030
+21:56:48 |   epoch 116 | train loss 0.1781 | steps 152 | 262.2s | dump=False
+21:57:32 |   epoch 117 | lr 2.443208e-02 | val loss 0.3524 | val dice 0.3776
+21:59:54 |   epoch 116 | lr 2.452454e-02 | val loss 0.3322 | val dice 0.3881
+22:04:16 |     [train probs] min=0.0000 mean=0.0073 max=1.0000 | mean_prob@fg=0.9814 mean_prob@bg=0.0023
+22:04:17 |     [train probs] min=0.0000 mean=0.0090 max=1.0000 | mean_prob@fg=0.9646 mean_prob@bg=0.0021
+22:04:17 |   epoch 117 | train loss 0.1413 | steps 152 | 262.4s | dump=False
+22:04:17 |   epoch 118 | train loss 0.1647 | steps 152 | 405.1s | dump=False
+22:07:26 |   epoch 117 | lr 2.443208e-02 | val loss 0.3309 | val dice 0.3765
+22:11:49 |     [train probs] min=0.0000 mean=0.0036 max=1.0000 | mean_prob@fg=0.9764 mean_prob@bg=0.0009
+22:11:50 |   epoch 118 | train loss 0.1561 | steps 152 | 263.9s | dump=False
+22:12:47 |   epoch 118 | lr 2.433902e-02 | val loss 0.3577 | val dice 0.3562
+22:14:56 |   epoch 118 | lr 2.433902e-02 | val loss 0.2942 | val dice 0.4452
+22:19:01 |     [train probs] min=0.0000 mean=0.0075 max=1.0000 | mean_prob@fg=0.9981 mean_prob@bg=0.0031
+22:19:02 |   epoch 119 | train loss 0.1550 | steps 152 | 374.2s | dump=False
+22:19:22 |     [train probs] min=0.0000 mean=0.0133 max=1.0000 | mean_prob@fg=0.9972 mean_prob@bg=0.0041
+22:19:23 |   epoch 119 | train loss 0.1347 | steps 152 | 264.3s | dump=False
+22:22:29 |   epoch 119 | lr 2.424536e-02 | val loss 0.3182 | val dice 0.4345
+22:26:31 |   epoch 119 | lr 2.424536e-02 | val loss 0.3560 | val dice 0.3491
+22:26:50 |     [train probs] min=0.0000 mean=0.0085 max=1.0000 | mean_prob@fg=0.9881 mean_prob@bg=0.0020
+22:26:51 |   epoch 120 | train loss 0.1331 | steps 152 | 261.5s | dump=False
+22:29:56 |   epoch 120 | lr 2.415113e-02 | val loss 0.2994 | val dice 0.4268
+22:33:12 |     [train probs] min=0.0000 mean=0.0114 max=1.0000 | mean_prob@fg=0.9983 mean_prob@bg=0.0058
+22:33:12 |   epoch 120 | train loss 0.1359 | steps 152 | 401.5s | dump=False
+22:34:15 |     [train probs] min=0.0000 mean=0.0170 max=1.0000 | mean_prob@fg=0.9980 mean_prob@bg=0.0066
+22:34:15 |   epoch 121 | train loss 0.2321 | steps 152 | 259.2s | dump=False
+22:37:21 |   epoch 121 | lr 2.405631e-02 | val loss 0.3629 | val dice 0.3221
+22:41:48 |     [train probs] min=0.0000 mean=0.0091 max=1.0000 | mean_prob@fg=0.9947 mean_prob@bg=0.0033
+22:41:49 |   epoch 122 | train loss 0.1456 | steps 152 | 267.5s | dump=False
+22:44:54 |   epoch 122 | lr 2.396092e-02 | val loss 0.3441 | val dice 0.3526
+22:49:15 |     [train probs] min=0.0000 mean=0.0110 max=1.0000 | mean_prob@fg=0.9966 mean_prob@bg=0.0035
+22:49:16 |   epoch 123 | train loss 0.1409 | steps 152 | 261.3s | dump=False
+22:52:22 |   epoch 123 | lr 2.386497e-02 | val loss 0.3011 | val dice 0.4275
+22:56:44 |     [train probs] min=0.0000 mean=0.0107 max=1.0000 | mean_prob@fg=0.9987 mean_prob@bg=0.0027
+22:56:44 |   epoch 124 | train loss 0.1508 | steps 152 | 261.8s | dump=False
+22:59:52 |   epoch 124 | lr 2.376845e-02 | val loss 0.3320 | val dice 0.4111
+23:04:14 |     [train probs] min=0.0000 mean=0.0127 max=1.0000 | mean_prob@fg=0.9866 mean_prob@bg=0.0040
+23:04:14 |   epoch 125 | train loss 0.1341 | steps 152 | 262.3s | dump=False
+23:07:19 |   epoch 125 | lr 2.367138e-02 | val loss 0.3443 | val dice 0.4139
+23:11:37 |     [train probs] min=0.0000 mean=0.0109 max=1.0000 | mean_prob@fg=0.9949 mean_prob@bg=0.0027
+23:11:38 |   epoch 126 | train loss 0.1371 | steps 152 | 258.7s | dump=False
+23:14:41 |   epoch 126 | lr 2.357376e-02 | val loss 0.3039 | val dice 0.4221
+23:19:04 |     [train probs] min=0.0000 mean=0.0121 max=1.0000 | mean_prob@fg=0.9921 mean_prob@bg=0.0040
+23:19:04 |   epoch 127 | train loss 0.1439 | steps 152 | 263.2s | dump=False
+23:22:11 |   epoch 127 | lr 2.347560e-02 | val loss 0.3192 | val dice 0.3590
+23:26:35 |     [train probs] min=0.0000 mean=0.0095 max=1.0000 | mean_prob@fg=0.9947 mean_prob@bg=0.0026
+23:26:36 |   epoch 128 | train loss 0.1187 | steps 152 | 265.1s | dump=False
+23:29:54 |   epoch 128 | lr 2.337690e-02 | val loss 0.2915 | val dice 0.4490
+23:34:30 |     [train probs] min=0.0000 mean=0.0048 max=1.0000 | mean_prob@fg=0.9978 mean_prob@bg=0.0013
+23:34:31 |   epoch 129 | train loss 0.1222 | steps 152 | 275.4s | dump=False
+23:37:41 |   epoch 129 | lr 2.327767e-02 | val loss 0.2723 | val dice 0.4879
+23:42:04 |     [train probs] min=0.0000 mean=0.0083 max=1.0000 | mean_prob@fg=0.9876 mean_prob@bg=0.0036
+23:42:05 |   epoch 130 | train loss 0.1355 | steps 152 | 262.1s | dump=False
+23:45:20 |   epoch 130 | lr 2.317792e-02 | val loss 0.3129 | val dice 0.4075
+23:49:58 |     [train probs] min=0.0000 mean=0.0032 max=1.0000 | mean_prob@fg=0.9652 mean_prob@bg=0.0013
+23:49:59 |   epoch 131 | train loss 0.1244 | steps 152 | 279.4s | dump=False
+23:53:12 |   epoch 131 | lr 2.307765e-02 | val loss 0.3113 | val dice 0.4028
+23:57:51 |     [train probs] min=0.0000 mean=0.0136 max=1.0000 | mean_prob@fg=0.9930 mean_prob@bg=0.0044
+23:57:51 |   epoch 132 | train loss 0.1423 | steps 152 | 279.8s | dump=False
+00:01:01 |   epoch 132 | lr 2.297687e-02 | val loss 0.2926 | val dice 0.4432
+00:05:20 |     [train probs] min=0.0000 mean=0.0072 max=1.0000 | mean_prob@fg=0.9295 mean_prob@bg=0.0031
+00:05:20 |   epoch 133 | train loss 0.1522 | steps 152 | 259.3s | dump=False
+00:08:26 |   epoch 133 | lr 2.287559e-02 | val loss 0.2701 | val dice 0.4831
+00:12:47 |     [train probs] min=0.0000 mean=0.0094 max=1.0000 | mean_prob@fg=0.9946 mean_prob@bg=0.0022
+00:12:48 |   epoch 134 | train loss 0.1643 | steps 152 | 261.3s | dump=False
+00:15:53 |   epoch 134 | lr 2.277381e-02 | val loss 0.3642 | val dice 0.3213
+00:20:13 |     [train probs] min=0.0000 mean=0.0075 max=1.0000 | mean_prob@fg=0.9956 mean_prob@bg=0.0030
+00:20:13 |   epoch 135 | train loss 0.1365 | steps 152 | 260.6s | dump=False
+00:23:19 |   epoch 135 | lr 2.267153e-02 | val loss 0.2848 | val dice 0.4569
+00:27:42 |     [train probs] min=0.0000 mean=0.0110 max=1.0000 | mean_prob@fg=0.9954 mean_prob@bg=0.0055
+00:27:43 |   epoch 136 | train loss 0.1256 | steps 152 | 263.6s | dump=False
+00:30:52 |   epoch 136 | lr 2.256877e-02 | val loss 0.2729 | val dice 0.4707
+00:35:15 |     [train probs] min=0.0000 mean=0.0069 max=1.0000 | mean_prob@fg=0.9995 mean_prob@bg=0.0023
+00:35:15 |   epoch 137 | train loss 0.1186 | steps 152 | 263.4s | dump=False
+00:38:30 |   epoch 137 | lr 2.246553e-02 | val loss 0.2907 | val dice 0.4237
+00:45:17 |     [train probs] min=0.0000 mean=0.0177 max=1.0000 | mean_prob@fg=0.9995 mean_prob@bg=0.0068
+00:45:18 |   epoch 138 | train loss 0.1347 | steps 152 | 408.2s | dump=False
+00:48:22 |   epoch 138 | lr 2.236182e-02 | val loss 0.3288 | val dice 0.3512
+00:52:42 |     [train probs] min=0.0000 mean=0.0121 max=1.0000 | mean_prob@fg=0.9835 mean_prob@bg=0.0038
+00:52:43 |   epoch 139 | train loss 0.1299 | steps 152 | 260.5s | dump=False
+00:55:47 |   epoch 139 | lr 2.225765e-02 | val loss 0.2776 | val dice 0.4529
+01:00:08 |     [train probs] min=0.0000 mean=0.0072 max=1.0000 | mean_prob@fg=0.9786 mean_prob@bg=0.0020
+01:00:09 |   epoch 140 | train loss 0.1301 | steps 152 | 261.6s | dump=False
+01:03:15 |   epoch 140 | lr 2.215301e-02 | val loss 0.2502 | val dice 0.5061
+01:07:40 |     [train probs] min=0.0000 mean=0.0088 max=1.0000 | mean_prob@fg=0.9992 mean_prob@bg=0.0027
+01:07:40 |   epoch 141 | train loss 0.1275 | steps 152 | 263.5s | dump=False
+01:10:46 |   epoch 141 | lr 2.204792e-02 | val loss 0.2803 | val dice 0.4564
+01:15:08 |     [train probs] min=0.0000 mean=0.0101 max=1.0000 | mean_prob@fg=0.9978 mean_prob@bg=0.0053
+01:15:08 |   epoch 142 | train loss 0.1425 | steps 152 | 262.0s | dump=False
+01:18:14 |   epoch 142 | lr 2.194239e-02 | val loss 0.2992 | val dice 0.4670
+01:22:36 |     [train probs] min=0.0000 mean=0.0086 max=1.0000 | mean_prob@fg=0.9716 mean_prob@bg=0.0024
+01:22:37 |   epoch 143 | train loss 0.1308 | steps 152 | 262.9s | dump=False
+01:25:43 |   epoch 143 | lr 2.183642e-02 | val loss 0.2664 | val dice 0.4977
+01:30:04 |     [train probs] min=0.0000 mean=0.0071 max=1.0000 | mean_prob@fg=0.9970 mean_prob@bg=0.0020
+01:30:04 |   epoch 144 | train loss 0.1239 | steps 152 | 261.7s | dump=False
+01:33:10 |   epoch 144 | lr 2.173001e-02 | val loss 0.2408 | val dice 0.5437
+01:37:32 |     [train probs] min=0.0000 mean=0.0096 max=1.0000 | mean_prob@fg=0.9937 mean_prob@bg=0.0024
+01:37:32 |   epoch 145 | train loss 0.1207 | steps 152 | 260.6s | dump=False
+01:40:38 |   epoch 145 | lr 2.162318e-02 | val loss 0.2624 | val dice 0.4803
+01:45:14 |     [train probs] min=0.0000 mean=0.0069 max=1.0000 | mean_prob@fg=0.9850 mean_prob@bg=0.0030
+01:45:14 |   epoch 146 | train loss 0.1412 | steps 152 | 276.6s | dump=False
+01:48:20 |   epoch 146 | lr 2.151593e-02 | val loss 0.2876 | val dice 0.4434
+01:52:41 |     [train probs] min=0.0000 mean=0.0033 max=1.0000 | mean_prob@fg=0.9770 mean_prob@bg=0.0010
+01:52:42 |   epoch 147 | train loss 0.1217 | steps 152 | 262.1s | dump=False
+01:55:46 |   epoch 147 | lr 2.140827e-02 | val loss 0.2183 | val dice 0.5667
+02:00:05 |     [train probs] min=0.0000 mean=0.0117 max=1.0000 | mean_prob@fg=0.9989 mean_prob@bg=0.0043
+02:00:06 |   epoch 148 | train loss 0.1230 | steps 152 | 258.0s | dump=False
+02:03:11 |   epoch 148 | lr 2.130020e-02 | val loss 0.2656 | val dice 0.4669
+02:07:30 |     [train probs] min=0.0000 mean=0.0095 max=1.0000 | mean_prob@fg=0.9926 mean_prob@bg=0.0025
+02:07:30 |   epoch 149 | train loss 0.1281 | steps 152 | 259.6s | dump=False
+02:10:36 |   epoch 149 | lr 2.119174e-02 | val loss 0.2457 | val dice 0.5226
+02:14:54 |     [train probs] min=0.0000 mean=0.0110 max=1.0000 | mean_prob@fg=0.9953 mean_prob@bg=0.0030
+02:14:54 |   epoch 150 | train loss 0.1309 | steps 152 | 258.6s | dump=True
+02:17:59 |   epoch 150 | lr 2.108288e-02 | val loss 0.2711 | val dice 0.5055
+02:22:20 |     [train probs] min=0.0000 mean=0.0125 max=1.0000 | mean_prob@fg=0.9977 mean_prob@bg=0.0032
+02:22:21 |   epoch 151 | train loss 0.1235 | steps 152 | 261.8s | dump=False
+02:25:26 |   epoch 151 | lr 2.097364e-02 | val loss 0.2345 | val dice 0.5261
+02:26:36 | === train.py | experiment: swin_run_local | device: cuda ===
+02:26:36 | building dataloaders…
+02:26:46 | auto-detected IN_CHANNELS = 5
+02:27:01 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+02:27:01 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+02:27:02 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 148 | Restored best_val_dice: 0.5667 | Current LR: 2.130020e-02
+02:27:02 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+02:29:48 |     [train probs] min=0.0000 mean=0.0141 max=1.0000 | mean_prob@fg=0.9984 mean_prob@bg=0.0044
+02:29:49 |   epoch 152 | train loss 0.1326 | steps 152 | 262.9s | dump=False
+02:31:40 |     [train probs] min=0.0000 mean=0.0119 max=1.0000 | mean_prob@fg=0.9963 mean_prob@bg=0.0035
+02:31:40 |   epoch 148 | train loss 0.1298 | steps 152 | 278.1s | dump=False
+02:33:00 |   epoch 152 | lr 2.086402e-02 | val loss 0.2981 | val dice 0.4023
+02:35:07 |   epoch 148 | lr 2.130020e-02 | val loss 0.2865 | val dice 0.4469
+02:37:32 |     [train probs] min=0.0000 mean=0.0111 max=1.0000 | mean_prob@fg=0.9981 mean_prob@bg=0.0037
+02:37:33 |   epoch 153 | train loss 0.1216 | steps 152 | 273.2s | dump=False
+02:39:39 |     [train probs] min=0.0000 mean=0.0052 max=1.0000 | mean_prob@fg=0.9951 mean_prob@bg=0.0014
+02:39:40 |   epoch 149 | train loss 0.1269 | steps 152 | 273.0s | dump=False
+02:40:39 |   epoch 153 | lr 2.075403e-02 | val loss 0.2805 | val dice 0.4350
+02:42:50 |   epoch 149 | lr 2.119174e-02 | val loss 0.2965 | val dice 0.4466
+02:47:26 |     [train probs] min=0.0000 mean=0.0086 max=1.0000 | mean_prob@fg=0.9985 mean_prob@bg=0.0032
+02:47:27 |   epoch 150 | train loss 0.1345 | steps 152 | 277.2s | dump=True
+02:50:36 |   epoch 150 | lr 2.108288e-02 | val loss 0.2729 | val dice 0.4962
+02:55:12 |     [train probs] min=0.0000 mean=0.0072 max=1.0000 | mean_prob@fg=0.9893 mean_prob@bg=0.0021
+02:55:13 |   epoch 151 | train loss 0.1191 | steps 152 | 276.9s | dump=False
+02:58:22 |   epoch 151 | lr 2.097364e-02 | val loss 0.2517 | val dice 0.4958
+03:03:08 |     [train probs] min=0.0000 mean=0.0034 max=1.0000 | mean_prob@fg=0.9786 mean_prob@bg=0.0008
+03:03:09 |   epoch 152 | train loss 0.1320 | steps 152 | 286.3s | dump=False
+03:06:21 |   epoch 152 | lr 2.086402e-02 | val loss 0.2449 | val dice 0.5014
+03:11:45 |     [train probs] min=0.0000 mean=0.0132 max=1.0000 | mean_prob@fg=0.9801 mean_prob@bg=0.0041
+03:11:46 |   epoch 153 | train loss 0.1200 | steps 152 | 325.1s | dump=False
+03:14:57 |   epoch 153 | lr 2.075403e-02 | val loss 0.2381 | val dice 0.5193
+03:19:34 |     [train probs] min=0.0000 mean=0.0082 max=1.0000 | mean_prob@fg=0.9967 mean_prob@bg=0.0018
+03:19:34 |   epoch 154 | train loss 0.1289 | steps 152 | 277.4s | dump=False
+03:22:44 |   epoch 154 | lr 2.064367e-02 | val loss 0.2550 | val dice 0.4822
+03:27:19 |     [train probs] min=0.0000 mean=0.0165 max=1.0000 | mean_prob@fg=0.9945 mean_prob@bg=0.0062
+03:27:19 |   epoch 155 | train loss 0.1465 | steps 152 | 275.0s | dump=False
+03:30:28 |   epoch 155 | lr 2.053296e-02 | val loss 0.2554 | val dice 0.4863
+03:35:03 |     [train probs] min=0.0000 mean=0.0082 max=1.0000 | mean_prob@fg=0.9905 mean_prob@bg=0.0024
+03:35:04 |   epoch 156 | train loss 0.1087 | steps 152 | 275.3s | dump=False
+03:38:15 |   epoch 156 | lr 2.042190e-02 | val loss 0.2328 | val dice 0.5225
+03:43:25 |     [train probs] min=0.0000 mean=0.0111 max=1.0000 | mean_prob@fg=0.9969 mean_prob@bg=0.0036
+03:43:26 |   epoch 157 | train loss 0.1288 | steps 152 | 311.2s | dump=False
+03:46:35 |   epoch 157 | lr 2.031049e-02 | val loss 0.2555 | val dice 0.4871
+03:51:10 |     [train probs] min=0.0000 mean=0.0108 max=1.0000 | mean_prob@fg=0.9986 mean_prob@bg=0.0028
+03:51:11 |   epoch 158 | train loss 0.1307 | steps 152 | 275.5s | dump=False
+03:54:21 |   epoch 158 | lr 2.019875e-02 | val loss 0.2380 | val dice 0.5120
+03:58:56 |     [train probs] min=0.0000 mean=0.0128 max=1.0000 | mean_prob@fg=0.9875 mean_prob@bg=0.0040
+03:58:57 |   epoch 159 | train loss 0.1291 | steps 152 | 276.5s | dump=False
+04:02:05 |   epoch 159 | lr 2.008668e-02 | val loss 0.2544 | val dice 0.4899
+04:06:39 |     [train probs] min=0.0000 mean=0.0116 max=1.0000 | mean_prob@fg=0.9983 mean_prob@bg=0.0034
+04:06:39 |   epoch 160 | train loss 0.1216 | steps 152 | 273.8s | dump=False
+04:09:49 |   epoch 160 | lr 1.997429e-02 | val loss 0.2399 | val dice 0.5130
+04:14:23 |     [train probs] min=0.0000 mean=0.0117 max=1.0000 | mean_prob@fg=0.9925 mean_prob@bg=0.0037
+04:14:24 |   epoch 161 | train loss 0.1277 | steps 152 | 274.9s | dump=False
+04:17:44 |   epoch 161 | lr 1.986158e-02 | val loss 0.2346 | val dice 0.5116
+04:22:27 |     [train probs] min=0.0000 mean=0.0092 max=1.0000 | mean_prob@fg=0.9845 mean_prob@bg=0.0023
+04:22:27 |   epoch 162 | train loss 0.1059 | steps 152 | 282.6s | dump=False
+04:25:49 |   epoch 162 | lr 1.974857e-02 | val loss 0.2089 | val dice 0.5707
+04:30:33 |     [train probs] min=0.0000 mean=0.0047 max=1.0000 | mean_prob@fg=0.9963 mean_prob@bg=0.0011
+04:30:34 |   epoch 163 | train loss 0.1124 | steps 152 | 282.7s | dump=False
+04:33:55 |   epoch 163 | lr 1.963525e-02 | val loss 0.2355 | val dice 0.5411
+04:38:33 |     [train probs] min=0.0000 mean=0.0082 max=1.0000 | mean_prob@fg=0.9927 mean_prob@bg=0.0034
+04:38:34 |   epoch 164 | train loss 0.1204 | steps 152 | 278.5s | dump=False
+04:41:51 |   epoch 164 | lr 1.952165e-02 | val loss 0.2502 | val dice 0.5025
+04:46:30 |     [train probs] min=0.0000 mean=0.0027 max=1.0000 | mean_prob@fg=0.9473 mean_prob@bg=0.0009
+04:46:31 |   epoch 165 | train loss 0.1139 | steps 152 | 279.6s | dump=False
+04:49:52 |   epoch 165 | lr 1.940775e-02 | val loss 0.2330 | val dice 0.5524
+04:54:35 |     [train probs] min=0.0000 mean=0.0128 max=1.0000 | mean_prob@fg=0.9943 mean_prob@bg=0.0036
+04:54:36 |   epoch 166 | train loss 0.1273 | steps 152 | 284.4s | dump=False
+04:57:59 |   epoch 166 | lr 1.929358e-02 | val loss 0.2492 | val dice 0.5033
+05:02:37 |     [train probs] min=0.0000 mean=0.0069 max=1.0000 | mean_prob@fg=0.9822 mean_prob@bg=0.0027
+05:02:38 |   epoch 167 | train loss 0.1124 | steps 152 | 278.9s | dump=False
+05:05:56 |   epoch 167 | lr 1.917914e-02 | val loss 0.2374 | val dice 0.5328
+05:10:35 |     [train probs] min=0.0000 mean=0.0090 max=1.0000 | mean_prob@fg=0.9777 mean_prob@bg=0.0020
+05:10:36 |   epoch 168 | train loss 0.1246 | steps 152 | 279.7s | dump=False
+05:13:51 |   epoch 168 | lr 1.906443e-02 | val loss 0.2605 | val dice 0.4713
+05:18:26 |     [train probs] min=0.0000 mean=0.0069 max=1.0000 | mean_prob@fg=0.9966 mean_prob@bg=0.0024
+05:18:26 |   epoch 169 | train loss 0.1232 | steps 152 | 275.4s | dump=False
+05:21:35 |   epoch 169 | lr 1.894946e-02 | val loss 0.1985 | val dice 0.6095
+05:26:07 |     [train probs] min=0.0000 mean=0.0095 max=1.0000 | mean_prob@fg=0.9967 mean_prob@bg=0.0040
+05:26:07 |   epoch 170 | train loss 0.1106 | steps 152 | 270.5s | dump=False
+05:29:17 |   epoch 170 | lr 1.883425e-02 | val loss 0.2177 | val dice 0.5559
+05:33:52 |     [train probs] min=0.0000 mean=0.0071 max=1.0000 | mean_prob@fg=0.9997 mean_prob@bg=0.0025
+05:33:53 |   epoch 171 | train loss 0.1087 | steps 152 | 275.6s | dump=False
+05:37:09 |   epoch 171 | lr 1.871879e-02 | val loss 0.2872 | val dice 0.4202
+05:41:46 |     [train probs] min=0.0000 mean=0.0171 max=1.0000 | mean_prob@fg=0.9990 mean_prob@bg=0.0062
+05:41:46 |   epoch 172 | train loss 0.1258 | steps 152 | 276.7s | dump=False
+05:44:58 |   epoch 172 | lr 1.860310e-02 | val loss 0.2714 | val dice 0.4494
+05:49:31 |     [train probs] min=0.0000 mean=0.0122 max=1.0000 | mean_prob@fg=0.9921 mean_prob@bg=0.0038
+05:49:32 |   epoch 173 | train loss 0.1230 | steps 152 | 273.6s | dump=False
+05:52:43 |   epoch 173 | lr 1.848718e-02 | val loss 0.2684 | val dice 0.4654
+05:57:18 |     [train probs] min=0.0000 mean=0.0073 max=1.0000 | mean_prob@fg=0.9902 mean_prob@bg=0.0020
+05:57:19 |   epoch 174 | train loss 0.1145 | steps 152 | 275.8s | dump=False
+06:00:27 |   epoch 174 | lr 1.837104e-02 | val loss 0.2505 | val dice 0.5066
+06:05:01 |     [train probs] min=0.0000 mean=0.0083 max=1.0000 | mean_prob@fg=0.9969 mean_prob@bg=0.0022
+06:05:02 |   epoch 175 | train loss 0.1106 | steps 152 | 274.4s | dump=False
+06:08:13 |   epoch 175 | lr 1.825468e-02 | val loss 0.2290 | val dice 0.5761
+06:12:47 |     [train probs] min=0.0000 mean=0.0088 max=1.0000 | mean_prob@fg=0.9995 mean_prob@bg=0.0041
+06:12:48 |   epoch 176 | train loss 0.1306 | steps 152 | 275.2s | dump=False
+06:15:58 |   epoch 176 | lr 1.813812e-02 | val loss 0.2500 | val dice 0.5120
+06:20:32 |     [train probs] min=0.0000 mean=0.0086 max=1.0000 | mean_prob@fg=0.9832 mean_prob@bg=0.0024
+06:20:33 |   epoch 177 | train loss 0.1194 | steps 152 | 274.8s | dump=False
+06:23:47 |   epoch 177 | lr 1.802136e-02 | val loss 0.2118 | val dice 0.5734
+06:28:20 |     [train probs] min=0.0000 mean=0.0074 max=1.0000 | mean_prob@fg=0.9983 mean_prob@bg=0.0023
+06:28:21 |   epoch 178 | train loss 0.1157 | steps 152 | 273.3s | dump=False
+06:31:29 |   epoch 178 | lr 1.790441e-02 | val loss 0.2427 | val dice 0.5084
+06:36:04 |     [train probs] min=0.0000 mean=0.0095 max=1.0000 | mean_prob@fg=0.9909 mean_prob@bg=0.0023
+06:36:04 |   epoch 179 | train loss 0.1271 | steps 152 | 274.7s | dump=False
+06:39:13 |   epoch 179 | lr 1.778728e-02 | val loss 0.2582 | val dice 0.4976
+06:43:48 |     [train probs] min=0.0000 mean=0.0053 max=1.0000 | mean_prob@fg=0.9610 mean_prob@bg=0.0015
+06:43:49 |   epoch 180 | train loss 0.1344 | steps 152 | 275.1s | dump=False
+06:46:56 |   epoch 180 | lr 1.766997e-02 | val loss 0.2375 | val dice 0.5368
+06:51:31 |     [train probs] min=0.0000 mean=0.0041 max=1.0000 | mean_prob@fg=0.9947 mean_prob@bg=0.0018
+06:51:32 |   epoch 181 | train loss 0.1091 | steps 152 | 275.5s | dump=False
+03:17:44 | === train.py | experiment: swin_run_local | device: cuda ===
+03:17:44 | building dataloaders…
+03:17:53 | auto-detected IN_CHANNELS = 5
+03:18:08 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+03:18:08 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+03:18:09 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 170 | Restored best_val_dice: 0.6095 | Current LR: 1.883425e-02
+03:18:09 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+03:22:34 |     [train probs] min=0.0000 mean=0.0112 max=1.0000 | mean_prob@fg=0.9903 mean_prob@bg=0.0029
+03:22:34 |   epoch 170 | train loss 0.1135 | steps 152 | 265.1s | dump=False
+03:25:58 |   epoch 170 | lr 1.883425e-02 | val loss 0.2340 | val dice 0.5314
+03:30:25 |     [train probs] min=0.0000 mean=0.0050 max=1.0000 | mean_prob@fg=0.9932 mean_prob@bg=0.0012
+03:30:26 |   epoch 171 | train loss 0.1031 | steps 152 | 267.8s | dump=False
+03:33:37 |   epoch 171 | lr 1.871879e-02 | val loss 0.2352 | val dice 0.5536
+03:36:48 | === train.py | experiment: swin_run_local | device: cuda ===
+03:36:48 | building dataloaders…
+03:36:59 | auto-detected IN_CHANNELS = 5
+03:37:16 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+03:37:16 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+03:37:17 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 170 | Restored best_val_dice: 0.6095 | Current LR: 1.883425e-02
+03:37:17 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+03:41:52 |     [train probs] min=0.0000 mean=0.0112 max=1.0000 | mean_prob@fg=0.9903 mean_prob@bg=0.0029
+03:41:52 |   epoch 170 | train loss 0.1135 | steps 152 | 274.8s | dump=False
+03:49:47 | === train.py | experiment: swin_run_local | device: cuda ===
+03:49:47 | building dataloaders…
+03:49:57 | auto-detected IN_CHANNELS = 5
+03:50:10 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+03:50:10 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+03:50:11 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 170 | Restored best_val_dice: 0.6095 | Current LR: 1.883425e-02
+03:50:11 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+03:54:35 |     [train probs] min=0.0000 mean=0.0112 max=1.0000 | mean_prob@fg=0.9903 mean_prob@bg=0.0029
+03:54:35 |   epoch 170 | train loss 0.1135 | steps 152 | 263.9s | dump=False
+04:40:58 | === train.py | experiment: swin_run_local | device: cuda ===
+04:40:58 | building dataloaders…
+04:41:03 | auto-detected IN_CHANNELS = 5
+04:41:11 | Loss Function: TVERSKYCE | pos_weight: 1000.00 (cap: 1000.0) | Class: TverskyWeightedCE
+04:41:11 | Attempting to resume from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth
+04:41:12 | Resumed from /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_2/runs/swin_run_local/ckpts/best_dice.pth at epoch 170 | Restored best_val_dice: 0.6095 | Current LR: 1.883425e-02
+04:41:12 | Training Config | Total Epochs: 400 | Warmup Epochs: 5 | Base LR: 0.03 | Weight Decay: 0.0 | AMP: False | GradScaler enabled: False
+04:45:00 |     [train probs] min=0.0000 mean=0.0112 max=1.0000 | mean_prob@fg=0.9903 mean_prob@bg=0.0029
+04:45:01 |   epoch 170 | train loss 0.1135 | steps 152 | 228.9s | dump=False
+04:47:59 |   epoch 170 | lr 1.883425e-02 | val loss 0.2340 | val dice 0.5314
+04:51:44 |     [train probs] min=0.0000 mean=0.0050 max=1.0000 | mean_prob@fg=0.9932 mean_prob@bg=0.0012
+04:51:44 |   epoch 171 | train loss 0.1031 | steps 152 | 225.8s | dump=False
+04:54:36 |   epoch 171 | lr 1.871879e-02 | val loss 0.2352 | val dice 0.5534
+04:58:23 |     [train probs] min=0.0000 mean=0.0087 max=1.0000 | mean_prob@fg=0.9995 mean_prob@bg=0.0033
+04:58:23 |   epoch 172 | train loss 0.1179 | steps 152 | 226.7s | dump=False
+05:01:15 |   epoch 172 | lr 1.860310e-02 | val loss 0.2378 | val dice 0.5149
+05:05:01 |     [train probs] min=0.0000 mean=0.0071 max=1.0000 | mean_prob@fg=0.9960 mean_prob@bg=0.0020
+05:05:01 |   epoch 173 | train loss 0.1049 | steps 152 | 226.0s | dump=False
+05:07:53 |   epoch 173 | lr 1.848718e-02 | val loss 0.2221 | val dice 0.5494
+05:11:43 |     [train probs] min=0.0000 mean=0.0035 max=1.0000 | mean_prob@fg=0.9843 mean_prob@bg=0.0008
+05:11:43 |   epoch 174 | train loss 0.1189 | steps 152 | 230.2s | dump=False
+05:14:35 |   epoch 174 | lr 1.837104e-02 | val loss 0.2203 | val dice 0.5466
+05:18:25 |     [train probs] min=0.0000 mean=0.0133 max=1.0000 | mean_prob@fg=0.9981 mean_prob@bg=0.0041
+05:18:25 |   epoch 175 | train loss 0.1097 | steps 152 | 230.6s | dump=False
+05:21:17 |   epoch 175 | lr 1.825468e-02 | val loss 0.2237 | val dice 0.5492
+05:25:06 |     [train probs] min=0.0000 mean=0.0080 max=1.0000 | mean_prob@fg=0.9811 mean_prob@bg=0.0016
+05:25:06 |   epoch 176 | train loss 0.1306 | steps 152 | 228.7s | dump=False
+05:27:58 |   epoch 176 | lr 1.813812e-02 | val loss 0.2261 | val dice 0.5385
+05:31:47 |     [train probs] min=0.0000 mean=0.0153 max=1.0000 | mean_prob@fg=0.9914 mean_prob@bg=0.0050
+05:31:47 |   epoch 177 | train loss 0.1342 | steps 152 | 229.4s | dump=False
+05:34:39 |   epoch 177 | lr 1.802136e-02 | val loss 0.2499 | val dice 0.5022
+05:38:26 |     [train probs] min=0.0000 mean=0.0084 max=1.0000 | mean_prob@fg=0.9940 mean_prob@bg=0.0026
+05:38:26 |   epoch 178 | train loss 0.1032 | steps 152 | 226.6s | dump=False
+05:41:18 |   epoch 178 | lr 1.790441e-02 | val loss 0.2345 | val dice 0.5271
+05:45:03 |     [train probs] min=0.0000 mean=0.0107 max=1.0000 | mean_prob@fg=0.9968 mean_prob@bg=0.0032
+05:45:03 |   epoch 179 | train loss 0.1135 | steps 152 | 224.9s | dump=False
+05:47:55 |   epoch 179 | lr 1.778728e-02 | val loss 0.2353 | val dice 0.5187
+05:51:42 |     [train probs] min=0.0000 mean=0.0107 max=1.0000 | mean_prob@fg=0.9911 mean_prob@bg=0.0028
+05:51:42 |   epoch 180 | train loss 0.1135 | steps 152 | 226.8s | dump=False
+05:54:34 |   epoch 180 | lr 1.766997e-02 | val loss 0.2405 | val dice 0.5302
+05:58:20 |     [train probs] min=0.0000 mean=0.0123 max=1.0000 | mean_prob@fg=0.9940 mean_prob@bg=0.0035
+05:58:20 |   epoch 181 | train loss 0.1162 | steps 152 | 225.7s | dump=False
+06:01:11 |   epoch 181 | lr 1.755249e-02 | val loss 0.2296 | val dice 0.5414
+06:04:58 |     [train probs] min=0.0000 mean=0.0110 max=1.0000 | mean_prob@fg=0.9980 mean_prob@bg=0.0029
+06:04:58 |   epoch 182 | train loss 0.1078 | steps 152 | 226.6s | dump=False
+06:07:50 |   epoch 182 | lr 1.743485e-02 | val loss 0.2137 | val dice 0.5538
+06:11:34 |     [train probs] min=0.0000 mean=0.0119 max=1.0000 | mean_prob@fg=0.9870 mean_prob@bg=0.0038
+06:11:34 |   epoch 183 | train loss 0.1177 | steps 152 | 224.2s | dump=False
+06:14:27 |   epoch 183 | lr 1.731705e-02 | val loss 0.2175 | val dice 0.5620
+06:18:13 |     [train probs] min=0.0000 mean=0.0096 max=1.0000 | mean_prob@fg=0.9970 mean_prob@bg=0.0027
+06:18:13 |   epoch 184 | train loss 0.1023 | steps 152 | 226.0s | dump=False
+06:21:05 |   epoch 184 | lr 1.719911e-02 | val loss 0.2468 | val dice 0.5076
+06:24:50 |     [train probs] min=0.0000 mean=0.0046 max=1.0000 | mean_prob@fg=0.9930 mean_prob@bg=0.0011
+06:24:51 |   epoch 185 | train loss 0.1049 | steps 152 | 226.1s | dump=False
+06:27:43 |   epoch 185 | lr 1.708103e-02 | val loss 0.2212 | val dice 0.5628
+06:31:28 |     [train probs] min=0.0000 mean=0.0079 max=1.0000 | mean_prob@fg=0.9897 mean_prob@bg=0.0032
+06:31:28 |   epoch 186 | train loss 0.1102 | steps 152 | 225.6s | dump=False
+06:34:20 |   epoch 186 | lr 1.696282e-02 | val loss 0.2335 | val dice 0.5306
+06:38:05 |     [train probs] min=0.0000 mean=0.0028 max=1.0000 | mean_prob@fg=0.9744 mean_prob@bg=0.0008
+06:38:05 |   epoch 187 | train loss 0.0943 | steps 152 | 225.4s | dump=False
+06:40:58 |   epoch 187 | lr 1.684449e-02 | val loss 0.2070 | val dice 0.5763
+06:44:43 |     [train probs] min=0.0000 mean=0.0125 max=1.0000 | mean_prob@fg=0.9854 mean_prob@bg=0.0035
+06:44:43 |   epoch 188 | train loss 0.1103 | steps 152 | 225.7s | dump=False
+06:47:35 |   epoch 188 | lr 1.672603e-02 | val loss 0.2175 | val dice 0.5754
+06:51:19 |     [train probs] min=0.0000 mean=0.0065 max=1.0000 | mean_prob@fg=0.9855 mean_prob@bg=0.0022
+06:51:20 |   epoch 189 | train loss 0.1148 | steps 152 | 224.4s | dump=False
+06:54:11 |   epoch 189 | lr 1.660747e-02 | val loss 0.2175 | val dice 0.5505
+06:57:56 |     [train probs] min=0.0000 mean=0.0092 max=1.0000 | mean_prob@fg=0.9967 mean_prob@bg=0.0021
+06:57:57 |   epoch 190 | train loss 0.1121 | steps 152 | 225.3s | dump=False
+07:00:49 |   epoch 190 | lr 1.648881e-02 | val loss 0.2355 | val dice 0.5318
+07:04:35 |     [train probs] min=0.0000 mean=0.0070 max=1.0000 | mean_prob@fg=0.9987 mean_prob@bg=0.0026
+07:04:36 |   epoch 191 | train loss 0.1220 | steps 152 | 226.6s | dump=False
+07:07:28 |   epoch 191 | lr 1.637005e-02 | val loss 0.2170 | val dice 0.5754
+07:11:11 |     [train probs] min=0.0000 mean=0.0097 max=1.0000 | mean_prob@fg=0.9967 mean_prob@bg=0.0041
+07:11:11 |   epoch 192 | train loss 0.1100 | steps 152 | 223.8s | dump=False
+07:14:04 |   epoch 192 | lr 1.625120e-02 | val loss 0.2148 | val dice 0.5661
+07:17:47 |     [train probs] min=0.0000 mean=0.0065 max=1.0000 | mean_prob@fg=0.9976 mean_prob@bg=0.0020
+07:17:48 |   epoch 193 | train loss 0.0923 | steps 152 | 224.1s | dump=False
+07:20:40 |   epoch 193 | lr 1.613228e-02 | val loss 0.2120 | val dice 0.5610
+07:24:26 |     [train probs] min=0.0000 mean=0.0172 max=1.0000 | mean_prob@fg=0.9995 mean_prob@bg=0.0063
+07:24:26 |   epoch 194 | train loss 0.1156 | steps 152 | 226.5s | dump=False
+07:27:19 |   epoch 194 | lr 1.601329e-02 | val loss 0.2441 | val dice 0.4946
+07:31:04 |     [train probs] min=0.0000 mean=0.0121 max=1.0000 | mean_prob@fg=0.9921 mean_prob@bg=0.0037
+07:31:04 |   epoch 195 | train loss 0.1112 | steps 152 | 225.5s | dump=False
+07:33:56 |   epoch 195 | lr 1.589423e-02 | val loss 0.2467 | val dice 0.5110
+07:37:40 |     [train probs] min=0.0000 mean=0.0075 max=1.0000 | mean_prob@fg=0.9914 mean_prob@bg=0.0022
+07:37:40 |   epoch 196 | train loss 0.1392 | steps 152 | 224.0s | dump=False
+07:40:32 |   epoch 196 | lr 1.577511e-02 | val loss 0.2314 | val dice 0.5273
+07:44:16 |     [train probs] min=0.0000 mean=0.0082 max=1.0000 | mean_prob@fg=0.9919 mean_prob@bg=0.0021
+07:44:17 |   epoch 197 | train loss 0.1058 | steps 152 | 224.3s | dump=False
+07:47:08 |   epoch 197 | lr 1.565595e-02 | val loss 0.2023 | val dice 0.5994
+07:50:54 |     [train probs] min=0.0000 mean=0.0085 max=1.0000 | mean_prob@fg=0.9971 mean_prob@bg=0.0038
+07:50:54 |   epoch 198 | train loss 0.1287 | steps 152 | 225.6s | dump=False
+07:53:46 |   epoch 198 | lr 1.553674e-02 | val loss 0.2302 | val dice 0.5233
+07:57:32 |     [train probs] min=0.0000 mean=0.0087 max=1.0000 | mean_prob@fg=0.9827 mean_prob@bg=0.0025
+07:57:32 |   epoch 199 | train loss 0.1173 | steps 152 | 226.6s | dump=True
+08:00:25 |   epoch 199 | lr 1.541750e-02 | val loss 0.2071 | val dice 0.5832
+08:00:25 | early stop condition met.
+08:00:25 | === complete. best val_dice = 0.6095 ===

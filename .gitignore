@@ -1,5 +1,56 @@
-# MONAI Cache
-Segmentation_Rajat/monai_cache
-Segmentation_Rajat/EDA_Extra 
-Segmentation_Rajat/nnUnet
+# Byte-compiled / cache directories
+**/__pycache__/
+*.py[cod]
+*$py.class
+Segmentation_Rajat/monai_cache/
 
+# Virtual environments
+myenv/
+.venv/
+env/
+
+# Claude / IDE config
+.claude/
+.vscode/
+.idea/
+
+# Large Datasets & Resampled Volumes
+data_canonical/
+data_original/
+data_resampled/
+data_resampled_*/
+
+# nnU-Net Working Directories (raw, preprocessed, results, grouped)
+**/nnUnet_raw/
+**/nnUnet_preprocessed/
+**/nnUnet_results/
+**/Grouped/
+
+# Temporary / Scratch Scripts
+temp*.py
+
+# Specific Issue / Debugging Dumps & Docs
+xml_to_binary_issue/
+documentation.md
+
+# Miscellaneous untracked assets
+Blog_&_Paper/
+Images/
+others/
+
+#ckpts and eval_preds directories
+**/ckpts/
+**/eval_preds/
+
+# Specific Metadata / Perlmutter configs
+Utilities/dataset_perlmutter.json
+Segmentation_Rajat/MetaData/dataset_stats_dob_scv.json
+Segmentation_Rajat/MetaData/dataset_stats_dob_scv_new.json
+Segmentation_Rajat/MetaData/dataset_stats_simple_scv.json
+Segmentation_Rajat/MetaData/old_verbose_dob_scv.md
+Segmentation_Rajat/MetaData/old_verbose_simple_scv.md
+Segmentation_Rajat/MetaData/splits_dob_scv.json
+Segmentation_Rajat/MetaData/splits_dob_scv_new.json
+Segmentation_Rajat/MetaData/splits_simple_scv.json
+Segmentation_Rajat/MetaData/splits_early.json
+Segmentation_Rajat/MetaData/splits_orgi.json

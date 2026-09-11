@@ -32,7 +32,6 @@ from monai.transforms import (
     ToTensord,
 )
 from monai.transforms import MapTransform
-from monai.data import PersistentDataset
 
 sys.path.append(str(Path(__file__).parent))
 import config
@@ -50,11 +49,31 @@ DO_HEART_ROI_MASKING = config.dataloader_config["HEART_MASK_FLAG"]
 ADD_HEART_MASK_CHANNEL = config.dataloader_config["ADD_HEART_MASK_CHANNEL"]
 COORD_MODE = config.dataloader_config["COORD_MODE"]
 
+
+NUM_SAMPLES = config.dataloader_config["NUM_OF_SAMPLES_PER_BATCH"]
+
+
+import warnings
+
+# 1. Ignore "data_array is not of type MetaTensor" warning
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=r".*`data_array` is not of type `MetaTensor.*"
+)
+
+warnings.filterwarnings(
+    "ignore",
+    category=DeprecationWarning,
+    message=r".*__array__ implementation doesn't accept a copy keyword.*"
+)
+
+
 # ── Patch size ────────────────────────────────────────────────────
 # (96,128,96)  → safe for 8-12GB VRAM,  batch_size=2
 # (112,160,128)→ nnU-Net native,         needs 24GB VRAM, batch_size=2
 
-ROI_SIZE = (128, 128, 35)
+# ROI_SIZE = (128, 128, 35)
 
 # For Caching we will go with Persisten Cahcing, where we store the deterministic transforms on disk, and load them into memory during training. This is more efficient than caching in memory for large datasets, and allows us to reuse the cached data across multiple runs.
 # So Assuming Float32 images and Binary labels, we can estimate the cache size as follows:
@@ -81,13 +100,51 @@ class AddHeartMaskChanneld(MapTransform):
         img = d[self.image_key]
         roi = (d[self.roi_key] > 0).astype(img.dtype)
 
-        d[self.image_key] = np.concatenate(
+        res = np.concatenate(
             [img, roi],
             axis=0,
         )
 
+        if isinstance(img, MetaTensor):
+            d[self.image_key] = MetaTensor(
+                res, 
+                meta=img.meta, 
+                applied_operations=getattr(img, "applied_operations", None)
+            )
+        else:
+            d[self.image_key] = res
+
         return d
     
+# class DualHUWindowingd(MapTransform):
+#     def __init__(self, image_key="image"):
+#         super().__init__([image_key])
+#         self.image_key = image_key
+
+#     def __call__(self, data):
+#         d = dict(data)
+
+#         img = d[self.image_key]
+#         print(f"Processing image with shape {img.shape} and dtype {img.dtype}")
+
+#         # Tissue window [-100, 400]
+#         tissue = np.clip(img, -100.0, 400.0)
+#         tissue = (tissue + 100.0) / 500.0
+
+#         # Calcium window [130, 1000]
+#         calcium = np.clip(img, 130.0, 1000.0)
+#         calcium = (calcium - 130.0) / (1000.0 - 130.0)
+
+#         d[self.image_key] = np.concatenate(
+#             [tissue, calcium],
+#             axis=0
+#         ).astype(np.float32)
+
+#         return d
+
+import gc
+from monai.data import MetaTensor
+
 class DualHUWindowingd(MapTransform):
     def __init__(self, image_key="image"):
         super().__init__([image_key])
@@ -95,79 +152,123 @@ class DualHUWindowingd(MapTransform):
 
     def __call__(self, data):
         d = dict(data)
-
         img = d[self.image_key]
 
+        out = np.empty((2, *img.shape[1:]), dtype=np.float32)
+
         # Tissue window [-100, 400]
-        tissue = np.clip(img, -100.0, 400.0)
-        tissue = (tissue + 100.0) / 500.0
+        np.clip(img[0], -100.0, 400.0, out=out[0])
+        out[0] += 100.0
+        out[0] /= 500.0
 
         # Calcium window [130, 1000]
-        calcium = np.clip(img, 130.0, 1000.0)
-        calcium = (calcium - 130.0) / (1000.0 - 130.0)
+        np.clip(img[0], 130.0, 1000.0, out=out[1])
+        out[1] -= 130.0
+        out[1] /= (1000.0 - 130.0)
 
-        d[self.image_key] = np.concatenate(
-            [tissue, calcium],
-            axis=0
-        ).astype(np.float32)
-
+        d[self.image_key] = out
+        
+        if isinstance(img, MetaTensor):
+            d[self.image_key] = MetaTensor(out, meta=img.meta, applied_operations=img.applied_operations)
+        else:
+            d[self.image_key] = out
+        
+        del img
+        gc.collect()
         return d
 
 # Right now we are doing PIXEL CO-ORD CONVULTION WITH REALTIVE ENCODING
+# class AddCoordConvChannelsd(MapTransform):
+#     def __init__(
+#         self,
+#         image_key="image",
+#         normalized=True,
+#     ):
+#         super().__init__([image_key])
+#         self.image_key = image_key
+#         self.normalized = normalized
+
+#     def __call__(self, data):
+
+#         d = dict(data)
+
+#         img = d[self.image_key]
+
+#         _, D, H, W = img.shape
+
+#         if self.normalized:
+
+#             z = np.linspace(-1, 1, D, dtype=np.float32)
+#             y = np.linspace(-1, 1, H, dtype=np.float32)
+#             x = np.linspace(-1, 1, W, dtype=np.float32)
+
+#         else:
+
+#             z = np.arange(D, dtype=np.float32)
+#             y = np.arange(H, dtype=np.float32)
+#             x = np.arange(W, dtype=np.float32)
+
+#         zz = np.broadcast_to(
+#             z[:, None, None],
+#             (D, H, W)
+#         )
+
+#         yy = np.broadcast_to(
+#             y[None, :, None],
+#             (D, H, W)
+#         )
+
+#         xx = np.broadcast_to(
+#             x[None, None, :],
+#             (D, H, W)
+#         )
+
+#         coords = np.stack(
+#             [zz, yy, xx],
+#             axis=0
+#         )
+
+#         d[self.image_key] = np.concatenate(
+#             [img, coords],
+#             axis=0
+#         )
+
+#         return d
+
 class AddCoordConvChannelsd(MapTransform):
-    def __init__(
-        self,
-        image_key="image",
-        normalized=True,
-    ):
+    def __init__(self, image_key="image", normalized=True):
         super().__init__([image_key])
         self.image_key = image_key
         self.normalized = normalized
 
     def __call__(self, data):
-
         d = dict(data)
-
         img = d[self.image_key]
+        C, D, H, W = img.shape
 
-        _, D, H, W = img.shape
+        # Pre-allocate output array for existing channels + 3 spatial coordinate channels
+        out = np.empty((C + 3, D, H, W), dtype=np.float32)
+        out[:C] = img  # Copy initial channels
 
         if self.normalized:
-
             z = np.linspace(-1, 1, D, dtype=np.float32)
             y = np.linspace(-1, 1, H, dtype=np.float32)
             x = np.linspace(-1, 1, W, dtype=np.float32)
-
         else:
-
             z = np.arange(D, dtype=np.float32)
             y = np.arange(H, dtype=np.float32)
             x = np.arange(W, dtype=np.float32)
 
-        zz = np.broadcast_to(
-            z[:, None, None],
-            (D, H, W)
-        )
+        # Broadcast directly into pre-allocated slices
+        out[C] = z[:, None, None]
+        out[C + 1] = y[None, :, None]
+        out[C + 2] = x[None, None, :]
 
-        yy = np.broadcast_to(
-            y[None, :, None],
-            (D, H, W)
-        )
-
-        xx = np.broadcast_to(
-            x[None, None, :],
-            (D, H, W)
-        )
-
-        coords = np.stack(
-            [zz, yy, xx],
-            axis=0
-        )
-
-        d[self.image_key] = np.concatenate(
-            [img, coords],
-            axis=0
-        )
+        # Preserve spatial metadata if input was MetaTensor
+        if isinstance(img, MetaTensor):
+            d[self.image_key] = MetaTensor(out, meta=img.meta, applied_operations=img.applied_operations)
+        else:
+            d[self.image_key] = out
 
         return d
 
@@ -199,6 +300,8 @@ class ApplyHeartROIMaskd(MapTransform):
 
         return d
 
+from monai.data import NibabelReader
+
 def get_transforms(mode: str):
 
     load_keys = ["image", "label"]
@@ -212,6 +315,7 @@ def get_transforms(mode: str):
     base.append(
         LoadImaged(
             keys=load_keys,
+            reader=NibabelReader(mmap=False),
             image_only=False,
         )
     )
@@ -247,20 +351,12 @@ def get_transforms(mode: str):
             )
         )
 
-    # # Resample to isotropic spacing
-    # base.append(
-    #     Spacingd(
-    #         keys=["image", "label"],
-    #         pixdim=(1.0, 1.0, 1.0),
-    #         mode=("bilinear", "nearest"),
-    #     )
-    # ) # already resampled before passing 
-
     # Reorient to RAS
     base.append(
         Orientationd(
             keys=load_keys,
             axcodes="RAS",
+            labels=None,
         )
     )
 
@@ -273,18 +369,24 @@ def get_transforms(mode: str):
             )
         )
 
-    # Crop around foreground
-    base.append(
-        CropForegroundd(
-            keys=load_keys,
-            source_key="image",
-            margin=5,
-        )
-    )
+    # # Crop around foreground
+    # base.append(
+    #     CropForegroundd(
+    #         keys=load_keys,
+    #         source_key="image",
+    #         margin=5,
+    #     )
+    # )
 
     base.append(
         EnsureTyped(keys=load_keys)
     )
+
+    MODE = ("bilinear", "nearest")
+
+    if DO_HEART_ROI_MASKING or ADD_HEART_MASK_CHANNEL:
+        MODE = ("bilinear", "nearest", "nearest")
+    
 
     if mode == "train":
 
@@ -292,82 +394,82 @@ def get_transforms(mode: str):
 
             # Foreground-biased patch sampling
             RandCropByPosNegLabeld(
-                keys=["image", "label"],
+                keys=load_keys,
                 label_key="label",
                 spatial_size=ROI_SIZE,
-                pos=2,
+                pos=3,
                 neg=1,
-                num_samples=2,
+                num_samples=NUM_SAMPLES,
                 image_key="image",
                 image_threshold=0,
             ),
 
-            # Anatomically valid flips
-            RandFlipd(
-                keys=["image", "label"],
-                prob=0.5,
-                spatial_axis=0,
-            ),
+            # # Anatomically valid flips
+            # RandFlipd(
+            #     keys=load_keys,
+            #     prob=0.5,
+            #     spatial_axis=0,
+            # ),
 
-            RandFlipd(
-                keys=["image", "label"],
-                prob=0.5,
-                spatial_axis=1,
-            ),
+            # RandFlipd(
+            #     keys=load_keys,
+            #     prob=0.5,
+            #     spatial_axis=1,
+            # ),
 
-            RandFlipd(
-                keys=["image", "label"],
-                prob=0.5,
-                spatial_axis=2,
-            ),
+            # RandFlipd(
+            #     keys=load_keys,
+            #     prob=0.5,
+            #     spatial_axis=2,
+            # ),
 
-            # Small realistic geometric perturbations
-            RandAffined(
-                keys=["image", "label"],
-                prob=0.2,
-                rotate_range=(0.1, 0.1, 0.1),  # ~6 degrees
-                scale_range=(0.05, 0.05, 0.05),
-                mode=("bilinear", "nearest"),
-            ),
+            # # Small realistic geometric perturbations
+            # RandAffined(
+            #     keys=load_keys,
+            #     prob=0.2,
+            #     rotate_range=(0.1, 0.1, 0.1),  # ~6 degrees
+            #     scale_range=(0.05, 0.05, 0.05),
+            #     mode=MODE,
+            # ),
 
-            # Conservative elastic deformation
-            Rand3DElasticd(
-                keys=["image", "label"],
-                prob=0.15,
-                sigma_range=(4, 6),
-                magnitude_range=(0.5, 1.5),
-                mode=("bilinear", "nearest"),
-            ),
+            # # Conservative elastic deformation
+            # Rand3DElasticd(
+            #     keys=load_keys,
+            #     prob=0.15,
+            #     sigma_range=(4, 6),
+            #     magnitude_range=(0.5, 1.5),
+            #     mode=MODE,
+            # ),
 
-            # Simulated scanner blur / reconstruction variability
-            RandGaussianSmoothd(
-                keys=["image"],
-                prob=0.2,
-                sigma_x=(0.25, 0.75),
-                sigma_y=(0.25, 0.75),
-                sigma_z=(0.25, 0.75),
-            ),
+            # # Simulated scanner blur / reconstruction variability
+            # RandGaussianSmoothd(
+            #     keys=["image"],
+            #     prob=0.2,
+            #     sigma_x=(0.25, 0.75),
+            #     sigma_y=(0.25, 0.75),
+            #     sigma_z=(0.25, 0.75),
+            # ),
 
-            # Low-dose CT style noise
-            RandGaussianNoised(
-                keys=["image"],
-                prob=0.25,
-                std=0.015,
-            ),
+            # # Low-dose CT style noise
+            # RandGaussianNoised(
+            #     keys=["image"],
+            #     prob=0.25,
+            #     std=0.015,
+            # ),
 
-            # Gamma / contrast augmentation
-            RandAdjustContrastd(
-                keys=["image"],
-                prob=0.3,
-                gamma=(0.7, 1.5),
-            ),
+            # # Gamma / contrast augmentation
+            # RandAdjustContrastd(
+            #     keys=["image"],
+            #     prob=0.3,
+            #     gamma=(0.7, 1.5),
+            # ),
 
-            # Small HU calibration shifts
-            RandShiftIntensityd(
-                keys=["image"],
-                prob=0.3,
-                offsets=0.05,
-            ),
+            # # Small HU calibration shifts
+            # RandShiftIntensityd(
+            #     keys=["image"],
+            #     prob=0.3,
+            #     offsets=0.05,
+            # ),
 
             ToTensord(
                 keys=["image", "label"]
@@ -387,14 +489,10 @@ def get_transforms(mode: str):
 # ══════════════════════════════════════════════════════════════════
 #  DATASET CLASS
 #
-#  PersistentDataset is a MONAI dataset that caches transformed data on disk.
-#  We will need some where around 30GBs of disk space from my estimate
-#
 # ══════════════════════════════════════════════════════════════════
 
-from monai.data import PersistentDataset
 
-class CacSegDataset(PersistentDataset):
+class CacSegDataset(Dataset):
     """
     Args:
         data  : list of dicts with "image", "label", "id"
@@ -405,7 +503,7 @@ class CacSegDataset(PersistentDataset):
         n = len(data)
 
         print(f"   [{mode:5s}] {n} scans | "
-              f"cache_method: Persistent | "
+              f"cache_method: Normal | "
               f"roi={ROI_SIZE if mode=='train' else 'full volume'}")
         
         parent_dir = Path(__file__).parent
@@ -413,7 +511,6 @@ class CacSegDataset(PersistentDataset):
         super().__init__(
             data=data,
             transform=get_transforms(mode),
-            cache_dir=f"{parent_dir}/monai_cache",
         )
         self.mode      = mode
         self.data_list = data
@@ -424,50 +521,6 @@ class CacSegDataset(PersistentDataset):
             f"mode='{self.mode}', "
             f"n={len(self.data_list)})"
         )
-
-
-# ══════════════════════════════════════════════════════════════════
-#  WEIGHTED SAMPLER
-# ══════════════════════════════════════════════════════════════════
-
-def make_weighted_sampler(train_data: list) -> WeightedRandomSampler:
-    """
-    Balance scans based on Agatston availability.
-
-    agatston_available=0 -> no score available
-    agatston_available=1 -> score available
-    """
-
-    classes = [
-        int(d.get("agatston_available", 0))
-        for d in train_data
-    ]
-
-    class_counts = np.bincount(
-        classes,
-        minlength=2,
-    ).astype(float)
-
-    # avoid divide-by-zero
-    class_counts = np.where(
-        class_counts == 0,
-        1.0,
-        class_counts,
-    )
-
-    weights = 1.0 / class_counts[classes]
-
-    print(
-        "\n   WeightedSampler — "
-        f"NoAgatston(0): {int(class_counts[0])}  "
-        f"HasAgatston(1): {int(class_counts[1])}"
-    )
-
-    return WeightedRandomSampler(
-        weights=torch.DoubleTensor(weights),
-        num_samples=len(weights),
-        replacement=True,
-    )
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -497,6 +550,8 @@ def build_dataloaders(splits_json: str = SPLITS_JSON):
     print(f"   Splits : {splits_json}")
     print(f"   ROI    : {ROI_SIZE}")
     print(f"   Batch  : {BATCH_SIZE}\n")
+    print(f" Number of Samples per Batch: {NUM_SAMPLES}")
+    print(f" Effective Samples per Batch: {NUM_SAMPLES * BATCH_SIZE}\n")
 
     # Warn if test set is too small
     if n_test < 3:
@@ -508,14 +563,28 @@ def build_dataloaders(splits_json: str = SPLITS_JSON):
     val_ds   = CacSegDataset(splits["val"],   mode="val")
     test_ds  = CacSegDataset(splits["test"],  mode="test")
 
-    sampler = make_weighted_sampler(splits["train"])
+    from monai.data import list_data_collate
+
+    import torch
+    from monai.data import list_data_collate
+
+    def custom_patch_collate(batch):
+        # Unroll list of lists: [[patch1, patch2], [patch3, patch4]] -> [patch1, patch2, patch3, patch4]
+        flattened_batch = []
+        for item in batch:
+            if isinstance(item, list):
+                flattened_batch.extend(item)
+            else:
+                flattened_batch.append(item)
+                
+        return list_data_collate(flattened_batch)
 
     train_loader = DataLoader(
         train_ds,
         batch_size=BATCH_SIZE,
-        sampler=sampler,
-        num_workers=NUM_WORKERS,
+        num_workers=NUM_WORKERS,    
         pin_memory=True,
+        collate_fn=custom_patch_collate,
     )
     val_loader = DataLoader(
         val_ds,
@@ -523,6 +592,7 @@ def build_dataloaders(splits_json: str = SPLITS_JSON):
         shuffle=False,
         num_workers=NUM_WORKERS,
         pin_memory=True,
+        collate_fn=custom_patch_collate,
     )
     test_loader = DataLoader(
         test_ds,
@@ -530,13 +600,16 @@ def build_dataloaders(splits_json: str = SPLITS_JSON):
         shuffle=False,
         num_workers=NUM_WORKERS,
         pin_memory=True,
+        collate_fn=custom_patch_collate,
     )
 
     print(f"\n✅ DataLoaders ready")
     print(f"   train : {n_train} scans | "
-          f"batch={BATCH_SIZE} | weighted sampler")
-    print(f"   val   : {n_val} scans | batch=1 | full volume")
-    print(f"   test  : {n_test} scans | batch=1 | full volume")
+          f"batch={BATCH_SIZE} | ")
+    print(f"   val   : {n_val} scans | batch={1} ")
+    print(f"   test  : {n_test} scans | batch={1}")
+
+    print("\n ⚠️:  3 Warnings are Ignored you can check them out in standalone executuion of dataset.py\n")
 
     return train_loader, val_loader, test_loader
 
@@ -556,7 +629,6 @@ if __name__ == "__main__":
     train_loader, val_loader, test_loader = build_dataloaders()
 
     print("\n🔍 Loading one training batch...")
-    print("   (First load triggers caching — may take 30-60s)\n")
 
     batch = next(iter(train_loader))
     batch = next(iter(train_loader))
@@ -689,6 +761,3 @@ if __name__ == "__main__":
                 "   CoordConv channels verified"
             )
 
-        print(
-            "   Persistent caching active"
-        )

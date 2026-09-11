@@ -7,11 +7,14 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 import SimpleITK as sitk
+import numpy as np
+import cc3d
 import cv2
 from tqdm import tqdm
 
 # Debug flag to enable more verbose output during processing
-debug = True
+debug = False
+REMOVED = 0
 
 # THe Four Artery Labels as per XML Files
 
@@ -72,6 +75,72 @@ class COCAProcessor:
         """Generates a unique, reproducible ID for each scan."""
         h = hashlib.sha1("||".join(parts).encode("utf-8")).hexdigest()
         return h[:n]
+
+    def lesion_post_process(self, binary_mask, multi_mask=None, max_voxel_threshold=15000, connectivity=26):
+        """
+        Filters out large unwanted 3D components (blobs/artifacts) exceeding a voxel threshold.
+        
+        Parameters:
+        ----------
+        binary_mask : np.ndarray
+            3D binary segmentation mask (values > 0 treated as foreground).
+        multi_mask : np.ndarray, optional
+            3D multi-class segmentation mask corresponding to binary_mask.
+        max_voxel_threshold : int, default=15000
+            Maximum allowed voxel count for a single 3D connected component. 
+            Components larger than this are removed (set to 0).
+        connectivity : int, default=26
+            Connected component connectivity (6, 18, or 26).
+            
+        Returns:
+        -------
+        cleaned_binary_mask : np.ndarray (uint8)
+        cleaned_multi_mask : np.ndarray (same dtype as multi_mask) or None
+        """
+        # Ensure binary format
+        binary_input = (binary_mask > 0).astype(np.uint8)
+        
+        if np.sum(binary_input) == 0:
+            if multi_mask is not None:
+                return binary_input, multi_mask.copy()
+            return binary_input
+
+        # 1. Run 3D Connected Components Analysis
+        labels_out = cc3d.connected_components(binary_input, connectivity=connectivity)
+        stats = cc3d.statistics(labels_out)
+        voxel_counts = stats["voxel_counts"]
+
+        # 2. Identify label IDs exceeding the voxel count threshold
+        # Note: Index 0 is background, so we inspect index 1 onwards
+        large_component_ids = np.where(voxel_counts > max_voxel_threshold)[0]
+        
+        # Remove index 0 if it accidentally matched (background is usually largest)
+        large_component_ids = large_component_ids[large_component_ids != 0]
+
+        # 3. Create cleaned masks
+        cleaned_binary = binary_input.copy()
+        cleaned_multi = multi_mask.copy() if multi_mask is not None else None
+
+        # 4. Zero out voxels belonging to large components
+        if len(large_component_ids) > 0:
+
+            # if debug:
+            print(
+                f" [WARNING] Removing {len(large_component_ids)} large components "
+                f"exceeding {max_voxel_threshold} voxels."
+            )
+            REMOVED += 1
+
+            # Create a boolean mask of voxels to remove
+            large_blobs_mask = np.isin(labels_out, large_component_ids)
+            
+            cleaned_binary[large_blobs_mask] = 0
+            if cleaned_multi is not None:
+                cleaned_multi[large_blobs_mask] = 0
+
+        if multi_mask is not None:
+            return cleaned_binary, cleaned_multi
+        return cleaned_binary
 
     def parse_plist_filled(self, xml_path: Path, image_array, image_shape: tuple, spacing):
       global lesions_skipped
@@ -329,9 +398,14 @@ class COCAProcessor:
               f"{xml_path.name}: {e}"
           )
 
-      return (
+      cleaned_binary_mask, cleaned_multi_mask = self.lesion_post_process(
         binary_mask,
         multi_mask,
+        max_voxel_threshold=15000,)
+
+      return (
+        cleaned_binary_mask,
+        cleaned_multi_mask,
         sorted(segmented_slices),
         artery_scores,
         total_agatston,
@@ -438,15 +512,14 @@ class COCAProcessor:
 
                     continue
 
-
-
                 voxel_count = int(np.sum(binary_mask))
 
                 if xml_path.exists() and voxel_count == 0:
                     print(f"\n  [WARNING] Patient {patient_id}: XML exists but 0 voxels drawn. Check slice alignment.")
 
                 # Setup output folder
-                scan_id = self.generate_stable_id(str(s_dir.resolve()), patient_id)
+                # scan_id = self.generate_stable_id(str(s_dir.resolve()), patient_id)
+                scan_id = "id_" + str(patient_id)  # Use patient_id as scan_id for simplicity
                 scan_folder = self.out_images_base / scan_id
                 scan_folder.mkdir(parents=True, exist_ok=True)
                 
@@ -568,3 +641,5 @@ if __name__ == "__main__":
     processor = COCAProcessor(r"E:\MyProjects\Gsoc_2026_Official", r"E:\MyProjects\Gsoc_2026_Official\data_original\dataset\cocacoronarycalciumandchestcts-2\Gated_release_final\patient", r"E:\MyProjects\Gsoc_2026_Official\data_original\dataset\cocacoronarycalciumandchestcts-2\Gated_release_final\calcium_xml")
     
     processor.process_all()
+
+    print(f"Removed: {REMOVED} large components exceeding 15000 voxels during post-processing.")

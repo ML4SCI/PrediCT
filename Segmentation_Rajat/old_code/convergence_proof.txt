@@ -1,0 +1,169 @@
+((myenv) ) (nersc-python) rajatns@perlmutter:login30:/pscratch/sd/r/rajatns/gsoc_2026_official/try1> python Segmentation_Rajat/overfit_check.py try1 --n-samples 10 --epochs 200 --lr 1e-2 --scheduler --warmup-epochs 5 --loss-kind weighted_dice_ce --pos-weight-cap 1000
+04:28:13 | === overfit_check | experiment: try1 | device: cuda ===
+04:28:13 | building dataloaders (only to sample the fixed subset)…
+
+📦 Building CACSegDatasets
+   Splits : /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat/MetaData/splits.json
+   ROI    : (128, 128, 32)
+   Batch  : 2
+
+ Number of Samples per Batch: 4
+ Effective Samples per Batch: 8
+
+   [train] 303 scans | cache_method: Normal | roi=(128, 128, 32)
+   [val  ] 65 scans | cache_method: Normal | roi=full volume
+   [test ] 65 scans | cache_method: Normal | roi=full volume
+
+✅ DataLoaders ready
+   train : 303 scans | batch=2 |
+   val   : 65 scans | batch=1
+   test  : 65 scans | batch=1
+
+ ⚠️:  3 Warnings are Ignored you can check them out in standalone executuion of dataset.py
+
+04:28:28 | auto-detected IN_CHANNELS = 5
+04:28:49 | cached 10 fixed sample(s) for overfitting
+04:28:49 |   sample 0: label shape=(8, 1, 128, 128, 32) fg_voxels=123 / 4194304 (0.0029%)
+04:28:50 |   sample 1: label shape=(8, 1, 128, 128, 32) fg_voxels=138 / 4194304 (0.0033%)
+04:28:50 |   sample 2: label shape=(8, 1, 128, 128, 32) fg_voxels=206 / 4194304 (0.0049%)
+04:28:50 |   sample 3: label shape=(8, 1, 128, 128, 32) fg_voxels=117 / 4194304 (0.0028%)
+04:28:50 |   sample 4: label shape=(8, 1, 128, 128, 32) fg_voxels=64 / 4194304 (0.0015%)
+04:28:50 |   sample 5: label shape=(8, 1, 128, 128, 32) fg_voxels=80 / 4194304 (0.0019%)
+04:28:50 |   sample 6: label shape=(8, 1, 128, 128, 32) fg_voxels=69 / 4194304 (0.0016%)
+04:28:50 |   sample 7: label shape=(8, 1, 128, 128, 32) fg_voxels=88 / 4194304 (0.0021%)
+04:28:50 |   sample 8: label shape=(8, 1, 128, 128, 32) fg_voxels=111 / 4194304 (0.0026%)
+04:28:50 |   sample 9: label shape=(8, 1, 128, 128, 32) fg_voxels=95 / 4194304 (0.0023%)
+04:28:54 | loss_kind=weighted_dice_ce: pos_weight=1000.00 (capped at 1000.0)
+04:28:54 | LR scheduler enabled: warmup_epochs=5, then cosine to epoch 200
+04:29:02 |   epoch 0000 | loss 0.772944 | dice 0.000084 | lr 2.00e-03
+04:29:02 |     [probs] min=0.1305 mean=0.3324 max=0.7385 | mean_prob@fg=0.3876 mean_prob@bg=0.3324
+04:29:52 |   epoch 0010 | loss 0.494784 | dice 0.102952 | lr 9.98e-03
+04:29:52 |     [probs] min=0.0001 mean=0.0018 max=1.0000 | mean_prob@fg=0.9333 mean_prob@bg=0.0018
+04:30:42 |   epoch 0020 | loss 0.374497 | dice 0.313206 | lr 9.85e-03
+04:30:42 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.7150 mean_prob@bg=0.0000
+04:31:31 |   epoch 0030 | loss 0.348441 | dice 0.454860 | lr 9.60e-03
+04:31:31 |     [probs] min=0.0000 mean=0.0001 max=1.0000 | mean_prob@fg=0.8314 mean_prob@bg=0.0001
+04:32:21 |   epoch 0040 | loss 0.230633 | dice 0.665450 | lr 9.23e-03
+04:32:21 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.8392 mean_prob@bg=0.0000
+04:33:10 |   epoch 0050 | loss 0.205557 | dice 0.712274 | lr 8.74e-03
+04:33:10 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.7263 mean_prob@bg=0.0000
+04:34:00 |   epoch 0060 | loss 0.199915 | dice 0.720845 | lr 8.16e-03
+04:34:00 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.7390 mean_prob@bg=0.0000
+04:34:51 |   epoch 0070 | loss 0.203099 | dice 0.667489 | lr 7.50e-03
+04:34:51 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9258 mean_prob@bg=0.0000
+04:35:41 |   epoch 0080 | loss 0.172495 | dice 0.770979 | lr 6.77e-03
+04:35:41 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9218 mean_prob@bg=0.0000
+04:36:32 |   epoch 0090 | loss 0.171801 | dice 0.739371 | lr 6.00e-03
+04:36:32 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9749 mean_prob@bg=0.0000
+04:37:22 |   epoch 0100 | loss 0.155136 | dice 0.809610 | lr 5.20e-03
+04:37:22 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9315 mean_prob@bg=0.0000
+04:38:12 |   epoch 0110 | loss 0.155621 | dice 0.817636 | lr 4.40e-03
+04:38:12 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9339 mean_prob@bg=0.0000
+04:39:02 |   epoch 0120 | loss 0.146435 | dice 0.831586 | lr 3.61e-03
+04:39:02 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9792 mean_prob@bg=0.0000
+04:39:53 |   epoch 0130 | loss 0.133849 | dice 0.865529 | lr 2.86e-03
+04:39:53 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9695 mean_prob@bg=0.0000
+04:40:44 |   epoch 0140 | loss 0.131421 | dice 0.872960 | lr 2.16e-03
+04:40:44 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9986 mean_prob@bg=0.0000
+04:41:34 |   epoch 0150 | loss 0.123331 | dice 0.881447 | lr 1.54e-03
+04:41:34 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9972 mean_prob@bg=0.0000
+04:42:25 |   epoch 0160 | loss 0.119960 | dice 0.887156 | lr 1.00e-03
+04:42:25 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9964 mean_prob@bg=0.0000
+04:43:15 |   epoch 0170 | loss 0.118110 | dice 0.892316 | lr 5.73e-04
+04:43:15 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9963 mean_prob@bg=0.0000
+04:44:05 |   epoch 0180 | loss 0.116595 | dice 0.897320 | lr 2.57e-04
+04:44:05 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9961 mean_prob@bg=0.0000
+04:44:55 |   epoch 0190 | loss 0.116084 | dice 0.898003 | lr 6.47e-05
+04:44:55 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9962 mean_prob@bg=0.0000
+04:45:41 |   epoch 0199 | loss 0.116002 | dice 0.898437 | lr 6.49e-07
+04:45:41 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9962 mean_prob@bg=0.0000
+04:45:41 | done in 1006.7s
+04:45:41 |
+FINAL: loss=0.116002  dice=0.898437
+04:45:41 |   -> FAIL: model could not memorize even a tiny fixed subset. This points to a structural bug (metric bug, label/prediction misalignment, broken loss config, LR far off, or an architecture issue) rather than a data-scale problem. Check debug_logit_stats trend above before anything else — if mean_prob@fg never rises off ~0, the model genuinely isn't learning; if it does rise but dice stays flat, look at the dice/threshold logic instead.
+  [CHANNEL CHECK] No foreground voxels found in y[0,0] — skipping.
+((myenv) ) (nersc-python) rajatns@perlmutter:login30:/pscratch/sd/r/rajatns/gsoc_2026_official/try1> ^C
+((myenv) ) (nersc-python) rajatns@perlmutter:login30:/pscratch/sd/r/rajatns/gsoc_2026_official/try1> python Segmentation_Rajat/overfit_check.py try1 --n-samples 10 --epochs 200 --lr 1e-2 --scheduler --warmup-epochs 5 --loss-kind tversky_ce --pos-weight-cap 1000
+04:54:16 | === overfit_check | experiment: try1 | device: cuda ===
+04:54:16 | building dataloaders (only to sample the fixed subset)…
+
+📦 Building CACSegDatasets
+   Splits : /pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat/MetaData/splits.json
+   ROI    : (128, 128, 32)
+   Batch  : 2
+
+ Number of Samples per Batch: 4
+ Effective Samples per Batch: 8
+
+   [train] 303 scans | cache_method: Normal | roi=(128, 128, 32)
+   [val  ] 65 scans | cache_method: Normal | roi=full volume
+   [test ] 65 scans | cache_method: Normal | roi=full volume
+
+✅ DataLoaders ready
+   train : 303 scans | batch=2 |
+   val   : 65 scans | batch=1
+   test  : 65 scans | batch=1
+
+ ⚠️:  3 Warnings are Ignored you can check them out in standalone executuion of dataset.py
+
+04:54:30 | auto-detected IN_CHANNELS = 5
+04:54:54 | cached 10 fixed sample(s) for overfitting
+04:54:54 |   sample 0: label shape=(8, 1, 128, 128, 32) fg_voxels=123 / 4194304 (0.0029%)
+04:54:54 |   sample 1: label shape=(8, 1, 128, 128, 32) fg_voxels=138 / 4194304 (0.0033%)
+04:54:54 |   sample 2: label shape=(8, 1, 128, 128, 32) fg_voxels=206 / 4194304 (0.0049%)
+04:54:54 |   sample 3: label shape=(8, 1, 128, 128, 32) fg_voxels=117 / 4194304 (0.0028%)
+04:54:54 |   sample 4: label shape=(8, 1, 128, 128, 32) fg_voxels=64 / 4194304 (0.0015%)
+04:54:54 |   sample 5: label shape=(8, 1, 128, 128, 32) fg_voxels=80 / 4194304 (0.0019%)
+04:54:54 |   sample 6: label shape=(8, 1, 128, 128, 32) fg_voxels=69 / 4194304 (0.0016%)
+04:54:54 |   sample 7: label shape=(8, 1, 128, 128, 32) fg_voxels=88 / 4194304 (0.0021%)
+04:54:54 |   sample 8: label shape=(8, 1, 128, 128, 32) fg_voxels=111 / 4194304 (0.0026%)
+04:54:54 |   sample 9: label shape=(8, 1, 128, 128, 32) fg_voxels=95 / 4194304 (0.0023%)
+04:54:58 | loss_kind=tversky_ce: pos_weight=1000.00 (capped at 1000.0)
+04:54:58 | LR scheduler enabled: warmup_epochs=5, then cosine to epoch 200
+04:55:04 |   epoch 0000 | loss 0.770832 | dice 0.000071 | lr 2.00e-03
+04:55:04 |     [probs] min=0.1082 mean=0.3236 max=0.8726 | mean_prob@fg=0.4136 mean_prob@bg=0.3236
+04:55:54 |   epoch 0010 | loss 0.492596 | dice 0.099608 | lr 9.98e-03
+04:55:54 |     [probs] min=0.0000 mean=0.0009 max=0.9979 | mean_prob@fg=0.8107 mean_prob@bg=0.0009
+04:56:44 |   epoch 0020 | loss 0.402585 | dice 0.262685 | lr 9.85e-03
+04:56:44 |     [probs] min=0.0000 mean=0.0000 max=0.9963 | mean_prob@fg=0.6745 mean_prob@bg=0.0000
+04:57:34 |   epoch 0030 | loss 0.284030 | dice 0.427929 | lr 9.60e-03
+04:57:34 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.7989 mean_prob@bg=0.0000
+04:58:25 |   epoch 0040 | loss 0.244218 | dice 0.545824 | lr 9.23e-03
+04:58:25 |     [probs] min=0.0000 mean=0.0001 max=1.0000 | mean_prob@fg=0.9170 mean_prob@bg=0.0000
+04:59:16 |   epoch 0050 | loss 0.221640 | dice 0.616445 | lr 8.74e-03
+04:59:16 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.8517 mean_prob@bg=0.0000
+05:00:06 |   epoch 0060 | loss 0.182529 | dice 0.710907 | lr 8.16e-03
+05:00:06 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.7977 mean_prob@bg=0.0000
+05:00:56 |   epoch 0070 | loss 0.183035 | dice 0.721623 | lr 7.50e-03
+05:00:56 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9130 mean_prob@bg=0.0000
+05:01:46 |   epoch 0080 | loss 0.166305 | dice 0.750182 | lr 6.77e-03
+05:01:46 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9194 mean_prob@bg=0.0000
+05:02:36 |   epoch 0090 | loss 0.179286 | dice 0.751222 | lr 6.00e-03
+05:02:36 |     [probs] min=0.0000 mean=0.0001 max=1.0000 | mean_prob@fg=0.9894 mean_prob@bg=0.0000
+05:03:26 |   epoch 0100 | loss 0.104363 | dice 0.821210 | lr 5.20e-03
+05:03:26 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9936 mean_prob@bg=0.0000
+05:04:16 |   epoch 0110 | loss 0.078796 | dice 0.781676 | lr 4.40e-03
+05:04:16 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9547 mean_prob@bg=0.0000
+05:05:06 |   epoch 0120 | loss 0.049673 | dice 0.871268 | lr 3.61e-03
+05:05:06 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9682 mean_prob@bg=0.0000
+05:05:56 |   epoch 0130 | loss 0.040392 | dice 0.897060 | lr 2.86e-03
+05:05:56 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9714 mean_prob@bg=0.0000
+05:06:46 |   epoch 0140 | loss 0.035989 | dice 0.898766 | lr 2.16e-03
+05:06:46 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9686 mean_prob@bg=0.0000
+05:07:36 |   epoch 0150 | loss 0.028787 | dice 0.931173 | lr 1.54e-03
+05:07:36 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9879 mean_prob@bg=0.0000
+05:08:26 |   epoch 0160 | loss 0.025418 | dice 0.938622 | lr 1.00e-03
+05:08:26 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9881 mean_prob@bg=0.0000
+05:09:16 |   epoch 0170 | loss 0.023229 | dice 0.947914 | lr 5.73e-04
+05:09:16 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9884 mean_prob@bg=0.0000
+05:10:07 |   epoch 0180 | loss 0.022493 | dice 0.948719 | lr 2.57e-04
+05:10:07 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9885 mean_prob@bg=0.0000
+05:10:58 |   epoch 0190 | loss 0.022330 | dice 0.948719 | lr 6.47e-05
+05:10:58 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9886 mean_prob@bg=0.0000
+05:11:43 |   epoch 0199 | loss 0.022307 | dice 0.948719 | lr 6.49e-07
+05:11:43 |     [probs] min=0.0000 mean=0.0000 max=1.0000 | mean_prob@fg=0.9886 mean_prob@bg=0.0000
+05:11:43 | done in 1004.9s
+05:11:43 |
+FINAL: loss=0.022307  dice=0.948719
+05:11:43 |   -> PASS: model can memorize the fixed subset. Pipeline/loss/architecture look structurally sound; a poor full-dataset dice curve is more likely a data-scale/imbalance/sampling issue than a bug.
+  [CHANNEL CHECK] No foreground voxels found in y[0,0] — skipping.

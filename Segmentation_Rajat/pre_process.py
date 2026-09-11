@@ -580,6 +580,11 @@ def load_clean_and_pre_process(dataset_resampled_csv, config, max_files=None):
 #  DOB-SCV SPLITS (70/15/15) 
 #  Distrbution Optimal Balanced Stratified Cross Validation
 # ══════════════════════════════════════════════════════════════════
+import json
+import numpy as np
+import pandas as pd
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
 
 import json
 import numpy as np
@@ -588,62 +593,49 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 
 def create_splits_dob_scv(dataset_df, features_csv_path, splits_json_path):
-    """
-    Creates MONAI-compatible train/val/test splits using DOB-SCV on Agatston 
+    """Creates MONAI-compatible train/val/test splits using DOB-SCV on Agatston
+
     and lesion count profiles to eliminate spatial covariate shift.
 
-    Ratios:
-        Train : 70% (14/20 folds)
-        Val   : 15% (3/20 folds)
-        Test  : 15% (3/20 folds)
+    Target Ratios (applied per risk group, so stratification is preserved):
+        Train : ~70%
+        Val   : ~15%
+        Test  : ~15%
     """
     df = dataset_df.copy()
-    
+
     # 1. Load the low-level clinical/structural features
     feat_df = pd.read_csv(features_csv_path)
-    
+
     feature_cols = [
-        'lesion_count', 
-        'agatston_rca', 
-        'agatston_left_coronary', 
-        'agatston_lad', 
-        'agatston_lcx'
+        "lesion_count",
+        "agatston_rca",
+        "agatston_left_coronary",
+        "agatston_lad",
+        "agatston_lcx",
     ]
-    
+
     # Ensure features match up perfectly with dataset_df using 'scan_id'
-    # This prevents misalignment if rows are ordered differently
-    df = df.merge(feat_df[['scan_id'] + feature_cols], on='scan_id', how='left')
-
-    print(f'CColumns: {df.columns.tolist()}')
-    
-    # Fill missing values if any scan lacked calcification profile info
+    df = df.merge(feat_df[["scan_id"] + feature_cols], on="scan_id", how="left")
     df[feature_cols] = df[feature_cols].fillna(0)
-    
-    # 2. Setup internal 20-fold tracking for 70/15/15 assignment mapping
-    n_splits = 20
-    fold_indices = [[] for _ in range(n_splits)]
-    
-    # Stratify explicitly by presence/absence of calcium first
-    # ISSUE IS THAT HERE WE ARE SUPPOSED TO BIN THESE! 
 
+    print(f"Columns: {df.columns.tolist()}")
+
+    # 2. Risk stratification binning
     def assign_risk_label(score):
         if score < 10:
-            return 'Low Risk'
+            return "Low Risk"
         elif score < 100:
-            return 'Medium Risk'
+            return "Medium Risk"
         elif score < 400:
-            return 'High Risk'
+            return "High Risk"
         elif score < 1000:
-            return 'Very High Risk'
+            return "Very High Risk"
         else:
-            return 'Extreme Risk'
-        
+            return "Extreme Risk"
+
     score_col = "agatston_total"
-
-    # Assign each scan to a risk category
     df["risk_group"] = df[score_col].apply(assign_risk_label)
-
-    # Keep the categories ordered
     df["risk_group"] = pd.Categorical(
         df["risk_group"],
         categories=[
@@ -660,13 +652,21 @@ def create_splits_dob_scv(dataset_df, features_csv_path, splits_json_path):
     print(df["risk_group"].value_counts().sort_index())
     print("\n" + "=" * 50 + "\n")
 
-    # Process one risk group at a time
-    for c in df["risk_group"].cat.categories:
+    # 3. Per-risk-group DOB-SCV: cluster + fold-assign + interleave + slice
+    #    Doing this WITHIN each risk group (instead of pooling across groups)
+    #    guarantees every split gets a proportional share of every risk
+    #    group, rather than train getting mostly low-risk and val/test
+    #    getting mostly high-risk (which happens if you pool folds across
+    #    groups before slicing).
+    max_folds = 20
+    train_indices, val_indices, test_indices = [], [], []
 
+    for c in df["risk_group"].cat.categories:
         class_subset = df[df["risk_group"] == c]
         class_idx = class_subset.index.values
 
         if len(class_idx) == 0:
+            print(f"[{c}] skipped — 0 samples")
             continue
 
         # Extract features and scale them
@@ -674,14 +674,13 @@ def create_splits_dob_scv(dataset_df, features_csv_path, splits_json_path):
         scaler = StandardScaler()
         feats_scaled = scaler.fit_transform(feats)
 
+        # Can't have more folds than points in this group
+        n_splits = min(max_folds, len(class_idx))
+        fold_indices = [[] for _ in range(n_splits)]
         assigned = np.zeros(len(class_idx), dtype=bool)
+        current_fold = 0
 
-        # Determine neighborhood sizes
-        k_neighbors = min(n_splits, len(class_idx))
-        nn = NearestNeighbors(
-            n_neighbors=k_neighbors,
-            metric="euclidean"
-        )
+        nn = NearestNeighbors(n_neighbors=n_splits, metric="euclidean")
         nn.fit(feats_scaled)
 
         for i in range(len(class_idx)):
@@ -689,44 +688,49 @@ def create_splits_dob_scv(dataset_df, features_csv_path, splits_json_path):
                 continue
 
             remaining = len(class_idx) - np.sum(assigned)
-
             _, indices = nn.kneighbors(
-                [feats_scaled[i]],
-                n_neighbors=min(n_splits, remaining)
+                [feats_scaled[i]], n_neighbors=min(n_splits, remaining)
             )
-
             indices = indices[0]
 
-            valid_indices = [
-                idx for idx in indices
-                if not assigned[idx]
-            ]
+            valid_indices = [idx for idx in indices if not assigned[idx]]
 
-            # Spread neighbors across folds
-            for fold_offset, idx in enumerate(valid_indices):
-                fold_id = fold_offset % n_splits
-                fold_indices[fold_id].append(class_idx[idx])
+            # Round-robin distribution across this group's folds
+            for idx in valid_indices:
+                fold_indices[current_fold].append(class_idx[idx])
                 assigned[idx] = True
+                current_fold = (current_fold + 1) % n_splits
 
-    # 3. Aggregate the 20 internal buckets into target clinical ratios
-    # 14 folds (70%) -> Train | 3 folds (15%) -> Val | 3 folds (15%) -> Test
-    train_indices = []
-    val_indices = []
-    test_indices = []
-    
-    for f in range(20):
-        if f < 14:
-            train_indices.extend(fold_indices[f])
-        elif f < 17:
-            val_indices.extend(fold_indices[f])
-        else:
-            test_indices.extend(fold_indices[f])
-            
+        # Interleave this group's folds to preserve feature balance upon slicing
+        group_pool = []
+        max_fold_len = max(len(f) for f in fold_indices)
+        for step in range(max_fold_len):
+            for f in range(n_splits):
+                if step < len(fold_indices[f]):
+                    group_pool.append(fold_indices[f][step])
+
+        # Proportional 70/15/15 split WITHIN this risk group
+        n_group = len(group_pool)
+        val_n = int(round(n_group * 0.15))
+        test_n = int(round(n_group * 0.15))
+        train_n = n_group - val_n - test_n
+
+        train_indices.extend(group_pool[:train_n])
+        val_indices.extend(group_pool[train_n:train_n + val_n])
+        test_indices.extend(group_pool[train_n + val_n:])
+
+        print(
+            f"[{c}] n={n_group} -> train={train_n} "
+            f"val={val_n} test={test_n} (folds used={n_splits})"
+        )
+
+    print("\n" + "=" * 50 + "\n")
+
     train_df = df.loc[train_indices].reset_index(drop=True)
     val_df = df.loc[val_indices].reset_index(drop=True)
     test_df = df.loc[test_indices].reset_index(drop=True)
 
-    # 4. Convert DataFrame -> MONAI dictionaries
+    # 4. Convert DataFrame -> MONAI dictionary format
     def build_monai_dicts(split_df):
         return [
             {
@@ -746,22 +750,48 @@ def create_splits_dob_scv(dataset_df, features_csv_path, splits_json_path):
         "test": build_monai_dicts(test_df),
     }
 
-    # Save
+    # Save output to JSON
     with open(splits_json_path, "w") as f:
         json.dump(splits, f, indent=2)
 
-    # Summary Stats
+    # Output Summary Stats
     print(f"\n✅ Saved DOB-SCV balanced splits → {splits_json_path}")
     print(f"Train : {len(train_df)} ({len(train_df)/len(df)*100:.1f}%)")
     print(f"Val   : {len(val_df)} ({len(val_df)/len(df)*100:.1f}%)")
     print(f"Test  : {len(test_df)} ({len(test_df)/len(df)*100:.1f}%)")
 
-    print("\nStructural Target Balancing Breakdown:")
-    for name, split_df in [("train", train_df), ("val", val_df), ("test", test_df)]:
-        counts = split_df["agatston_available"].value_counts().sort_index().to_dict()
+    print("\n" + "=" * 60)
+    print("STRUCTURAL & RISK PROFILE BALANCING BREAKDOWN")
+    print("=" * 60)
+
+    for name, split_df in [
+        ("train", train_df),
+        ("val", val_df),
+        ("test", test_df),
+    ]:
+        counts = (
+            split_df["agatston_available"].value_counts().sort_index().to_dict()
+        )
         mean_agatston = split_df["agatston_total"].mean()
         mean_lesions = split_df["lesion_count"].mean()
-        print(f"{name:5s} -> Calcium Presence Count: {counts} | Mean Agatston: {mean_agatston:.2f} | Mean Lesions: {mean_lesions:.2f}")
+
+        # Risk group percentage breakdown
+        risk_pcts = (
+            split_df["risk_group"]
+            .value_counts(normalize=True)
+            .sort_index()
+            * 100
+        )
+        risk_str = " | ".join(
+            [f"{cat}: {pct:.1f}%" for cat, pct in risk_pcts.items()]
+        )
+
+        print(f"[{name.upper()}] (n={len(split_df)})")
+        print(
+            f"  • Calcium Presence Count: {counts} | Mean Agatston: {mean_agatston:.2f} | Mean Lesions: {mean_lesions:.2f}"
+        )
+        print(f"  • Risk Distribution    : {risk_str}")
+        print("-" * 60)
 
     return splits
 
@@ -780,34 +810,23 @@ def create_splits_simple_scv(dataset_df, features_csv_path, splits_json_path):
         Test  : 15%
     """
     df = dataset_df.copy()
-    
-    # 1. Load the low-level clinical/structural features
+
+    # 1. Load the low-level clinical/structural features (kept for reporting only,
+    #    since this simple variant stratifies on risk bin, not on feature similarity)
     feat_df = pd.read_csv(features_csv_path)
-    
+
     feature_cols = [
-        'lesion_count', 
-        'agatston_rca', 
-        'agatston_left_coronary', 
-        'agatston_lad', 
+        'lesion_count',
+        'agatston_rca',
+        'agatston_left_coronary',
+        'agatston_lad',
         'agatston_lcx'
     ]
-    
-    # Ensure features match up perfectly with dataset_df using 'scan_id'
-    # This prevents misalignment if rows are ordered differently
+
     df = df.merge(feat_df[['scan_id'] + feature_cols], on='scan_id', how='left')
-
-    print(f'CColumns: {df.columns.tolist()}')
-    
-    # Fill missing values if any scan lacked calcification profile info
     df[feature_cols] = df[feature_cols].fillna(0)
-    
-    # 2. Setup internal 20-fold tracking for 70/15/15 assignment mapping
-    n_splits = 20
-    fold_indices = [[] for _ in range(n_splits)]
-    
-    # Stratify explicitly by presence/absence of calcium first
-    # ISSUE IS THAT HERE WE ARE SUPPOSED TO BIN THESE! 
 
+    # 2. Bin the target (Agatston total) into risk groups for stratification
     def assign_risk_label(score):
         if score < 10:
             return 'Low Risk'
@@ -819,13 +838,10 @@ def create_splits_simple_scv(dataset_df, features_csv_path, splits_json_path):
             return 'Very High Risk'
         else:
             return 'Extreme Risk'
-        
+
     score_col = "agatston_total"
 
-    # Assign each scan to a risk category
     df["risk_group"] = df[score_col].apply(assign_risk_label)
-
-    # Keep the categories ordered
     df["risk_group"] = pd.Categorical(
         df["risk_group"],
         categories=[
@@ -842,71 +858,26 @@ def create_splits_simple_scv(dataset_df, features_csv_path, splits_json_path):
     print(df["risk_group"].value_counts().sort_index())
     print("\n" + "=" * 50 + "\n")
 
-    # Process one risk group at a time
-    for c in df["risk_group"].cat.categories:
+    # 3. Stratified train/val/test split based on risk_group bins
+    #    First split off train (70%) vs. remainder (30%),
+    #    then split remainder evenly into val (15%) and test (15%).
+    train_df, remainder_df = train_test_split(
+        df,
+        test_size=0.30,
+        stratify=df["risk_group"],
+        random_state=42,
+    )
 
-        class_subset = df[df["risk_group"] == c]
-        class_idx = class_subset.index.values
+    val_df, test_df = train_test_split(
+        remainder_df,
+        test_size=0.50,
+        stratify=remainder_df["risk_group"],
+        random_state=42,
+    )
 
-        if len(class_idx) == 0:
-            continue
-
-        # Extract features and scale them
-        feats = class_subset[feature_cols].values
-        scaler = StandardScaler()
-        feats_scaled = scaler.fit_transform(feats)
-
-        assigned = np.zeros(len(class_idx), dtype=bool)
-
-        # Determine neighborhood sizes
-        k_neighbors = min(n_splits, len(class_idx))
-        nn = NearestNeighbors(
-            n_neighbors=k_neighbors,
-            metric="euclidean"
-        )
-        nn.fit(feats_scaled)
-
-        for i in range(len(class_idx)):
-            if assigned[i]:
-                continue
-
-            remaining = len(class_idx) - np.sum(assigned)
-
-            _, indices = nn.kneighbors(
-                [feats_scaled[i]],
-                n_neighbors=min(n_splits, remaining)
-            )
-
-            indices = indices[0]
-
-            valid_indices = [
-                idx for idx in indices
-                if not assigned[idx]
-            ]
-
-            # Spread neighbors across folds
-            for fold_offset, idx in enumerate(valid_indices):
-                fold_id = fold_offset % n_splits
-                fold_indices[fold_id].append(class_idx[idx])
-                assigned[idx] = True
-
-    # 3. Aggregate the 20 internal buckets into target clinical ratios
-    # 14 folds (70%) -> Train | 3 folds (15%) -> Val | 3 folds (15%) -> Test
-    train_indices = []
-    val_indices = []
-    test_indices = []
-    
-    for f in range(20):
-        if f < 14:
-            train_indices.extend(fold_indices[f])
-        elif f < 17:
-            val_indices.extend(fold_indices[f])
-        else:
-            test_indices.extend(fold_indices[f])
-            
-    train_df = df.loc[train_indices].reset_index(drop=True)
-    val_df = df.loc[val_indices].reset_index(drop=True)
-    test_df = df.loc[test_indices].reset_index(drop=True)
+    train_df = train_df.reset_index(drop=True)
+    val_df = val_df.reset_index(drop=True)
+    test_df = test_df.reset_index(drop=True)
 
     # 4. Convert DataFrame -> MONAI dictionaries
     def build_monai_dicts(split_df):
@@ -933,17 +904,17 @@ def create_splits_simple_scv(dataset_df, features_csv_path, splits_json_path):
         json.dump(splits, f, indent=2)
 
     # Summary Stats
-    print(f"\n✅ Saved DOB-SCV balanced splits → {splits_json_path}")
+    print(f"\n✅ Saved simple stratified splits → {splits_json_path}")
     print(f"Train : {len(train_df)} ({len(train_df)/len(df)*100:.1f}%)")
     print(f"Val   : {len(val_df)} ({len(val_df)/len(df)*100:.1f}%)")
     print(f"Test  : {len(test_df)} ({len(test_df)/len(df)*100:.1f}%)")
 
-    print("\nStructural Target Balancing Breakdown:")
+    print("\nRisk Group Stratification Breakdown:")
     for name, split_df in [("train", train_df), ("val", val_df), ("test", test_df)]:
-        counts = split_df["agatston_available"].value_counts().sort_index().to_dict()
+        counts = split_df["risk_group"].value_counts().sort_index().to_dict()
         mean_agatston = split_df["agatston_total"].mean()
         mean_lesions = split_df["lesion_count"].mean()
-        print(f"{name:5s} -> Calcium Presence Count: {counts} | Mean Agatston: {mean_agatston:.2f} | Mean Lesions: {mean_lesions:.2f}")
+        print(f"{name:5s} -> Risk Group Counts: {counts} | Mean Agatston: {mean_agatston:.2f} | Mean Lesions: {mean_lesions:.2f}")
 
     return splits
 
@@ -1092,13 +1063,14 @@ def compute_stats(df: pd.DataFrame, splits: dict) -> dict:
     print(f"✅ Saved stats → {out_path}")
     return stats
 
-
 # ══════════════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
     import argparse
+    import os
+    import pandas as pd
 
     parser = argparse.ArgumentParser(description="PrediCT GSoC — Preprocessing Pipeline")
     parser.add_argument(
@@ -1108,6 +1080,11 @@ if __name__ == "__main__":
         help="Cap the number of VALID scans processed (after path validation). "
              "Useful for quick pipeline smoke-tests. e.g. --max-files 100",
     )
+    parser.add_argument(
+        "--force-recompute",
+        action="store_true",
+        help="Force pipeline execution even if the cached DataFrame exists.",
+    )
     args = parser.parse_args()
 
     print("═" * 55)
@@ -1116,17 +1093,42 @@ if __name__ == "__main__":
         print(f"  ⚠️  DEBUG MODE — capped at {args.max_files} valid scans")
     print("═" * 55 + "\n")
 
-    # ── Step 1: Load, validate, generate ROI masks ────────────────
-    df = load_clean_and_pre_process(
-        dataset_resampled_csv=DATASET_CSV,
-        config=config,
-        max_files=args.max_files,     # <── passed in here
-    )
+    # Retrieve output path from config
+    CLEANED_DF = config.preprocessing_config["CLEANED_DF"]
 
-    # ── Step 2: Stratified splits ─────────────────────────────────
+    # ── Step 1: Load, validate, generate ROI masks (with caching) ──
+    if os.path.exists(CLEANED_DF) and not args.force_recompute and not args.max_files:
+        print(f"📦 Loading precomputed DataFrame from: {CLEANED_DF}")
+        df = pd.read_csv(CLEANED_DF)
+    else:
+        if args.force_recompute:
+            print("🔄 Force recompute requested. Running preprocessing pipeline...")
+        elif args.max_files:
+            print("⚙️ Debug mode active. Executing pipeline with capped files...")
+        else:
+            print("⚙️ Cached DataFrame not found. Running preprocessing pipeline...")
+
+        df = load_clean_and_pre_process(
+            dataset_resampled_csv=DATASET_CSV,
+            config=config,
+            max_files=args.max_files,
+        )
+
+        # Cache results only on full pipeline runs
+        if not args.max_files:
+            os.makedirs(os.path.dirname(CLEANED_DF), exist_ok=True)
+            df.to_csv(CLEANED_DF, index=False)
+            print(f"✅ Saved processed DataFrame to: {CLEANED_DF}")
+        else:
+            print("⚠️ Debug mode active (--max-files used). Skipping cache save.")
+
+    # ── Step 2: Stratified splits (DOB or Simple) ─────────────────
     splits = create_splits_dob_scv(df, features_csv_path=FEATURES_CSV_PATH, splits_json_path=SPLITS_JSON)
+    # DOB SCV
 
-    # ── Step 3: Dataset statistics → Insights/ ───────────────────
+    # splits = create_splits_simple_scv(df, features_csv_path=FEATURES_CSV_PATH, splits_json_path=SPLITS_JSON) # -> Simple SCV
+
+    # ── Step 3: Dataset statistics → Insights/ ────────────────────
     stats = compute_stats(df, splits)
 
     print(f"\n{'═'*55}")

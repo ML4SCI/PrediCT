@@ -1,0 +1,3368 @@
+{
+  "train": [
+    {
+      "id": "id_0",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_0/id_0_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_0/id_0_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_0/id_0_roi_mask.nii.gz",
+      "agatston_total": 5.856605619192123,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_368",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_368/id_368_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_368/id_368_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_368/id_368_roi_mask.nii.gz",
+      "agatston_total": 7.786422781646252,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_106",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_106/id_106_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_106/id_106_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_106/id_106_roi_mask.nii.gz",
+      "agatston_total": 3.663635195698589,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_189",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_189/id_189_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_189/id_189_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_189/id_189_roi_mask.nii.gz",
+      "agatston_total": 3.6534424405545,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_32",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_32/id_32_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_32/id_32_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_32/id_32_roi_mask.nii.gz",
+      "agatston_total": 2.632797253318131,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_17",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_17/id_17_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_17/id_17_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_17/id_17_roi_mask.nii.gz",
+      "agatston_total": 1.6342734917998314,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_149",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_149/id_149_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_149/id_149_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_149/id_149_roi_mask.nii.gz",
+      "agatston_total": 1.6188049223273993,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_411",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_411/id_411_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_411/id_411_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_411/id_411_roi_mask.nii.gz",
+      "agatston_total": 0.4856414627283811,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_179",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_179/id_179_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_179/id_179_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_179/id_179_roi_mask.nii.gz",
+      "agatston_total": 0.6665191613137722,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_188",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_188/id_188_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_188/id_188_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_188/id_188_roi_mask.nii.gz",
+      "agatston_total": 0.709468824788928,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_384",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_384/id_384_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_384/id_384_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_384/id_384_roi_mask.nii.gz",
+      "agatston_total": 0.8572387509047985,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_307",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_307/id_307_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_307/id_307_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_307/id_307_roi_mask.nii.gz",
+      "agatston_total": 0.8942527696490288,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_357",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_357/id_357_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_357/id_357_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_357/id_357_roi_mask.nii.gz",
+      "agatston_total": 0.9238128550350666,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_153",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_153/id_153_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_153/id_153_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_153/id_153_roi_mask.nii.gz",
+      "agatston_total": 0.9712829254567624,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_302",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_302/id_302_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_302/id_302_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_302/id_302_roi_mask.nii.gz",
+      "agatston_total": 1.0108642280101776,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_140",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_140/id_140_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_140/id_140_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_140/id_140_roi_mask.nii.gz",
+      "agatston_total": 1.2524757534265518,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_233",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_233/id_233_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_233/id_233_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_233/id_233_roi_mask.nii.gz",
+      "agatston_total": 1.2656250037252903,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_101",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_101/id_101_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_101/id_101_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_101/id_101_roi_mask.nii.gz",
+      "agatston_total": 1.3830452226102352,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_355",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_355/id_355_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_355/id_355_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_355/id_355_roi_mask.nii.gz",
+      "agatston_total": 1.434127800166607,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_429",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_429/id_429_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_429/id_429_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_429/id_429_roi_mask.nii.gz",
+      "agatston_total": 0.8084564469754696,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_103",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_103/id_103_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_103/id_103_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_103/id_103_roi_mask.nii.gz",
+      "agatston_total": 3.9155274629592896,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_133",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_133/id_133_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_133/id_133_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_133/id_133_roi_mask.nii.gz",
+      "agatston_total": 5.8732908219099045,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_208",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_208/id_208_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_208/id_208_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_208/id_208_roi_mask.nii.gz",
+      "agatston_total": 1.3996582478284836,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_202",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_202/id_202_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_202/id_202_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_202/id_202_roi_mask.nii.gz",
+      "agatston_total": 1.124759670346975,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_314",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_314/id_314_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_314/id_314_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_314/id_314_roi_mask.nii.gz",
+      "agatston_total": 2.1869659423828125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_111",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_111/id_111_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_111/id_111_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_111/id_111_roi_mask.nii.gz",
+      "agatston_total": 1.6316071152687073,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_163",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_163/id_163_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_163/id_163_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_163/id_163_roi_mask.nii.gz",
+      "agatston_total": 1.6450652852654457,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_105",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_105/id_105_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_105/id_105_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_105/id_105_roi_mask.nii.gz",
+      "agatston_total": 9.671996533870695,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_198",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_198/id_198_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_198/id_198_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_198/id_198_roi_mask.nii.gz",
+      "agatston_total": 8.859374932944775,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_70",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_70/id_70_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_70/id_70_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_70/id_70_roi_mask.nii.gz",
+      "agatston_total": 4.931831359863281,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_396",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_396/id_396_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_396/id_396_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_396/id_396_roi_mask.nii.gz",
+      "agatston_total": 3.7109375,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_61",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_61/id_61_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_61/id_61_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_61/id_61_roi_mask.nii.gz",
+      "agatston_total": 1.559165958315134,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_297",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_297/id_297_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_297/id_297_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_297/id_297_roi_mask.nii.gz",
+      "agatston_total": 1.3054847717285156,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_151",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_151/id_151_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_151/id_151_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_151/id_151_roi_mask.nii.gz",
+      "agatston_total": 9.157455246895552,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_23",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_23/id_23_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_23/id_23_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_23/id_23_roi_mask.nii.gz",
+      "agatston_total": 5.674850381910801,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_174",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_174/id_174_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_174/id_174_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_174/id_174_roi_mask.nii.gz",
+      "agatston_total": 8.723823353648186,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_217",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_217/id_217_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_217/id_217_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_217/id_217_roi_mask.nii.gz",
+      "agatston_total": 9.533683583140371,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_224",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_224/id_224_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_224/id_224_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_224/id_224_roi_mask.nii.gz",
+      "agatston_total": 9.67475501820445,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_251",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_251/id_251_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_251/id_251_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_251/id_251_roi_mask.nii.gz",
+      "agatston_total": 9.77618400938809,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_53",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_53/id_53_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_53/id_53_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_53/id_53_roi_mask.nii.gz",
+      "agatston_total": 5.69531237706542,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_55",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_55/id_55_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_55/id_55_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_55/id_55_roi_mask.nii.gz",
+      "agatston_total": 5.143432784825563,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_180",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_180/id_180_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_180/id_180_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_180/id_180_roi_mask.nii.gz",
+      "agatston_total": 4.951171763241291,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_264",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_264/id_264_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_264/id_264_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_264/id_264_roi_mask.nii.gz",
+      "agatston_total": 4.912025283556432,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_221",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_221/id_221_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_221/id_221_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_221/id_221_roi_mask.nii.gz",
+      "agatston_total": 4.076019208878279,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_31",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_31/id_31_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_31/id_31_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_31/id_31_roi_mask.nii.gz",
+      "agatston_total": 8.1573486328125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_334",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_334/id_334_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_334/id_334_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_334/id_334_roi_mask.nii.gz",
+      "agatston_total": 7.553291320800781,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_156",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_156/id_156_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_156/id_156_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_156/id_156_roi_mask.nii.gz",
+      "agatston_total": 7.542800903320312,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_102",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_102/id_102_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_102/id_102_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_102/id_102_roi_mask.nii.gz",
+      "agatston_total": 51.26953125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_62",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_62/id_62_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_62/id_62_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_62/id_62_roi_mask.nii.gz",
+      "agatston_total": 47.86721747368574,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_358",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_358/id_358_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_358/id_358_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_358/id_358_roi_mask.nii.gz",
+      "agatston_total": 56.224289909005165,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_414",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_414/id_414_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_414/id_414_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_414/id_414_roi_mask.nii.gz",
+      "agatston_total": 50.63673770055175,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_333",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_333/id_333_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_333/id_333_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_333/id_333_roi_mask.nii.gz",
+      "agatston_total": 34.386665653437376,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_262",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_262/id_262_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_262/id_262_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_262/id_262_roi_mask.nii.gz",
+      "agatston_total": 48.75064487569034,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_379",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_379/id_379_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_379/id_379_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_379/id_379_roi_mask.nii.gz",
+      "agatston_total": 49.31831359863281,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_391",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_391/id_391_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_391/id_391_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_391/id_391_roi_mask.nii.gz",
+      "agatston_total": 66.69807434082031,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_138",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_138/id_138_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_138/id_138_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_138/id_138_roi_mask.nii.gz",
+      "agatston_total": 12.377929454669356,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_35",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_35/id_35_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_35/id_35_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_35/id_35_roi_mask.nii.gz",
+      "agatston_total": 47.24783571437001,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_280",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_280/id_280_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_280/id_280_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_280/id_280_roi_mask.nii.gz",
+      "agatston_total": 44.62718963623047,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_271",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_271/id_271_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_271/id_271_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_271/id_271_roi_mask.nii.gz",
+      "agatston_total": 41.9176303781569,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_227",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_227/id_227_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_227/id_227_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_227/id_227_roi_mask.nii.gz",
+      "agatston_total": 44.49015585705638,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_316",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_316/id_316_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_316/id_316_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_316/id_316_roi_mask.nii.gz",
+      "agatston_total": 15.257648564875126,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_409",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_409/id_409_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_409/id_409_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_409/id_409_roi_mask.nii.gz",
+      "agatston_total": 48.15904605202377,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_404",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_404/id_404_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_404/id_404_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_404/id_404_roi_mask.nii.gz",
+      "agatston_total": 39.66064474079758,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_346",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_346/id_346_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_346/id_346_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_346/id_346_roi_mask.nii.gz",
+      "agatston_total": 43.152922205626965,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_278",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_278/id_278_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_278/id_278_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_278/id_278_roi_mask.nii.gz",
+      "agatston_total": 22.266235202550888,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_422",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_422/id_422_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_422/id_422_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_422/id_422_roi_mask.nii.gz",
+      "agatston_total": 79.57191467285156,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_367",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_367/id_367_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_367/id_367_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_367/id_367_roi_mask.nii.gz",
+      "agatston_total": 50.61418619006872,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_104",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_104/id_104_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_104/id_104_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_104/id_104_roi_mask.nii.gz",
+      "agatston_total": 63.170456886291504,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_15",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_15/id_15_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_15/id_15_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_15/id_15_roi_mask.nii.gz",
+      "agatston_total": 60.88266372680664,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_162",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_162/id_162_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_162/id_162_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_162/id_162_roi_mask.nii.gz",
+      "agatston_total": 60.82864226773381,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_348",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_348/id_348_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_348/id_348_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_348/id_348_roi_mask.nii.gz",
+      "agatston_total": 53.940467443317175,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_205",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_205/id_205_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_205/id_205_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_205/id_205_roi_mask.nii.gz",
+      "agatston_total": 70.92797867953777,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_18",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_18/id_18_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_18/id_18_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_18/id_18_roi_mask.nii.gz",
+      "agatston_total": 63.16031956812367,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_377",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_377/id_377_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_377/id_377_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_377/id_377_roi_mask.nii.gz",
+      "agatston_total": 58.83755525574088,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_248",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_248/id_248_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_248/id_248_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_248/id_248_roi_mask.nii.gz",
+      "agatston_total": 63.89770279638469,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_7",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_7/id_7_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_7/id_7_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_7/id_7_roi_mask.nii.gz",
+      "agatston_total": 51.90040608868003,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_166",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_166/id_166_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_166/id_166_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_166/id_166_roi_mask.nii.gz",
+      "agatston_total": 53.9779044687748,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_95",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_95/id_95_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_95/id_95_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_95/id_95_roi_mask.nii.gz",
+      "agatston_total": 72.92191870510578,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_9",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_9/id_9_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_9/id_9_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_9/id_9_roi_mask.nii.gz",
+      "agatston_total": 72.14062511920929,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_52",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_52/id_52_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_52/id_52_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_52/id_52_roi_mask.nii.gz",
+      "agatston_total": 49.65600669384003,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_436",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_436/id_436_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_436/id_436_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_436/id_436_roi_mask.nii.gz",
+      "agatston_total": 61.623382568359375,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_212",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_212/id_212_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_212/id_212_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_212/id_212_roi_mask.nii.gz",
+      "agatston_total": 62.74006739258766,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_114",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_114/id_114_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_114/id_114_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_114/id_114_roi_mask.nii.gz",
+      "agatston_total": 65.65355556085706,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_344",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_344/id_344_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_344/id_344_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_344/id_344_roi_mask.nii.gz",
+      "agatston_total": 66.69807434082031,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_291",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_291/id_291_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_291/id_291_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_291/id_291_roi_mask.nii.gz",
+      "agatston_total": 55.72821721434593,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_108",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_108/id_108_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_108/id_108_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_108/id_108_roi_mask.nii.gz",
+      "agatston_total": 70.73780631180853,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_328",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_328/id_328_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_328/id_328_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_328/id_328_roi_mask.nii.gz",
+      "agatston_total": 80.14739365316927,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_309",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_309/id_309_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_309/id_309_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_309/id_309_roi_mask.nii.gz",
+      "agatston_total": 87.17651474289596,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_58",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_58/id_58_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_58/id_58_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_58/id_58_roi_mask.nii.gz",
+      "agatston_total": 38.57421875,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_252",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_252/id_252_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_252/id_252_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_252/id_252_roi_mask.nii.gz",
+      "agatston_total": 48.8138769287616,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_38",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_38/id_38_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_38/id_38_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_38/id_38_roi_mask.nii.gz",
+      "agatston_total": 83.86573791503906,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_33",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_33/id_33_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_33/id_33_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_33/id_33_roi_mask.nii.gz",
+      "agatston_total": 44.71548376604915,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_201",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_201/id_201_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_201/id_201_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_201/id_201_roi_mask.nii.gz",
+      "agatston_total": 80.46490475535393,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_439",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_439/id_439_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_439/id_439_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_439/id_439_roi_mask.nii.gz",
+      "agatston_total": 76.84111050330102,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_167",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_167/id_167_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_167/id_167_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_167/id_167_roi_mask.nii.gz",
+      "agatston_total": 93.79651714116336,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_120",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_120/id_120_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_120/id_120_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_120/id_120_roi_mask.nii.gz",
+      "agatston_total": 58.86367675848305,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_213",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_213/id_213_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_213/id_213_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_213/id_213_roi_mask.nii.gz",
+      "agatston_total": 99.84594797715545,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_41",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_41/id_41_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_41/id_41_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_41/id_41_roi_mask.nii.gz",
+      "agatston_total": 71.29101529717445,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_109",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_109/id_109_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_109/id_109_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_109/id_109_roi_mask.nii.gz",
+      "agatston_total": 46.60915285348892,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_113",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_113/id_113_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_113/id_113_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_113/id_113_roi_mask.nii.gz",
+      "agatston_total": 54.13832366466522,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_110",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_110/id_110_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_110/id_110_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_110/id_110_roi_mask.nii.gz",
+      "agatston_total": 36.715058237314224,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_247",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_247/id_247_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_247/id_247_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_247/id_247_roi_mask.nii.gz",
+      "agatston_total": 32.30310045182705,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_359",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_359/id_359_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_359/id_359_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_359/id_359_roi_mask.nii.gz",
+      "agatston_total": 50.626953691244125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_376",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_376/id_376_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_376/id_376_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_376/id_376_roi_mask.nii.gz",
+      "agatston_total": 58.76518487930298,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_287",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_287/id_287_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_287/id_287_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_287/id_287_roi_mask.nii.gz",
+      "agatston_total": 30.5064395070076,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_369",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_369/id_369_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_369/id_369_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_369/id_369_roi_mask.nii.gz",
+      "agatston_total": 33.64906311035156,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_381",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_381/id_381_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_381/id_381_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_381/id_381_roi_mask.nii.gz",
+      "agatston_total": 29.818153381347656,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_204",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_204/id_204_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_204/id_204_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_204/id_204_roi_mask.nii.gz",
+      "agatston_total": 29.330870509147644,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_16",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_16/id_16_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_16/id_16_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_16/id_16_roi_mask.nii.gz",
+      "agatston_total": 26.30120567046106,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_121",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_121/id_121_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_121/id_121_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_121/id_121_roi_mask.nii.gz",
+      "agatston_total": 11.444091796875,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_195",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_195/id_195_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_195/id_195_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_195/id_195_roi_mask.nii.gz",
+      "agatston_total": 12.093749642372131,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_29",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_29/id_29_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_29/id_29_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_29/id_29_roi_mask.nii.gz",
+      "agatston_total": 10.636108368635178,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_24",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_24/id_24_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_24/id_24_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_24/id_24_roi_mask.nii.gz",
+      "agatston_total": 12.272445857524872,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_373",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_373/id_373_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_373/id_373_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_373/id_373_roi_mask.nii.gz",
+      "agatston_total": 16.374023258686066,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_68",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_68/id_68_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_68/id_68_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_68/id_68_roi_mask.nii.gz",
+      "agatston_total": 18.56536865234375,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_97",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_97/id_97_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_97/id_97_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_97/id_97_roi_mask.nii.gz",
+      "agatston_total": 12.890388630330564,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_93",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_93/id_93_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_93/id_93_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_93/id_93_roi_mask.nii.gz",
+      "agatston_total": 13.986671343445778,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_423",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_423/id_423_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_423/id_423_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_423/id_423_roi_mask.nii.gz",
+      "agatston_total": 14.6484375,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_136",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_136/id_136_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_136/id_136_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_136/id_136_roi_mask.nii.gz",
+      "agatston_total": 19.92216501384973,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_148",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_148/id_148_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_148/id_148_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_148/id_148_roi_mask.nii.gz",
+      "agatston_total": 26.79455578327179,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_228",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_228/id_228_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_228/id_228_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_228/id_228_roi_mask.nii.gz",
+      "agatston_total": 27.1076649427414,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_265",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_265/id_265_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_265/id_265_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_265/id_265_roi_mask.nii.gz",
+      "agatston_total": 11.768692266196012,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_79",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_79/id_79_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_79/id_79_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_79/id_79_roi_mask.nii.gz",
+      "agatston_total": 14.946796651929615,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_96",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_96/id_96_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_96/id_96_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_96/id_96_roi_mask.nii.gz",
+      "agatston_total": 18.08013916015625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_127",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_127/id_127_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_127/id_127_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_127/id_127_roi_mask.nii.gz",
+      "agatston_total": 20.628478564321995,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_122",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_122/id_122_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_122/id_122_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_122/id_122_roi_mask.nii.gz",
+      "agatston_total": 24.0020751953125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_187",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_187/id_187_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_187/id_187_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_187/id_187_roi_mask.nii.gz",
+      "agatston_total": 16.27432983368635,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_447",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_447/id_447_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_447/id_447_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_447/id_447_roi_mask.nii.gz",
+      "agatston_total": 15.328124444931746,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_207",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_207/id_207_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_207/id_207_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_207/id_207_roi_mask.nii.gz",
+      "agatston_total": 14.57204818725586,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_329",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_329/id_329_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_329/id_329_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_329/id_329_roi_mask.nii.gz",
+      "agatston_total": 28.946106135845184,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_308",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_308/id_308_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_308/id_308_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_308/id_308_roi_mask.nii.gz",
+      "agatston_total": 25.805579498410225,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_403",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_403/id_403_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_403/id_403_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_403/id_403_roi_mask.nii.gz",
+      "agatston_total": 16.486358642578125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_86",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_86/id_86_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_86/id_86_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_86/id_86_roi_mask.nii.gz",
+      "agatston_total": 11.169754341244698,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_279",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_279/id_279_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_279/id_279_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_279/id_279_roi_mask.nii.gz",
+      "agatston_total": 36.1582025885582,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_72",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_72/id_72_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_72/id_72_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_72/id_72_roi_mask.nii.gz",
+      "agatston_total": 10.576461628079414,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_44",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_44/id_44_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_44/id_44_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_44/id_44_roi_mask.nii.gz",
+      "agatston_total": 36.28266826272011,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_232",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_232/id_232_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_232/id_232_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_232/id_232_roi_mask.nii.gz",
+      "agatston_total": 15.009582601487637,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_432",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_432/id_432_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_432/id_432_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_432/id_432_roi_mask.nii.gz",
+      "agatston_total": 38.42090666294098,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_51",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_51/id_51_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_51/id_51_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_51/id_51_roi_mask.nii.gz",
+      "agatston_total": 54.103923216462135,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_124",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_124/id_124_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_124/id_124_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_124/id_124_roi_mask.nii.gz",
+      "agatston_total": 37.15248554944992,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_74",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_74/id_74_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_74/id_74_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_74/id_74_roi_mask.nii.gz",
+      "agatston_total": 56.69701979495585,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_158",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_158/id_158_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_158/id_158_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_158/id_158_roi_mask.nii.gz",
+      "agatston_total": 30.709865549579263,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_365",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_365/id_365_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_365/id_365_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_365/id_365_roi_mask.nii.gz",
+      "agatston_total": 34.15057808160782,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_78",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_78/id_78_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_78/id_78_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_78/id_78_roi_mask.nii.gz",
+      "agatston_total": 33.49121045321226,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_229",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_229/id_229_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_229/id_229_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_229/id_229_roi_mask.nii.gz",
+      "agatston_total": 59.95174078270793,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_435",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_435/id_435_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_435/id_435_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_435/id_435_roi_mask.nii.gz",
+      "agatston_total": 43.00708086229861,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_220",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_220/id_220_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_220/id_220_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_220/id_220_roi_mask.nii.gz",
+      "agatston_total": 70.48608388286084,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_295",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_295/id_295_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_295/id_295_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_295/id_295_roi_mask.nii.gz",
+      "agatston_total": 35.26878356933594,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_76",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_76/id_76_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_76/id_76_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_76/id_76_roi_mask.nii.gz",
+      "agatston_total": 52.1425643004477,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_366",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_366/id_366_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_366/id_366_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_366/id_366_roi_mask.nii.gz",
+      "agatston_total": 54.48835892602801,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_1",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_1/id_1_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_1/id_1_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_1/id_1_roi_mask.nii.gz",
+      "agatston_total": 369.7340643499047,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_6",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_6/id_6_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_6/id_6_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_6/id_6_roi_mask.nii.gz",
+      "agatston_total": 341.24277448281646,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_304",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_304/id_304_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_304/id_304_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_304/id_304_roi_mask.nii.gz",
+      "agatston_total": 278.6194631829858,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_322",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_322/id_322_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_322/id_322_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_322/id_322_roi_mask.nii.gz",
+      "agatston_total": 297.540283203125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_341",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_341/id_341_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_341/id_341_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_341/id_341_roi_mask.nii.gz",
+      "agatston_total": 271.777905151248,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_210",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_210/id_210_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_210/id_210_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_210/id_210_roi_mask.nii.gz",
+      "agatston_total": 308.0178719945252,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_449",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_449/id_449_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_449/id_449_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_449/id_449_roi_mask.nii.gz",
+      "agatston_total": 269.4411435164511,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_257",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_257/id_257_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_257/id_257_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_257/id_257_roi_mask.nii.gz",
+      "agatston_total": 278.8670622743666,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_407",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_407/id_407_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_407/id_407_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_407/id_407_roi_mask.nii.gz",
+      "agatston_total": 228.3684093505144,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_356",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_356/id_356_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_356/id_356_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_356/id_356_roi_mask.nii.gz",
+      "agatston_total": 329.6906830742955,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_352",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_352/id_352_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_352/id_352_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_352/id_352_roi_mask.nii.gz",
+      "agatston_total": 316.5468567982316,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_398",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_398/id_398_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_398/id_398_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_398/id_398_roi_mask.nii.gz",
+      "agatston_total": 311.28442236222327,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_161",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_161/id_161_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_161/id_161_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_161/id_161_roi_mask.nii.gz",
+      "agatston_total": 262.0231907814741,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_91",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_91/id_91_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_91/id_91_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_91/id_91_roi_mask.nii.gz",
+      "agatston_total": 245.7431677728892,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_323",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_323/id_323_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_323/id_323_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_323/id_323_roi_mask.nii.gz",
+      "agatston_total": 313.742795586586,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_59",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_59/id_59_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_59/id_59_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_59/id_59_roi_mask.nii.gz",
+      "agatston_total": 226.483297906816,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_288",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_288/id_288_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_288/id_288_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_288/id_288_roi_mask.nii.gz",
+      "agatston_total": 227.197265625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_258",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_258/id_258_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_258/id_258_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_258/id_258_roi_mask.nii.gz",
+      "agatston_total": 378.515625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_27",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_27/id_27_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_27/id_27_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_27/id_27_roi_mask.nii.gz",
+      "agatston_total": 244.40625347197056,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_144",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_144/id_144_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_144/id_144_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_144/id_144_roi_mask.nii.gz",
+      "agatston_total": 224.4163802359253,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_10",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_10/id_10_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_10/id_10_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_10/id_10_roi_mask.nii.gz",
+      "agatston_total": 113.44124589813872,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_92",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_92/id_92_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_92/id_92_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_92/id_92_roi_mask.nii.gz",
+      "agatston_total": 115.62689759302884,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_150",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_150/id_150_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_150/id_150_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_150/id_150_roi_mask.nii.gz",
+      "agatston_total": 193.0572509765625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_424",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_424/id_424_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_424/id_424_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_424/id_424_roi_mask.nii.gz",
+      "agatston_total": 120.16558996401729,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_176",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_176/id_176_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_176/id_176_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_176/id_176_roi_mask.nii.gz",
+      "agatston_total": 130.16148321330547,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_199",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_199/id_199_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_199/id_199_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_199/id_199_roi_mask.nii.gz",
+      "agatston_total": 154.85463510267437,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_380",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_380/id_380_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_380/id_380_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_380/id_380_roi_mask.nii.gz",
+      "agatston_total": 140.34015368670225,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_255",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_255/id_255_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_255/id_255_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_255/id_255_roi_mask.nii.gz",
+      "agatston_total": 146.91295656375587,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_168",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_168/id_168_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_168/id_168_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_168/id_168_roi_mask.nii.gz",
+      "agatston_total": 114.85046045854688,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_128",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_128/id_128_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_128/id_128_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_128/id_128_roi_mask.nii.gz",
+      "agatston_total": 186.9146580342204,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_183",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_183/id_183_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_183/id_183_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_183/id_183_roi_mask.nii.gz",
+      "agatston_total": 105.74607886373995,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_347",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_347/id_347_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_347/id_347_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_347/id_347_roi_mask.nii.gz",
+      "agatston_total": 146.44134524278343,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_335",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_335/id_335_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_335/id_335_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_335/id_335_roi_mask.nii.gz",
+      "agatston_total": 156.28120587207377,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_11",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_11/id_11_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_11/id_11_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_11/id_11_roi_mask.nii.gz",
+      "agatston_total": 148.83694080635905,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_400",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_400/id_400_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_400/id_400_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_400/id_400_roi_mask.nii.gz",
+      "agatston_total": 214.8808553814888,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_230",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_230/id_230_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_230/id_230_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_230/id_230_roi_mask.nii.gz",
+      "agatston_total": 113.62898382358252,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_390",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_390/id_390_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_390/id_390_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_390/id_390_roi_mask.nii.gz",
+      "agatston_total": 125.68512137513608,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_317",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_317/id_317_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_317/id_317_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_317/id_317_roi_mask.nii.gz",
+      "agatston_total": 125.88821472600102,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_2",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_2/id_2_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_2/id_2_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_2/id_2_roi_mask.nii.gz",
+      "agatston_total": 113.6809077579528,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_100",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_100/id_100_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_100/id_100_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_100/id_100_roi_mask.nii.gz",
+      "agatston_total": 214.59375112317505,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_222",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_222/id_222_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_222/id_222_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_222/id_222_roi_mask.nii.gz",
+      "agatston_total": 255.52997589111328,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_272",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_272/id_272_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_272/id_272_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_272/id_272_roi_mask.nii.gz",
+      "agatston_total": 239.795427210629,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_374",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_374/id_374_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_374/id_374_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_374/id_374_roi_mask.nii.gz",
+      "agatston_total": 213.1788949482143,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_387",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_387/id_387_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_387/id_387_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_387/id_387_roi_mask.nii.gz",
+      "agatston_total": 183.3527826704085,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_216",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_216/id_216_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_216/id_216_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_216/id_216_roi_mask.nii.gz",
+      "agatston_total": 368.9891815185547,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_441",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_441/id_441_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_441/id_441_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_441/id_441_roi_mask.nii.gz",
+      "agatston_total": 271.7497072182596,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_88",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_88/id_88_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_88/id_88_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_88/id_88_roi_mask.nii.gz",
+      "agatston_total": 316.9149168767035,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_250",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_250/id_250_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_250/id_250_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_250/id_250_roi_mask.nii.gz",
+      "agatston_total": 304.0739943273365,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_300",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_300/id_300_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_300/id_300_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_300/id_300_roi_mask.nii.gz",
+      "agatston_total": 273.73553491197526,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_107",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_107/id_107_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_107/id_107_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_107/id_107_roi_mask.nii.gz",
+      "agatston_total": 319.0101967193186,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_25",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_25/id_25_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_25/id_25_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_25/id_25_roi_mask.nii.gz",
+      "agatston_total": 385.9422926791012,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_337",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_337/id_337_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_337/id_337_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_337/id_337_roi_mask.nii.gz",
+      "agatston_total": 360.25611720979214,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_443",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_443/id_443_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_443/id_443_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_443/id_443_roi_mask.nii.gz",
+      "agatston_total": 341.0859424620867,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_270",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_270/id_270_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_270/id_270_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_270/id_270_roi_mask.nii.gz",
+      "agatston_total": 388.58622340485454,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_54",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_54/id_54_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_54/id_54_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_54/id_54_roi_mask.nii.gz",
+      "agatston_total": 365.3240730985999,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_67",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_67/id_67_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_67/id_67_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_67/id_67_roi_mask.nii.gz",
+      "agatston_total": 209.62167773395777,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_115",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_115/id_115_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_115/id_115_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_115/id_115_roi_mask.nii.gz",
+      "agatston_total": 160.76733581721783,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_253",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_253/id_253_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_253/id_253_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_253/id_253_roi_mask.nii.gz",
+      "agatston_total": 169.11339908838272,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_282",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_282/id_282_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_282/id_282_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_282/id_282_roi_mask.nii.gz",
+      "agatston_total": 124.2234536446631,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_286",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_286/id_286_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_286/id_286_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_286/id_286_roi_mask.nii.gz",
+      "agatston_total": 117.36641526222228,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_42",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_42/id_42_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_42/id_42_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_42/id_42_roi_mask.nii.gz",
+      "agatston_total": 116.3554071681574,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_154",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_154/id_154_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_154/id_154_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_154/id_154_roi_mask.nii.gz",
+      "agatston_total": 199.3302787770517,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_186",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_186/id_186_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_186/id_186_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_186/id_186_roi_mask.nii.gz",
+      "agatston_total": 118.73889551497996,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_294",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_294/id_294_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_294/id_294_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_294/id_294_roi_mask.nii.gz",
+      "agatston_total": 138.5781217366457,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_131",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_131/id_131_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_131/id_131_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_131/id_131_roi_mask.nii.gz",
+      "agatston_total": 116.06247117742896,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_256",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_256/id_256_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_256/id_256_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_256/id_256_roi_mask.nii.gz",
+      "agatston_total": 103.46106118522584,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_34",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_34/id_34_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_34/id_34_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_34/id_34_roi_mask.nii.gz",
+      "agatston_total": 101.776123046875,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_296",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_296/id_296_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_296/id_296_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_296/id_296_roi_mask.nii.gz",
+      "agatston_total": 161.13100638613105,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_134",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_134/id_134_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_134/id_134_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_134/id_134_roi_mask.nii.gz",
+      "agatston_total": 149.70788955688477,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_353",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_353/id_353_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_353/id_353_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_353/id_353_roi_mask.nii.gz",
+      "agatston_total": 165.78997680917382,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_185",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_185/id_185_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_185/id_185_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_185/id_185_roi_mask.nii.gz",
+      "agatston_total": 147.42467990145087,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_372",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_372/id_372_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_372/id_372_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_372/id_372_roi_mask.nii.gz",
+      "agatston_total": 132.77633343823254,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_112",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_112/id_112_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_112/id_112_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_112/id_112_roi_mask.nii.gz",
+      "agatston_total": 949.0531384944916,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_123",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_123/id_123_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_123/id_123_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_123/id_123_roi_mask.nii.gz",
+      "agatston_total": 925.0523331342264,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_242",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_242/id_242_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_242/id_242_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_242/id_242_roi_mask.nii.gz",
+      "agatston_total": 696.4897986035794,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_263",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_263/id_263_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_263/id_263_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_263/id_263_roi_mask.nii.gz",
+      "agatston_total": 716.6329383850098,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_338",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_338/id_338_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_338/id_338_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_338/id_338_roi_mask.nii.gz",
+      "agatston_total": 632.1129417279735,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_117",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_117/id_117_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_117/id_117_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_117/id_117_roi_mask.nii.gz",
+      "agatston_total": 681.4701080322266,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_239",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_239/id_239_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_239/id_239_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_239/id_239_roi_mask.nii.gz",
+      "agatston_total": 567.8809661883861,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_305",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_305/id_305_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_305/id_305_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_305/id_305_roi_mask.nii.gz",
+      "agatston_total": 591.8649065308273,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_172",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_172/id_172_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_172/id_172_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_172/id_172_roi_mask.nii.gz",
+      "agatston_total": 753.4140463918447,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_57",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_57/id_57_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_57/id_57_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_57/id_57_roi_mask.nii.gz",
+      "agatston_total": 637.7669946756214,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_275",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_275/id_275_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_275/id_275_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_275/id_275_roi_mask.nii.gz",
+      "agatston_total": 878.8916551391594,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_431",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_431/id_431_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_431/id_431_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_431/id_431_roi_mask.nii.gz",
+      "agatston_total": 627.893194835633,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_165",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_165/id_165_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_165/id_165_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_165/id_165_roi_mask.nii.gz",
+      "agatston_total": 475.41336761787534,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_129",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_129/id_129_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_129/id_129_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_129/id_129_roi_mask.nii.gz",
+      "agatston_total": 473.981936275959,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_47",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_47/id_47_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_47/id_47_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_47/id_47_roi_mask.nii.gz",
+      "agatston_total": 763.57421875,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_66",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_66/id_66_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_66/id_66_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_66/id_66_roi_mask.nii.gz",
+      "agatston_total": 553.925707982853,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_354",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_354/id_354_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_354/id_354_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_354/id_354_roi_mask.nii.gz",
+      "agatston_total": 494.8651609942317,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_3",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_3/id_3_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_3/id_3_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_3/id_3_roi_mask.nii.gz",
+      "agatston_total": 470.87218863889575,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_160",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_160/id_160_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_160/id_160_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_160/id_160_roi_mask.nii.gz",
+      "agatston_total": 465.1782035827637,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_139",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_139/id_139_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_139/id_139_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_139/id_139_roi_mask.nii.gz",
+      "agatston_total": 804.2373657226562,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_116",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_116/id_116_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_116/id_116_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_116/id_116_roi_mask.nii.gz",
+      "agatston_total": 750.6807893514633,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_437",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_437/id_437_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_437/id_437_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_437/id_437_roi_mask.nii.gz",
+      "agatston_total": 848.8869024906307,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_141",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_141/id_141_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_141/id_141_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_141/id_141_roi_mask.nii.gz",
+      "agatston_total": 533.5090992972255,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_281",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_281/id_281_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_281/id_281_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_281/id_281_roi_mask.nii.gz",
+      "agatston_total": 644.8210188187659,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_39",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_39/id_39_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_39/id_39_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_39/id_39_roi_mask.nii.gz",
+      "agatston_total": 682.0472904015332,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_125",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_125/id_125_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_125/id_125_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_125/id_125_roi_mask.nii.gz",
+      "agatston_total": 920.6782685592772,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_118",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_118/id_118_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_118/id_118_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_118/id_118_roi_mask.nii.gz",
+      "agatston_total": 439.988504583016,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_292",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_292/id_292_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_292/id_292_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_292/id_292_roi_mask.nii.gz",
+      "agatston_total": 518.2179682888091,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_145",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_145/id_145_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_145/id_145_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_145/id_145_roi_mask.nii.gz",
+      "agatston_total": 739.2365486361086,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_245",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_245/id_245_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_245/id_245_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_245/id_245_roi_mask.nii.gz",
+      "agatston_total": 608.8473499752581,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_130",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_130/id_130_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_130/id_130_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_130/id_130_roi_mask.nii.gz",
+      "agatston_total": 768.0858935695142,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_410",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_410/id_410_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_410/id_410_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_410/id_410_roi_mask.nii.gz",
+      "agatston_total": 675.427786516957,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_340",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_340/id_340_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_340/id_340_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_340/id_340_roi_mask.nii.gz",
+      "agatston_total": 891.8326515704393,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_430",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_430/id_430_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_430/id_430_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_430/id_430_roi_mask.nii.gz",
+      "agatston_total": 729.2456656694412,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_283",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_283/id_283_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_283/id_283_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_283/id_283_roi_mask.nii.gz",
+      "agatston_total": 419.09122467041016,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_289",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_289/id_289_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_289/id_289_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_289/id_289_roi_mask.nii.gz",
+      "agatston_total": 555.3645496605895,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_382",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_382/id_382_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_382/id_382_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_382/id_382_roi_mask.nii.gz",
+      "agatston_total": 890.6362373847514,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_399",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_399/id_399_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_399/id_399_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_399/id_399_roi_mask.nii.gz",
+      "agatston_total": 762.2090676799417,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_363",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_363/id_363_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_363/id_363_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_363/id_363_roi_mask.nii.gz",
+      "agatston_total": 822.6361841894686,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_14",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_14/id_14_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_14/id_14_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_14/id_14_roi_mask.nii.gz",
+      "agatston_total": 806.6932678222656,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_178",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_178/id_178_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_178/id_178_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_178/id_178_roi_mask.nii.gz",
+      "agatston_total": 656.0751972836442,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_269",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_269/id_269_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_269/id_269_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_269/id_269_roi_mask.nii.gz",
+      "agatston_total": 696.4855464175344,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_299",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_299/id_299_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_299/id_299_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_299/id_299_roi_mask.nii.gz",
+      "agatston_total": 882.2995795868337,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_412",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_412/id_412_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_412/id_412_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_412/id_412_roi_mask.nii.gz",
+      "agatston_total": 829.1562580503523,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_30",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_30/id_30_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_30/id_30_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_30/id_30_roi_mask.nii.gz",
+      "agatston_total": 889.5593896508217,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_119",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_119/id_119_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_119/id_119_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_119/id_119_roi_mask.nii.gz",
+      "agatston_total": 1367.1660772990435,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_254",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_254/id_254_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_254/id_254_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_254/id_254_roi_mask.nii.gz",
+      "agatston_total": 1297.1014062175527,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_312",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_312/id_312_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_312/id_312_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_312/id_312_roi_mask.nii.gz",
+      "agatston_total": 1389.2432297579944,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_225",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_225/id_225_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_225/id_225_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_225/id_225_roi_mask.nii.gz",
+      "agatston_total": 1460.17736364156,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_360",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_360/id_360_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_360/id_360_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_360/id_360_roi_mask.nii.gz",
+      "agatston_total": 1237.8244175575674,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_392",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_392/id_392_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_392/id_392_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_392/id_392_roi_mask.nii.gz",
+      "agatston_total": 1080.0480842590332,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_405",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_405/id_405_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_405/id_405_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_405/id_405_roi_mask.nii.gz",
+      "agatston_total": 1153.4114278387278,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_209",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_209/id_209_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_209/id_209_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_209/id_209_roi_mask.nii.gz",
+      "agatston_total": 1151.542077306658,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_157",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_157/id_157_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_157/id_157_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_157/id_157_roi_mask.nii.gz",
+      "agatston_total": 1623.687744140625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_13",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_13/id_13_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_13/id_13_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_13/id_13_roi_mask.nii.gz",
+      "agatston_total": 1669.8640170507133,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_303",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_303/id_303_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_303/id_303_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_303/id_303_roi_mask.nii.gz",
+      "agatston_total": 1462.8299713134766,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_147",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_147/id_147_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_147/id_147_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_147/id_147_roi_mask.nii.gz",
+      "agatston_total": 1600.3856443800032,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_413",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_413/id_413_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_413/id_413_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_413/id_413_roi_mask.nii.gz",
+      "agatston_total": 1025.606368924491,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_71",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_71/id_71_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_71/id_71_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_71/id_71_roi_mask.nii.gz",
+      "agatston_total": 2102.879490889609,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_223",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_223/id_223_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_223/id_223_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_223/id_223_roi_mask.nii.gz",
+      "agatston_total": 1489.2102950951084,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_259",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_259/id_259_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_259/id_259_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_259/id_259_roi_mask.nii.gz",
+      "agatston_total": 1108.2029342651367,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_211",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_211/id_211_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_211/id_211_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_211/id_211_roi_mask.nii.gz",
+      "agatston_total": 2713.484250335023,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_324",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_324/id_324_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_324/id_324_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_324/id_324_roi_mask.nii.gz",
+      "agatston_total": 1879.3196648359296,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_81",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_81/id_81_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_81/id_81_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_81/id_81_roi_mask.nii.gz",
+      "agatston_total": 2833.9225742500275,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_5",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_5/id_5_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_5/id_5_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_5/id_5_roi_mask.nii.gz",
+      "agatston_total": 2298.9489178173244,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_132",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_132/id_132_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_132/id_132_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_132/id_132_roi_mask.nii.gz",
+      "agatston_total": 2823.8183598499745,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_349",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_349/id_349_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_349/id_349_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_349/id_349_roi_mask.nii.gz",
+      "agatston_total": 3188.4109497070312,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_218",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_218/id_218_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_218/id_218_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_218/id_218_roi_mask.nii.gz",
+      "agatston_total": 2824.249267578125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_326",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_326/id_326_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_326/id_326_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_326/id_326_roi_mask.nii.gz",
+      "agatston_total": 2867.902374267578,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_306",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_306/id_306_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_306/id_306_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_306/id_306_roi_mask.nii.gz",
+      "agatston_total": 1873.2804661151024,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_332",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_332/id_332_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_332/id_332_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_332/id_332_roi_mask.nii.gz",
+      "agatston_total": 3716.344247804954,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_190",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_190/id_190_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_190/id_190_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_190/id_190_roi_mask.nii.gz",
+      "agatston_total": 1792.767752148211,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_37",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_37/id_37_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_37/id_37_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_37/id_37_roi_mask.nii.gz",
+      "agatston_total": 1114.232609095052,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_40",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_40/id_40_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_40/id_40_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_40/id_40_roi_mask.nii.gz",
+      "agatston_total": 1864.550411386881,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_173",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_173/id_173_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_173/id_173_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_173/id_173_roi_mask.nii.gz",
+      "agatston_total": 3937.987225363031,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_22",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_22/id_22_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_22/id_22_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_22/id_22_roi_mask.nii.gz",
+      "agatston_total": 3010.167195275426,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_371",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_371/id_371_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_371/id_371_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_371/id_371_roi_mask.nii.gz",
+      "agatston_total": 2499.9640442430973,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_28",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_28/id_28_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_28/id_28_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_28/id_28_roi_mask.nii.gz",
+      "agatston_total": 1188.2716092281044,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_196",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_196/id_196_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_196/id_196_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_196/id_196_roi_mask.nii.gz",
+      "agatston_total": 2423.4463691711426,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_194",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_194/id_194_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_194/id_194_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_194/id_194_roi_mask.nii.gz",
+      "agatston_total": 4571.045993827283,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_321",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_321/id_321_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_321/id_321_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_321/id_321_roi_mask.nii.gz",
+      "agatston_total": 5770.008272398263,
+      "agatston_available": 1
+    }
+  ],
+  "val": [
+    {
+      "id": "id_64",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_64/id_64_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_64/id_64_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_64/id_64_roi_mask.nii.gz",
+      "agatston_total": 8.826621808111668,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_327",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_327/id_327_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_327/id_327_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_327/id_327_roi_mask.nii.gz",
+      "agatston_total": 8.85009765625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_345",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_345/id_345_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_345/id_345_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_345/id_345_roi_mask.nii.gz",
+      "agatston_total": 8.898559212684631,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_385",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_385/id_385_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_385/id_385_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_385/id_385_roi_mask.nii.gz",
+      "agatston_total": 7.464843895286322,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_267",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_267/id_267_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_267/id_267_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_267/id_267_roi_mask.nii.gz",
+      "agatston_total": 6.601562350988388,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_191",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_191/id_191_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_191/id_191_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_191/id_191_roi_mask.nii.gz",
+      "agatston_total": 6.032592803239822,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_152",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_152/id_152_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_152/id_152_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_152/id_152_roi_mask.nii.gz",
+      "agatston_total": 4.40673828125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_87",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_87/id_87_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_87/id_87_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_87/id_87_roi_mask.nii.gz",
+      "agatston_total": 4.3092042207717896,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_65",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_65/id_65_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_65/id_65_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_65/id_65_roi_mask.nii.gz",
+      "agatston_total": 4.285354539752007,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_236",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_236/id_236_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_236/id_236_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_236/id_236_roi_mask.nii.gz",
+      "agatston_total": 4.542144760489464,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_234",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_234/id_234_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_234/id_234_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_234/id_234_roi_mask.nii.gz",
+      "agatston_total": 58.32507247105241,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_137",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_137/id_137_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_137/id_137_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_137/id_137_roi_mask.nii.gz",
+      "agatston_total": 14.24548365175724,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_164",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_164/id_164_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_164/id_164_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_164/id_164_roi_mask.nii.gz",
+      "agatston_total": 16.352050378918648,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_450",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_450/id_450_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_450/id_450_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_450/id_450_roi_mask.nii.gz",
+      "agatston_total": 16.044372227042913,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_284",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_284/id_284_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_284/id_284_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_284/id_284_roi_mask.nii.gz",
+      "agatston_total": 11.157989501953123,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_63",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_63/id_63_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_63/id_63_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_63/id_63_roi_mask.nii.gz",
+      "agatston_total": 17.093078885227442,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_241",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_241/id_241_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_241/id_241_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_241/id_241_roi_mask.nii.gz",
+      "agatston_total": 16.536712646484375,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_170",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_170/id_170_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_170/id_170_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_170/id_170_roi_mask.nii.gz",
+      "agatston_total": 17.52746542915702,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_290",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_290/id_290_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_290/id_290_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_290/id_290_roi_mask.nii.gz",
+      "agatston_total": 17.92975626885891,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_200",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_200/id_200_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_200/id_200_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_200/id_200_roi_mask.nii.gz",
+      "agatston_total": 12.405842170119286,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_43",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_43/id_43_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_43/id_43_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_43/id_43_roi_mask.nii.gz",
+      "agatston_total": 24.720191955566406,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_21",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_21/id_21_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_21/id_21_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_21/id_21_roi_mask.nii.gz",
+      "agatston_total": 19.12170350551605,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_311",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_311/id_311_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_311/id_311_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_311/id_311_roi_mask.nii.gz",
+      "agatston_total": 30.69223165512085,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_19",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_19/id_19_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_19/id_19_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_19/id_19_roi_mask.nii.gz",
+      "agatston_total": 53.40571105480194,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_285",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_285/id_285_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_285/id_285_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_285/id_285_roi_mask.nii.gz",
+      "agatston_total": 20.230835117399693,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_427",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_427/id_427_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_427/id_427_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_427/id_427_roi_mask.nii.gz",
+      "agatston_total": 37.33655605465174,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_425",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_425/id_425_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_425/id_425_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_425/id_425_roi_mask.nii.gz",
+      "agatston_total": 21.13844277337193,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_171",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_171/id_171_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_171/id_171_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_171/id_171_roi_mask.nii.gz",
+      "agatston_total": 99.52844381332396,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_8",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_8/id_8_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_8/id_8_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_8/id_8_roi_mask.nii.gz",
+      "agatston_total": 70.10162472724915,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_426",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_426/id_426_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_426/id_426_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_426/id_426_roi_mask.nii.gz",
+      "agatston_total": 48.33641052246094,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_260",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_260/id_260_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_260/id_260_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_260/id_260_roi_mask.nii.gz",
+      "agatston_total": 82.61526657734066,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_89",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_89/id_89_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_89/id_89_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_89/id_89_roi_mask.nii.gz",
+      "agatston_total": 85.35952419042587,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_375",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_375/id_375_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_375/id_375_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_375/id_375_roi_mask.nii.gz",
+      "agatston_total": 187.61948850005865,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_320",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_320/id_320_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_320/id_320_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_320/id_320_roi_mask.nii.gz",
+      "agatston_total": 133.6199431680143,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_339",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_339/id_339_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_339/id_339_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_339/id_339_roi_mask.nii.gz",
+      "agatston_total": 185.26806570589545,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_330",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_330/id_330_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_330/id_330_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_330/id_330_roi_mask.nii.gz",
+      "agatston_total": 160.97980439662933,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_445",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_445/id_445_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_445/id_445_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_445/id_445_roi_mask.nii.gz",
+      "agatston_total": 130.37963639944792,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_83",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_83/id_83_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_83/id_83_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_83/id_83_roi_mask.nii.gz",
+      "agatston_total": 171.96618057787418,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_60",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_60/id_60_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_60/id_60_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_60/id_60_roi_mask.nii.gz",
+      "agatston_total": 165.40759205818176,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_142",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_142/id_142_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_142/id_142_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_142/id_142_roi_mask.nii.gz",
+      "agatston_total": 236.81989964097733,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_418",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_418/id_418_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_418/id_418_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_418/id_418_roi_mask.nii.gz",
+      "agatston_total": 137.46380594093353,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_143",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_143/id_143_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_143/id_143_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_143/id_143_roi_mask.nii.gz",
+      "agatston_total": 233.0407727509737,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_177",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_177/id_177_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_177/id_177_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_177/id_177_roi_mask.nii.gz",
+      "agatston_total": 131.890869140625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_364",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_364/id_364_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_364/id_364_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_364/id_364_roi_mask.nii.gz",
+      "agatston_total": 253.42134423553944,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_20",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_20/id_20_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_20/id_20_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_20/id_20_roi_mask.nii.gz",
+      "agatston_total": 146.03397119790316,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_416",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_416/id_416_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_416/id_416_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_416/id_416_roi_mask.nii.gz",
+      "agatston_total": 117.84725040197372,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_235",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_235/id_235_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_235/id_235_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_235/id_235_roi_mask.nii.gz",
+      "agatston_total": 269.1978454589844,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_448",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_448/id_448_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_448/id_448_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_448/id_448_roi_mask.nii.gz",
+      "agatston_total": 705.7666778564453,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_99",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_99/id_99_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_99/id_99_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_99/id_99_roi_mask.nii.gz",
+      "agatston_total": 486.76277538761497,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_181",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_181/id_181_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_181/id_181_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_181/id_181_roi_mask.nii.gz",
+      "agatston_total": 405.86071014404297,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_85",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_85/id_85_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_85/id_85_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_85/id_85_roi_mask.nii.gz",
+      "agatston_total": 503.2070376910269,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_350",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_350/id_350_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_350/id_350_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_350/id_350_roi_mask.nii.gz",
+      "agatston_total": 425.0725992023945,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_274",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_274/id_274_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_274/id_274_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_274/id_274_roi_mask.nii.gz",
+      "agatston_total": 407.67507553100586,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_50",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_50/id_50_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_50/id_50_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_50/id_50_roi_mask.nii.gz",
+      "agatston_total": 422.1824848093093,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_402",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_402/id_402_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_402/id_402_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_402/id_402_roi_mask.nii.gz",
+      "agatston_total": 435.845222696662,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_46",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_46/id_46_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_46/id_46_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_46/id_46_roi_mask.nii.gz",
+      "agatston_total": 431.0947231948376,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_219",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_219/id_219_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_219/id_219_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_219/id_219_roi_mask.nii.gz",
+      "agatston_total": 705.6880177697167,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_406",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_406/id_406_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_406/id_406_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_406/id_406_roi_mask.nii.gz",
+      "agatston_total": 3501.358945760876,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_386",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_386/id_386_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_386/id_386_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_386/id_386_roi_mask.nii.gz",
+      "agatston_total": 3233.5898583754897,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_401",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_401/id_401_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_401/id_401_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_401/id_401_roi_mask.nii.gz",
+      "agatston_total": 1764.0902719227597,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_231",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_231/id_231_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_231/id_231_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_231/id_231_roi_mask.nii.gz",
+      "agatston_total": 1327.8076171875,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_310",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_310/id_310_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_310/id_310_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_310/id_310_roi_mask.nii.gz",
+      "agatston_total": 1421.5712690725925,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_331",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_331/id_331_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_331/id_331_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_331/id_331_roi_mask.nii.gz",
+      "agatston_total": 1356.294047087431,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_90",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_90/id_90_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_90/id_90_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_90/id_90_roi_mask.nii.gz",
+      "agatston_total": 1185.5307620950043,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_393",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_393/id_393_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_393/id_393_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_393/id_393_roi_mask.nii.gz",
+      "agatston_total": 1161.338233947754,
+      "agatston_available": 1
+    }
+  ],
+  "test": [
+    {
+      "id": "id_273",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_273/id_273_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_273/id_273_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_273/id_273_roi_mask.nii.gz",
+      "agatston_total": 3.955078125,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_378",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_378/id_378_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_378/id_378_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_378/id_378_roi_mask.nii.gz",
+      "agatston_total": 3.7043534219264975,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_169",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_169/id_169_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_169/id_169_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_169/id_169_roi_mask.nii.gz",
+      "agatston_total": 3.3637695014476776,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_75",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_75/id_75_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_75/id_75_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_75/id_75_roi_mask.nii.gz",
+      "agatston_total": 5.5084228515625,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_214",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_214/id_214_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_214/id_214_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_214/id_214_roi_mask.nii.gz",
+      "agatston_total": 3.0937500298023224,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_438",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_438/id_438_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_438/id_438_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_438/id_438_roi_mask.nii.gz",
+      "agatston_total": 9.689453151077032,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_343",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_343/id_343_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_343/id_343_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_343/id_343_roi_mask.nii.gz",
+      "agatston_total": 92.95206069946288,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_276",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_276/id_276_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_276/id_276_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_276/id_276_roi_mask.nii.gz",
+      "agatston_total": 96.18218746036293,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_49",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_49/id_49_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_49/id_49_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_49/id_49_roi_mask.nii.gz",
+      "agatston_total": 72.76108041405678,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_193",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_193/id_193_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_193/id_193_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_193/id_193_roi_mask.nii.gz",
+      "agatston_total": 69.65255737304688,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_215",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_215/id_215_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_215/id_215_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_215/id_215_roi_mask.nii.gz",
+      "agatston_total": 88.85546885430813,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_80",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_80/id_80_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_80/id_80_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_80/id_80_roi_mask.nii.gz",
+      "agatston_total": 80.64744397997856,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_325",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_325/id_325_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_325/id_325_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_325/id_325_roi_mask.nii.gz",
+      "agatston_total": 36.66436397470534,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_420",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_420/id_420_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_420/id_420_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_420/id_420_roi_mask.nii.gz",
+      "agatston_total": 94.48553011752664,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_315",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_315/id_315_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_315/id_315_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_315/id_315_roi_mask.nii.gz",
+      "agatston_total": 91.2529768422246,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_4",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_4/id_4_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_4/id_4_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_4/id_4_roi_mask.nii.gz",
+      "agatston_total": 27.36915177665651,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_73",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_73/id_73_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_73/id_73_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_73/id_73_roi_mask.nii.gz",
+      "agatston_total": 23.424087278544903,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_240",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_240/id_240_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_240/id_240_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_240/id_240_roi_mask.nii.gz",
+      "agatston_total": 25.0044709071517,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_244",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_244/id_244_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_244/id_244_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_244/id_244_roi_mask.nii.gz",
+      "agatston_total": 30.149687826633453,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_444",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_444/id_444_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_444/id_444_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_444/id_444_roi_mask.nii.gz",
+      "agatston_total": 61.96894370950759,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_319",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_319/id_319_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_319/id_319_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_319/id_319_roi_mask.nii.gz",
+      "agatston_total": 97.30671296129005,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_182",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_182/id_182_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_182/id_182_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_182/id_182_roi_mask.nii.gz",
+      "agatston_total": 219.3969525396824,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_56",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_56/id_56_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_56/id_56_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_56/id_56_roi_mask.nii.gz",
+      "agatston_total": 257.7941928990185,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_206",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_206/id_206_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_206/id_206_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_206/id_206_roi_mask.nii.gz",
+      "agatston_total": 101.60980224609376,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_26",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_26/id_26_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_26/id_26_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_26/id_26_roi_mask.nii.gz",
+      "agatston_total": 208.6497325683013,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_36",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_36/id_36_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_36/id_36_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_36/id_36_roi_mask.nii.gz",
+      "agatston_total": 370.7155366428197,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_82",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_82/id_82_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_82/id_82_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_82/id_82_roi_mask.nii.gz",
+      "agatston_total": 308.2254173932597,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_362",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_362/id_362_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_362/id_362_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_362/id_362_roi_mask.nii.gz",
+      "agatston_total": 282.72932479158044,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_48",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_48/id_48_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_48/id_48_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_48/id_48_roi_mask.nii.gz",
+      "agatston_total": 341.4795991033316,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_440",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_440/id_440_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_440/id_440_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_440/id_440_roi_mask.nii.gz",
+      "agatston_total": 315.43750036507845,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_370",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_370/id_370_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_370/id_370_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_370/id_370_roi_mask.nii.gz",
+      "agatston_total": 229.543948546052,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_389",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_389/id_389_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_389/id_389_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_389/id_389_roi_mask.nii.gz",
+      "agatston_total": 337.64062295667827,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_94",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_94/id_94_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_94/id_94_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_94/id_94_roi_mask.nii.gz",
+      "agatston_total": 324.59667874500155,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_69",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_69/id_69_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_69/id_69_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_69/id_69_roi_mask.nii.gz",
+      "agatston_total": 360.610580444336,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_434",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_434/id_434_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_434/id_434_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_434/id_434_roi_mask.nii.gz",
+      "agatston_total": 715.8720833715051,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_419",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_419/id_419_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_419/id_419_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_419/id_419_roi_mask.nii.gz",
+      "agatston_total": 587.4416207894683,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_318",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_318/id_318_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_318/id_318_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_318/id_318_roi_mask.nii.gz",
+      "agatston_total": 690.1076493784785,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_397",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_397/id_397_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_397/id_397_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_397/id_397_roi_mask.nii.gz",
+      "agatston_total": 427.2268091328442,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_395",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_395/id_395_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_395/id_395_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_395/id_395_roi_mask.nii.gz",
+      "agatston_total": 869.2015479318798,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_243",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_243/id_243_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_243/id_243_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_243/id_243_roi_mask.nii.gz",
+      "agatston_total": 512.921456550248,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_428",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_428/id_428_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_428/id_428_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_428/id_428_roi_mask.nii.gz",
+      "agatston_total": 534.3849709257483,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_246",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_246/id_246_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_246/id_246_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_246/id_246_roi_mask.nii.gz",
+      "agatston_total": 675.2573237754405,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_408",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_408/id_408_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_408/id_408_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_408/id_408_roi_mask.nii.gz",
+      "agatston_total": 433.2275350578129,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_446",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_446/id_446_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_446/id_446_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_446/id_446_roi_mask.nii.gz",
+      "agatston_total": 437.6403918256983,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_249",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_249/id_249_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_249/id_249_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_249/id_249_roi_mask.nii.gz",
+      "agatston_total": 1009.1629941482096,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_336",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_336/id_336_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_336/id_336_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_336/id_336_roi_mask.nii.gz",
+      "agatston_total": 1012.2238538926468,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_394",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_394/id_394_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_394/id_394_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_394/id_394_roi_mask.nii.gz",
+      "agatston_total": 1253.1417846679688,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_277",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_277/id_277_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_277/id_277_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_277/id_277_roi_mask.nii.gz",
+      "agatston_total": 1196.8744346871972,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_301",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_301/id_301_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_301/id_301_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_301/id_301_roi_mask.nii.gz",
+      "agatston_total": 1214.6072387695312,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_342",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_342/id_342_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_342/id_342_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_342/id_342_roi_mask.nii.gz",
+      "agatston_total": 5381.45728642121,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_361",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_361/id_361_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_361/id_361_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_361/id_361_roi_mask.nii.gz",
+      "agatston_total": 1554.955881391652,
+      "agatston_available": 1
+    },
+    {
+      "id": "id_98",
+      "image": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_98/id_98_img.nii.gz",
+      "label": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_98/id_98_binary_seg.nii.gz",
+      "roi_mask": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/data_resampled/id_98/id_98_roi_mask.nii.gz",
+      "agatston_total": 2092.967186355964,
+      "agatston_available": 1
+    }
+  ]
+}

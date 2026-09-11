@@ -1,1 +1,0 @@
-This Folder contains the Training dataset of nnUnet, it contains 7 faulty samples and hence nnUnet is being trained once again and dice scores are expected to increase significantly since we no more have annotation inconsistencies

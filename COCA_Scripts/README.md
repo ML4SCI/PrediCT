@@ -21,7 +21,6 @@ COCA_Setup_Files/
 ├── COCA_processor.py
 ├── COCA_resampler.py
 ├── README.md
-├── Documentation.md
 │
 └── Utilities/
     ├── COCA_Sample_Dicom_Metadata.md
