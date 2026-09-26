@@ -1,0 +1,121 @@
+\documentclass[12pt, border=10pt]{standalone}
+\usepackage{amsmath, amssymb, bm}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+% ============================================================
+% HOW TO USE:
+% 1. Go to overleaf.com and create a new blank project
+% 2. Paste this entire file
+% 3. Uncomment ONE equation at a time (remove the %)
+% 4. Compile and screenshot
+% 5. Repeat for each equation
+% ============================================================
+
+
+% --- EQUATION 1: NCC Formula (Phase 1) ---
+% Blog Section: "Step 1: NCC-Based Pre-Selection"
+
+$\displaystyle
+\text{NCC}(F, M) = \frac{\sum_{\mathbf{x}} \big(F(\mathbf{x}) - \mu_F\big)\big(M(\mathbf{x}) - \mu_M\big)}{N \cdot \sigma_F \cdot \sigma_M}
+$
+
+
+% --- EQUATION 2: Mutual Information (Phase 1) ---
+% Blog Section: "Step 3: Best-Atlas Voting"
+
+$\displaystyle
+\text{MI}(F, M) = H(F) + H(M) - H(F, M) = \sum_{f,m} p(f,m) \log \frac{p(f,m)}{p(f) \cdot p(m)}
+$
+
+
+% --- EQUATION 3: Continuity Loss (Phase 2) ---
+% Blog Section: "1. Continuity (Mass Conservation)"
+
+$\displaystyle
+\mathcal{L}_{\text{mass}} = \left\| \frac{\partial u^*}{\partial x^*} + \frac{\partial v^*}{\partial y^*} + \frac{\partial w^*}{\partial z^*} \right\|^2
+$
+
+
+% --- EQUATION 4: Momentum Loss (Phase 2) ---
+% Blog Section: "2. Navier-Stokes Momentum"
+
+$\displaystyle
+\mathcal{L}_{\text{mom}} = \left\| \mathbf{u}^* \cdot \nabla^* \mathbf{u}^* + \nabla^* p^* - \frac{1}{Re}\, \nabla^{*2} \mathbf{u}^* \right\|^2
+$
+
+
+% --- EQUATION 5: Wall BC Loss (Phase 2) ---
+% Blog Section: "3. No-Slip Wall Boundary Condition"
+
+$\displaystyle
+\mathcal{L}_{\text{wall}} = \left\| \mathbf{u}^*\big|_{\text{wall}} \right\|^2
+$
+
+
+% --- EQUATION 6: Inlet Parabolic Profile (Phase 2) ---
+% Blog Section: "4. Parabolic Inlet Velocity Profile"
+
+$\displaystyle
+\mathcal{L}_{\text{inlet}} = \left\| u^*_{\text{pred}} - u^*_{\text{HP}}(r) \right\|^2, \qquad u^*_{\text{HP}}(r) = U_{\max}^* \left(1 - \frac{r^2}{R^{*2}}\right)
+$
+
+
+% --- EQUATION 7: Outlet Neumann BC (Phase 2) ---
+% Blog Section: "5. Outlet Neumann Condition"
+
+$\displaystyle
+\mathcal{L}_{\text{outlet}} = \left\| \frac{\partial \mathbf{u}^*}{\partial n^*} \right\|^2_{\text{outlet}}
+$
+
+
+% --- EQUATION 8: Total Weighted Loss (Phase 2) ---
+% Blog Section: "The total weighted loss is:"
+
+$\displaystyle
+\mathcal{L}_{\text{total}} = \lambda_{\text{mass}}\,\mathcal{L}_{\text{mass}} + \lambda_{\text{mom}}\,\mathcal{L}_{\text{mom}} + \lambda_{\text{wall}}\,\mathcal{L}_{\text{wall}} + \lambda_{\text{inlet}}\,\mathcal{L}_{\text{inlet}} + \lambda_{\text{outlet}}\,\mathcal{L}_{\text{outlet}}
+$
+
+
+% --- EQUATION 9: Stress Scale Factor (Phase 2) ---
+% Blog Section: "Computing Endothelial Shear Stress"
+
+$\displaystyle
+\tau_{\text{scale}} = \mu \cdot \frac{U_0}{L_0}
+$
+
+
+% --- EQUATION 10: Viscous Stress Tensor (Phase 2) ---
+% Blog Section: "Computing Endothelial Shear Stress"
+
+$\displaystyle
+\sigma_{ij} = \mu\,\frac{U_0}{L_0} \left(\frac{\partial u_i^*}{\partial x_j^*} + \frac{\partial u_j^*}{\partial x_i^*}\right)
+$
+
+
+% --- EQUATION 11: ESS Magnitude (Phase 2) ---
+% Blog Section: "Computing Endothelial Shear Stress"
+
+$\displaystyle
+\text{ESS} = \left| \bm{\sigma} \cdot \hat{\mathbf{n}} - \left(\bm{\sigma} \cdot \hat{\mathbf{n}} \cdot \hat{\mathbf{n}}\right)\hat{\mathbf{n}} \right|
+$
+
+
+% --- EQUATION 12: Alpha-Blending (Phase 4) ---
+% Blog Section: "The Alpha-Blending Degrading Function"
+
+$\displaystyle
+\text{HU}_{\text{final}}(d) = \alpha(d) \cdot \text{HU}_{\text{calcium}} + \big(1 - \alpha(d)\big) \cdot \text{HU}_{\text{tissue}}
+$
+
+
+% --- EQUATION 13: Alpha Decay (Phase 4) ---
+% Blog Section: "The Alpha-Blending Degrading Function"
+
+$\displaystyle
+\alpha(d) = \exp\!\left(-\lambda \cdot \frac{d}{D_{\text{gradient}}}\right)
+$
+
+
+\end{document}

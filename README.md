@@ -1,26 +1,31 @@
-# PrediCT
-A project to enhance predictive power of routine non-contrast CT scans
+# PrediCT: Physiologically-Driven Synthetic Calcium Generation
 
-Problem:
+PrediCT is a comprehensive pipeline for generating hyper-realistic, physiologically accurate synthetic coronary artery calcium (CAC) directly into non-contrast CT (NCCT) or contrast-enhanced CT angiography (CCTA) scans. 
 
-Current coronary artery calcium (CAC) tests are widely used in clinical practice but have limited predictive power regarding when and where future occlusions may occur. While more advanced imaging techniques such as Intravascular Ultrasound (IVUS) and optical coherence tomography (OCT) offer greater predictive capabilities and resolution, they are more resource-intensive, time-consuming, and less practical for routine use. At present, there is no diagnostic tool in cardiology that combines strong predictive ability with high clinical usability and accessibility.
-________________________________________
-Hypothesis:
+Unlike traditional data augmentation techniques that rely on hardcoded phenotypes or simple image processing, PrediCT uses a mathematically rigorous, multi-stage pipeline grounded in fluid dynamics and clinical statistics.
 
-Machine learning models, when trained on a large set of CT scans, can detect predictive patterns in calcium deposition that are not readily identifiable by human interpretation. Such models could uncover hidden features that improve risk prediction beyond traditional scoring systems, discover correlations between clinical and image data, and enhance the predictive capability of these scans through powerful feature detection.
-________________________________________
-Current Direction:
+## Project Structure
 
-While we await data transfer of major adverse cardiovascular event (MACE) endpoints + NCCT from Kettering Health Network, we will focus on constructing a robust front end for our model using open source data (Stanford COCA, ImageCAS, etc.). This includes a calcium segmentation head that combines speed with accuracy while preserving accurate spatial relations. We also aim to map the heart anatomy to properly localize calcium deposits. We will perform extensive feature extraction and analysis, with the goal of creating distinct calcium phenotypes that may map to MACE endpoints. Eventually, with expert annotation, we hope to integrate other features such as EAT, Heart Chamber Volume, etc. To supplement our current efforts we are also exploring data augmentation using simulation-based synthetic calcium generation and placement into empty CAC scans.
+The codebase is organized into four distinct biological phases:
 
-Clinical Translation (Long-Term Goal)
+* **`src/phase1_segmentation/`**: Vessel extraction and binary masking.
+* **`src/phase2_hemodynamics/`**: Endothelial Shear Stress (ESS) calculation via Physics-Informed Neural Networks (PINNs).
+* **`src/phase3_plaque_growth/`**: Stochastic calcium seeding and anisotropic Breadth-First Search (BFS) growth based on Negative Binomial and Log-Normal distributions.
+* **`src/phase4_texturing/`**: Dual-stage Gaussian Alpha Blending and Hounsfield Unit (HU) texturing to simulate CT quantum noise and blooming artifacts.
 
-o	Develop a clinician-facing tool that, based on a simple CAC scan, outputs:
+*See the `README.md` inside each of these folders for detailed mathematical and technical documentation of that specific phase.*
 
-	Predicted time-dependent risk levels for MACE,
-	Likely anatomical regions of future occlusion?,
-	Confidence intervals for predictions.
+## Entry Points
 
-o	This tool could improve patient outcomes by assisting providers in balancing the risks of cardiac events with the risks of further tests, treatments, or surgeries.
+* **`scripts/physio_twin.py`**: The primary end-to-end execution script. Runs the entire Phase 1 -> Phase 4 pipeline on a single patient scan.
+* **`scripts/run_batch_pinn.py`**: Batch processor for running the expensive Phase 2 PINN models across multiple patients.
+* **`analysis/`**: Various auditing, validation, and diagnostic scripts.
+* **`docs/`**: Generated reports and reproducibility logs.
 
-o	Longer-term, this framework could serve as a model for applying machine learning to preventive medicine more broadly.
+## Legacy Code
+Older iterations of the pipeline have been moved to `_legacy_archive/` to keep the main source tree clean.
+
+## Usage
+1. Install dependencies via `pip install -r requirements.txt`
+2. Configure paths in `src/phase2_hemodynamics/config.py`
+3. Run `python scripts/physio_twin.py <patient_id> <target_agatston>`

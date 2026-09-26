@@ -1,0 +1,35 @@
+node_modules/
+__pycache__/
+*.nii.gz
+*.pt
+data/
+COCA/
+cocacoronarycalciumandchestcts-2/
+1-200/
+pinn_checkpoints/
+physio_twin_batch_5/
+
+# Test outputs and data
+physio_twin_test_out_single/
+output_v2/
+output_v3/
+output/
+physio_twin_output/
+*.csv
+*.vtp
+*.png
+
+# Legacy code archive
+_legacy_archive/
+
+# Python Virtual Environments
+.venv/
+.venv.nosync/
+
+.venv/
+.venv*
+papers/
+approved_masks/
+Atlas_registration/
+.ipynb_checkpoints/
+.DS_Store
