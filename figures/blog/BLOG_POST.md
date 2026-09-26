@@ -139,17 +139,17 @@ Training a single network on variables spanning six orders of magnitude is numer
 
 | Physical Quantity | Scale | Reference Value |
 |---|---|---|
-| Length $L_0$ | Mean vessel length | ~10 mm |
-| Velocity $U_0$ | Mean inlet velocity | ~0.3 m/s |
-| Time $T_0$ | $L_0 / U_0$ | ~0.033 s |
-| Pressure $P_0$ | $\rho U_0^2$ | ~90 Pa |
-| Reynolds Number $Re$ | $\rho U_0 L_0 / \mu$ | ~150 (laminar) |
+| Length $L_0$ | Mean vessel diameter | 3.0 mm |
+| Velocity $U_0$ | Mean inlet velocity | 0.25 m/s |
+| Time $T_0$ | $L_0 / U_0$ | 0.012 s |
+| Pressure $P_0$ | $\rho U_0^2$ | 66.25 Pa |
+| Reynolds Number $Re$ | $\rho U_0 L_0 / \mu$ | ~227 (laminar) |
 
 The dimensionless coordinates are $x^* = x/L_0$ and the dimensionless velocities are $u^* = u/U_0$. The PINN operates entirely in this dimensionless space.
 
 ### The Physics Loss Function
 
-The training loss is a weighted sum of four residual terms, each enforcing a different physical constraint:
+The training loss is a weighted sum of six residual terms, each enforcing a different physical constraint:
 
 #### 1. Continuity (Mass Conservation)
 For incompressible Newtonian flow:
@@ -172,10 +172,17 @@ where $R^*$ is the **patient-specific inlet radius** measured from the vessel ce
 At vessel outlets, we enforce a zero-gradient (fully-developed flow) condition:
 ![Equation](equations/eq_07.png)
 
+#### 6. Integral Mass Conservation
+A global constraint enforcing that total volumetric flux entering the domain equals total flux leaving. The loss is the squared difference between inlet and outlet flow rates, estimated via Monte Carlo surface integration:
+
+```
+L_integral_mass = (Q_in − Q_out)²    where Q = A · mean(V · n)
+```
+
 The **total weighted loss** is:
 ![Equation](equations/eq_08.png)
 
-The $\lambda$ weights are tuned per-term: $\lambda_{continuity} = 10$, $\lambda_{momentum} = 1$, $\lambda_{wall} = 10$, $\lambda_{inlet} = 500$ (high to prevent trivial solution collapse), $\lambda_{outlet} = 1$, and $\lambda_{integral\_mass} = 50$.
+The $\lambda$ weights are tuned per-term: $\lambda_{continuity} = 10$, $\lambda_{momentum} = 1$, $\lambda_{wall} = 10$, $\lambda_{inlet} = 500$ (high to prevent trivial solution collapse), $\lambda_{outlet} = 1$, and $\lambda_{integral\_mass} = 50$ (enforces global flow conservation).
 
 ### Collocation Point Sampling
 
@@ -188,7 +195,7 @@ The network is trained not on a fixed mesh, but on randomly sampled **collocatio
 | **Inlet** | 500 pts | Circular disk at aortic ostium |
 | **Outlet** | 500 pts/outlet | Circular disk at each branch termination |
 
-During development, the collocation counts were tuned upward from initial lower values after discovering that ESS computation was undersampling the boundary layer — the thin region near the wall where velocity gradients are steepest.
+During development, these counts were calibrated to balance accuracy against memory constraints. Increasing wall points beyond 2,000 improved boundary-layer resolution for ESS but at diminishing returns for the additional GPU memory cost.
 
 ### Optimization
 
@@ -231,7 +238,7 @@ The fix reduced all ESS values by exactly a factor of $U_0/L_0 \approx 83\ \text
 
 The PINN repeatedly discovered that predicting $\mathbf{u}^* = 0$ everywhere was a perfectly valid solution to the continuity and momentum equations (trivially satisfied by zero velocity and zero pressure gradient). This "trivial solution" produces zero physics loss but zero useful hemodynamics.
 
-**Fix 1 — Inlet Dirichlet Enforcement:** Strongly enforcing the parabolic inlet profile with $\lambda_{inlet} = 1.0$ prevents the zero-velocity collapse at the inlet boundary, forcing the network to propagate non-zero flow into the domain.
+**Fix 1 — Inlet Dirichlet Enforcement:** Strongly enforcing the parabolic inlet profile with $\lambda_{inlet} = 500$ prevents the zero-velocity collapse at the inlet boundary, forcing the network to propagate non-zero flow into the domain.
 
 **Fix 2 — Velocity Collapse Detection Gate:** After training, the pipeline evaluates the mean velocity magnitude across the interior. If $|\mathbf{u}^*|_{mean} < 1 \times 10^{-2}$, a `RuntimeError` is raised:
 ```
@@ -370,7 +377,7 @@ The Agatston scoring algorithm uses HU thresholds to assign density multipliers 
 | 300–399 | 3 |
 | ≥ 400 | 4 |
 
-For maximum score density, we want the majority of core calcium voxels in the ≥400 HU band. To match the natural variance seen in clinical data, the HU profile for each synthetic scan is dynamically sampled from a Gaussian distribution. For example, a typical generation might use:
+For maximum score density, we want the majority of high-intensity calcium voxels in the ≥400 HU band. To match the natural variance seen in clinical data, the HU profile for each synthetic scan is dynamically sampled from a Gaussian distribution. For example, a typical generation might use:
 
 $$\mu_{HU} \sim \mathcal{N}(850,\ 100), \quad \sigma_{HU} \sim \mathcal{N}(150,\ 30)$$
 
@@ -384,7 +391,7 @@ Real CT scans exhibit the **partial volume effect** — at voxel boundaries betw
 
 ![Equation](equations/eq_12.png)
 
-In practice, the blending weights $\alpha$ are derived from the continuous intensity field computed in Phase 3. A **Gaussian blur** ($\sigma = 0.6$ mm) is applied to the calcium mask at native CT resolution, softening the binary edges into a smooth alpha channel. Any blur tails that bleed outside the vessel wall mask are erased, and the result is re-normalized so the peak value is 1.0. This produces a physically grounded partial-volume simulation: voxels near the calcium core have $\alpha \approx 1.0$ (full calcium HU), while boundary voxels blend smoothly into native tissue.
+In practice, the blending weights $\alpha$ are derived from the continuous intensity field computed in Phase 3. A **Gaussian blur** ($\sigma = 0.6$ mm) is applied to the calcium mask at native CT resolution, softening the binary edges into a smooth alpha channel. Any blur tails that bleed outside the vessel wall mask are erased, and the result is re-normalized so the peak value is 1.0. This produces a physically grounded partial-volume simulation: voxels near the high-intensity region have $\alpha \approx 1.0$ (full calcium HU), while boundary voxels blend smoothly into native tissue.
 
 ### Agatston Score Computation
 
