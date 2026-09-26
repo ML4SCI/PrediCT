@@ -264,18 +264,19 @@ The artificial cut-plane at each vessel outlet terminus produces a geometric edg
 
 ### Validation Gates — Phase 2
 
-Phase 2 has three hard physiological safety gates before ESS export:
+Phase 2 has two hard abort gates and two diagnostic logging checks before ESS export:
 
 | Gate | Check | Threshold | Failure Action |
 |---|---|---|---|
 | **Velocity Collapse** | $|\mathbf{u}^*|_{mean}$ | $> 1 \times 10^{-2}$ | Abort pipeline |
-| **Inlet Profile RMSE** | $RMSE(u_{pred}, u_{HP})$ | $< 0.05$ | Warning + continue |
-| **ESS Physiological Floor** | $\overline{ESS}_{wall}$ | $> 0.1$ Pa | Abort pipeline |
-| **Mass Conservation Error** | $|Q_{in} - Q_{out}| / Q_{in}$ | Logged | Warning only |
+| **ESS Floor** | $\overline{ESS}_{wall}$ | $> 0.1$ Pa | Abort pipeline |
+| **ESS Ceiling** | $\overline{ESS}_{wall}$ | $< 10.0$ Pa | Abort pipeline |
+| **Inlet Profile RMSE** | $RMSE(u_{pred}, u_{HP})$ | Logged | Diagnostic only |
+| **Mass Conservation Error** | $|Q_{in} - Q_{out}| / Q_{in}$ | Logged | Diagnostic only |
 
 ![Phase 2 ESS Heatmap](04_phase2_ess_heatmap.png)
 
-The ESS floor gate is the most critical. An ESS < 0.1 Pa indicates that the velocity field has collapsed to near-zero or that the geometry was degenerate, and any calcium grown from such a field would be physically meaningless. **If this gate fails, the entire run is aborted and the patient is flagged for manual review.**
+The ESS physiological range gate is the most critical. An ESS < 0.1 Pa indicates velocity field collapse or degenerate geometry. An ESS > 10.0 Pa indicates numerical divergence or incorrect scaling. In either case, the run is aborted and the patient flagged for manual review. The inlet RMSE and mass conservation error are logged as diagnostics but do not abort the pipeline.
 
 **Phase 2 Output:** `ess_predictions.csv` — a point cloud containing 3D physical coordinates, velocity vectors, and ESS magnitudes in Pascals for all validated wall points.
 
@@ -291,7 +292,7 @@ Phase 2 produces an ESS point cloud in physical coordinates. Phase 3 must transl
 
 #### Step 1: ESS Interpolation to Dense Grid
 
-The ESS point cloud is first interpolated onto the full voxel grid of the vessel mask using `scipy.interpolate.griddata` with a linear interpolation scheme. Only voxels inside the vessel mask are interpolated (saving substantial computation). Voxels outside the vessel receive a neutral ESS of 1.5 Pa (normal range, zero growth probability).
+The ESS point cloud is first interpolated onto the full voxel grid of the vessel mask using `scipy.interpolate.griddata` with a **nearest-neighbour** interpolation scheme. Only voxels inside the vessel mask are interpolated (saving substantial computation). Voxels outside the vessel mask receive an ESS of 0.0 (excluded from growth probability).
 
 ```
 Dense ESS Field Shape: (Z, Y, X) ← native CT resolution, typically 1×1×1 mm voxels
