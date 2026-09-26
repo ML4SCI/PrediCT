@@ -92,14 +92,15 @@ The atlas with the **most negative MI score** (highest information overlap) is s
 
 > **Key Design Decision:** An earlier version used **Majority Vote Fusion** — averaging all N registered atlases together. This produced smoother, more rounded vessel masks with fewer registration artifacts. But testing revealed a critical failure: fusion blurred out sharp vessel bifurcations and inner curvatures — exactly the geometric features that drive turbulent flow and calcium formation in Phase 2. Switching to single-winner Best-Atlas Voting preserved these features at the cost of slightly higher registration variance on poor-quality scans. The biological accuracy trade-off was worth it.
 
-### Validation Gate 1: Phase 1 Plaque Consistency Check
+### Phase 1 Registration Diagnostics
 
-After generating the vessel mask, a hard validation gate checks whether the proposed synthetic calcium location (from Phase 3, precomputed as a seed) is physically consistent with the actual vessel anatomy. The `PlaqueValidator` class confirms that:
+After generating the best-atlas vessel mask, the pipeline runs the `PlaqueValidator` suite to evaluate the registration quality. Because ground-truth vessel masks do not exist for the COCA dataset, we use proxy metrics to ensure anatomical validity before physics simulation:
 
-1. The vessel mask is non-empty and contains a connected component of sufficient voxel volume.
-2. The mask is loaded at native resolution to avoid resampling artifacts that could bias Phase 2 geometry.
+1. **Ensemble Consensus:** Computes the mean pairwise centerline distance between the top registered atlases. A low distance (< 5.0mm) indicates that multiple independent atlases agreed on the vessel geometry.
+2. **Ostial Anchoring:** Checks the deviation of the mask's center of mass from the expected location of the aortic root.
+3. **Ground Truth Calcium Overlap:** Loads the patient's actual COCA calcium segmentation at native resolution and checks what percentage of it falls near our generated vessel wall.
 
-If these checks fail, Phase 1 raises a `RuntimeError` and aborts the run, preventing bad anatomy from propagating into the fluid simulation.
+These metrics are logged as diagnostic warnings to help flag patients whose NCCT scans are too low-quality or anomalous for successful registration, without hard-aborting the pipeline prematurely.
 
 **Phase 1 Output:** `{patient_id}_synthetic_vessel.nii.gz` — a binary 3D NIfTI image delineating the coronary artery tree in patient space.
 
@@ -400,8 +401,8 @@ After compositing, the pipeline runs a closed-loop **Agatston score computation*
 
 1. Threshold the scan at 130 HU to identify all candidate calcium voxels.
 2. Apply connected-component labelling to separate distinct calcium clusters.
-3. For each cluster with area ≥ 1 mm²: multiply voxel count by the appropriate density multiplier (1–4).
-4. Sum all weighted voxel contributions.
+3. For each cluster with area ≥ 1 mm²: compute the cross-sectional area and multiply by the appropriate density multiplier (1–4) and slice thickness normalization factor.
+4. Sum all weighted area contributions across all axial slices.
 
 The computed score is logged alongside the target score. The ratio serves as a key quality metric — a ratio > 1.5× from target flags the patient for seed parameter re-tuning.
 
