@@ -492,7 +492,7 @@ By simulating the mechanobiological process that causes coronary atherosclerosis
 
 The four-phase pipeline — multi-atlas registration, PINN hemodynamics, stochastic plaque growth, and alpha-blended radiometric texturing — forms a complete, automated, and scientifically rigorous data synthesis system for cardiovascular AI.
 
-The code is fully open-source and available at [**github.com/CodeShrek/Predi_CT**](https://github.com/CodeShrek/Predi_CT).
+The code is fully open-source and available at [**https://github.com/ML4SCI/PrediCT/edit/Augmentation-ShriYam**](https://github.com/ML4SCI/PrediCT/edit/Augmentation-ShriYam).
 
 ---
 
