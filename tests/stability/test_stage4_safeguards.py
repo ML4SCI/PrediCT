@@ -207,3 +207,39 @@ def test_marker_binds_patient_inputs(tmp_path):
     assert after != before
     with pytest.raises(SystemExit, match="patients_fingerprint"):
         require_marker(tmp_path, {"patients_fingerprint": after})
+
+
+# ───────────── robust feature sets per arm and the final set ─────────────
+
+def _report(passes: dict[str, bool]) -> pd.DataFrame:
+    return pd.DataFrame([{"feature": f, "family": "canonical" if not f.startswith("original_") else "glcm",
+                          "icc": 0.9 if ok else 0.5, "ci_low": 0.85 if ok else 0.4,
+                          "ci_high": 0.95 if ok else 0.6, "icc_source": "empirical",
+                          "passes_gate": ok} for f, ok in passes.items()])
+
+
+def test_robust_sets_per_arm_and_final_is_the_primary_gate(tmp_path):
+    g = _load("05b_icc_gate_realistic")
+    report = _report({"a": True, "b": True, "original_glcm_x": False})
+    arms = pd.concat([_report({"a": True, "b": False, "original_glcm_x": True}).assign(arm="S1"),
+                      _report({"a": False, "b": False, "original_glcm_x": False}).assign(arm="attr_M1")])
+    m = g.robust_feature_sets(report, arms)
+    assert list(m.columns) == ["family", "primary", "S1", "attr_M1", "final"]
+    assert m["final"].equals(m["primary"])           # final = the locked D033 set
+    g.write_robust_sets(tmp_path, report, m)
+    read = lambda name: pd.read_csv(tmp_path / "robust_sets" / f"{name}.csv")["feature"].tolist()
+    assert read("primary") == ["a", "b"]
+    assert read("S1") == ["a", "original_glcm_x"]
+    assert read("attr_M1") == []
+    final = pd.read_csv(tmp_path / "robust_features_final.csv")
+    assert final["feature"].tolist() == ["a", "b"]
+    assert {"icc", "ci_low", "ci_high"} <= set(final.columns)
+    assert (pd.read_csv(tmp_path / "robust_feature_matrix.csv").shape) == (3, 6)
+
+
+def test_robust_sets_refuse_an_arm_missing_features():
+    g = _load("05b_icc_gate_realistic")
+    report = _report({"a": True, "b": True})
+    arms = _report({"a": True}).assign(arm="S2")
+    with pytest.raises(SystemExit, match="S2"):
+        g.robust_feature_sets(report, arms)

@@ -186,6 +186,19 @@ outputs/05_icc/
                             n_subjects, n_raters, passes_gate
   gated_features.csv        single column 'feature', features passing the gate
   icc_summary.json          aggregate counts and threshold info
+
+outputs/05b_icc_realistic/  (D033, primary)
+  gated_features.csv        the D033 gate, read by stage 5
+  robust_features_final.csv the FINAL robust feature set: the D033 primary
+                            set with ICC(1,1) and 95% interval
+  robust_sets/<set>.csv     one robust feature list per arm: primary,
+                            S1..S6, attr_M1, attr_P1..attr_P7 (arms are
+                            reported only and never gate)
+  robust_feature_matrix.csv feature x arm membership, plus `final`
+  icc_report_full.csv, derived_icc.csv, arms.csv, strata.csv,
+  realism.csv, d014_comparison.csv, summary.txt
+
+outputs/05c_robustness_tiers/<T1..T5>/gated_features.csv   D034 tiers
 ```
 
 ## How to run

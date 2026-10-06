@@ -36,6 +36,12 @@ Outputs (outputs/05b_icc_realistic/):
                           vessel_burden_gini) computed per draw with stage 5's
                           own functions and gated with the same rule; stage 5
                           reads their ICC from here and admits only passing ones
+    robust_features_final.csv   the final robust feature set: the D033 primary
+                          set (same features as gated_features.csv) with ICC
+                          and 95% interval
+    robust_sets/<set>.csv one feature list per arm: primary, S1..S6,
+                          attr_M1, attr_P1..attr_P7 (arms are reported only)
+    robust_feature_matrix.csv   feature x arm membership, plus ``final``
     strata.csv, arms.csv, realism.csv, d014_comparison.csv, summary.txt
 """
 from __future__ import annotations
@@ -130,6 +136,43 @@ def _gate_one(m: np.ndarray, feature: str, n_eligible: int, threshold: float) ->
     return {"feature": feature, "family": _family(feature), "icc": icc, "ci_low": lo, "ci_high": hi,
             "icc_source": source, "n_subjects": n_ok, "n_excluded": excl,
             "excluded_frac": excl_frac, "passes_gate": reason == "", "fail_reason": reason}
+
+
+def robust_feature_sets(report: pd.DataFrame, arms: pd.DataFrame) -> pd.DataFrame:
+    """Feature x arm membership of the robust set (``passes_gate``).
+
+    Columns: ``primary`` (the D033 gate), one column per secondary or
+    attribution arm in the order the arms were evaluated, and ``final``.
+    ``final`` is the D033 primary set by definition (the locked gate that
+    stage 5 reads); the arm columns are reported, never gate.
+    """
+    out = report.set_index("feature")[["family"]].copy()
+    out["primary"] = report.set_index("feature")["passes_gate"].astype(bool)
+    if len(arms):
+        wide = arms.pivot_table(index="feature", columns="arm", values="passes_gate",
+                                aggfunc="first", sort=False)
+        for arm in pd.unique(arms["arm"]):
+            col = wide[arm].reindex(out.index)
+            if col.isna().any():
+                raise SystemExit(f"arm {arm}: no result for {int(col.isna().sum())} features")
+            out[arm] = col.astype(bool)
+    out["final"] = out["primary"]
+    return out
+
+
+def write_robust_sets(out_dir: Path, report: pd.DataFrame, matrix: pd.DataFrame) -> None:
+    """robust_feature_matrix.csv, robust_sets/<set>.csv (one feature list per
+    arm, primary included) and robust_features_final.csv (the D033 set with
+    its ICC and interval)."""
+    matrix.to_csv(out_dir / "robust_feature_matrix.csv", index_label="feature")
+    sets_dir = out_dir / "robust_sets"
+    sets_dir.mkdir(exist_ok=True)
+    for col in matrix.columns.drop(["family", "final"]):
+        pd.DataFrame({"feature": matrix.index[matrix[col]].tolist()}).to_csv(
+            sets_dir / f"{col}.csv", index=False)
+    final = report.set_index("feature").loc[matrix.index[matrix["final"]]].reset_index()
+    final[["feature", "family", "icc", "ci_low", "ci_high", "icc_source"]].to_csv(
+        out_dir / "robust_features_final.csv", index=False)
 
 
 def _wcv(m: np.ndarray) -> float:
@@ -318,6 +361,8 @@ def main() -> int:
     arms = pd.DataFrame(arm_rows)
     if len(arms):
         arms.to_csv(out_dir / "arms.csv", index=False)
+    robust = robust_feature_sets(report, arms)
+    write_robust_sets(out_dir, report, robust)
 
     # ── realism check (reported only) ───────────────────────────
     real_rows = []
@@ -387,11 +432,12 @@ def main() -> int:
     for r in realism.itertuples():
         L.append(f"  {r.arm:<9}{r.measure:<18}{r.mean_pct:>7.1f} (median {r.median_pct:.1f})   "
                  f"published {r.published_pct} [{r.published_source}]  expected {r.expected}")
-    if len(arms):
-        L.append("")
-        L.append("Arms (reported only): pass count")
-        for arm, g in arms.groupby("arm", sort=False):
-            L.append(f"  {arm:<10}{int(g['passes_gate'].sum()):>4} / {len(g)}")
+    L.append("")
+    L.append("Robust feature set per arm (robust_sets/; arms are reported only):")
+    for col in robust.columns.drop(["family", "final"]):
+        L.append(f"  {col:<10}{int(robust[col].sum()):>4} / {len(robust)}")
+    L.append(f"FINAL robust feature set (D033 primary, feeds stage 5): "
+             f"{int(robust['final'].sum())} features -> robust_features_final.csv")
     if cmp_rows:
         c = pd.DataFrame(cmp_rows)
         L.append("")
