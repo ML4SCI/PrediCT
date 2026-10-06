@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Stage 3 — feature extraction.
+"""Stage 3: feature extraction.
 
 Reads ``outputs/01_manifest/manifest.csv`` plus stage-2 outputs
 (``{pid}_ct.npy``, ``{pid}_mask.npy``, ``spacing.json``,
@@ -14,21 +14,31 @@ Per-patient pipeline (each worker):
   3. Derive ``excluded_roi_ids`` for this patient from the cohort
      ``xml_roundtrip.csv`` (passes=False, matched_via!=dirty).
   4. Compute Agatston (D011), per-vessel aggregates, density tiers.
-  5. Group ROIs into 3D lesions (D007) → spatial features.
-  6. Build per-artery masks (D008) — used here only for voxel-count
-     reporting; per-vessel PyRadiomics is skipped by default to keep
-     stage-3 cost predictable (~107 features per mask × 5 masks per
-     patient is too much for a first run). Toggle on with
-     ``--per-vessel-radiomics``.
-  7. Run PyRadiomics on the resampled whole-mask (D009).
-  8. Aggregate into one row + a list of lesion rows for the audit CSV.
+  5. Group ROIs into 3D lesions (D007) with the configured
+     ``lesion_grouping`` parameters -> spatial features.
+  6. Run PyRadiomics on the resampled whole-mask (D009). A mask below
+     PyRadiomics' own minimumROISize / minimumROIDimensions is skipped
+     (decided before extraction); any exception from the extractor fails
+     the patient.
+  7. Aggregate into one row + a list of lesion rows for the audit CSV.
+
+Per-vessel PyRadiomics was removed: it paired
+masks rasterised in native pixel coordinates with the resampled CT (Dice 0.28
+with the saved whole mask on a real scan), it was off by default and nothing
+used its output. A correct version would build native per-vessel masks and
+resample them exactly as stage 2 does.
+
+Everything is written to ``outputs/03_features.partial/``. Only a run in
+which every manifest patient succeeds replaces ``outputs/03_features/``;
+otherwise the script exits 1 and the published folder is untouched
+(``predict.publish``, same policy as stage 2). ``--limit`` never publishes.
 
 Outputs (under ``outputs/03_features/``):
 
-  - ``features.csv``         — main artefact, one row per patient.
-  - ``lesions.csv``          — one row per 3D lesion (audit trail).
-  - ``feature_extraction_log.csv`` — per-patient runtime + counts.
-  - ``errors.csv``           — patients that failed (if any).
+  - ``features.csv``        : main artefact, one row per patient.
+  - ``lesions.csv``         : one row per 3D lesion (audit trail).
+  - ``feature_extraction_log.csv``: per-patient runtime + counts.
+  - ``errors.csv``          : patients that failed (if any).
 """
 from __future__ import annotations
 
@@ -37,7 +47,6 @@ import hashlib
 import json
 import logging
 import multiprocessing as mp
-import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -48,38 +57,24 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from predict.config import Config, load_config
-from predict.features.agatston import compute_agatston
-from predict.features.density_tiers import compute_density_tiers
+from predict.provenance import code_revision
+from predict.config import Config, default_n_jobs, load_config
+from predict.features.canonical import compute_canonical_features, grouping_from_config
 from predict.features.feature_schema import zero_features
-from predict.features.lesion_ccl import group_rois_into_lesions
-from predict.features.per_artery_mask import build_per_artery_masks, per_artery_voxel_counts
-from predict.features.per_vessel_aggregates import compute_per_vessel_aggregates
-from predict.features.radiomics import create_extractor, extract_pyradiomics
-from predict.features.spatial import compute_spatial_features
+from predict.features.radiomics import create_extractor, extract_pyradiomics, roi_too_small
 from predict.io import (
     PatientMetadata,
     load_patient_metadata,
     load_spacing_metadata,
     parse_calcium_xml,
 )
+from predict.publish import fresh_partial, publish
 
 
 LOW_BURDEN_VOXEL_THRESHOLD: int = 100
 
 
 # ───────────────────── reproducibility breadcrumbs ─────────────────────
-
-
-def _git_hash(repo_root: Path) -> str:
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=str(repo_root), capture_output=True, text=True, check=False,
-        )
-        return out.stdout.strip() or "unknown"
-    except Exception:
-        return "unknown"
 
 
 def _file_sha(path: Path) -> str:
@@ -90,13 +85,15 @@ def _file_sha(path: Path) -> str:
     return h.hexdigest()[:16]
 
 
-def build_run_header(repo_root: Path, params_yaml: Path) -> dict:
+def build_run_header(repo_root: Path, params_yaml: Path, grouping: dict) -> dict:
     """Return a dict of reproducibility breadcrumbs for the run."""
     import sys as _sys
     info = {
         "run_timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": _git_hash(repo_root),
+        "git_commit": code_revision(repo_root),
         "params_yaml_sha": _file_sha(params_yaml),
+        "config_yaml_sha": _file_sha(repo_root / "configs" / "default.yaml"),
+        "lesion_grouping": grouping,
         "python_version": _sys.version.split()[0],
     }
     # Library versions (lazy imports so this still runs without them).
@@ -115,11 +112,12 @@ def build_run_header(repo_root: Path, params_yaml: Path) -> dict:
 def _process_one(
     pid: str,
     data_root_str: str,
+    xml_dir_str: str,
     preproc_dir_str: str,
     excluded_set: set,
     target_spacing: tuple,
     quality_label: str,
-    include_per_vessel_radiomics: bool,
+    grouping: dict,
     extractor_holder: dict,
 ) -> dict:
     """Compute every feature for one patient."""
@@ -129,7 +127,7 @@ def _process_one(
         preproc_dir = Path(preproc_dir_str)
 
         meta: PatientMetadata = load_patient_metadata(pid, data_root)
-        parse_result = parse_calcium_xml(pid, data_root / "calcium_xml")
+        parse_result = parse_calcium_xml(pid, Path(xml_dir_str))
 
         # Stage-2 artefacts.
         ct = np.load(preproc_dir / f"{pid}_ct.npy")
@@ -144,79 +142,39 @@ def _process_one(
         row["low_burden_flag"] = int(mask.sum()) < LOW_BURDEN_VOXEL_THRESHOLD
         row["roundtrip_quality"] = quality_label
 
-        # ── Agatston (XML, D011) ──────────────────────────────────────
-        ag = compute_agatston(
-            parse_result,
-            slice_thickness_mm=meta.slice_thickness,
-            excluded_roi_ids=excluded_set,
+        # ── Canonical XML features: Agatston (D011), per-vessel
+        #    aggregates, density tiers, lesion CCL (D007) + spatial ─────
+        canonical, category, lesions_per_vessel = compute_canonical_features(
+            parse_result, meta, excluded_set, **grouping,
         )
-        row.update(ag.to_feature_dict())
-        row["category"] = ag.category
-
-        # ── Per-vessel aggregates ─────────────────────────────────────
-        row.update(compute_per_vessel_aggregates(
-            parse_result,
-            slice_thickness_mm=meta.slice_thickness,
-            excluded_roi_ids=excluded_set,
-        ))
-
-        # ── Density tiers ─────────────────────────────────────────────
-        row.update(compute_density_tiers(parse_result, excluded_roi_ids=excluded_set))
-
-        # ── Lesion CCL + spatial features ─────────────────────────────
-        lesions_per_vessel = group_rois_into_lesions(
-            parse_result,
-            slice_positions=meta.slice_positions,
-            pixel_spacing_xy=(meta.pixel_spacing[0], meta.pixel_spacing[1]),
-            slice_thickness_mm=meta.slice_thickness,
-            excluded_roi_ids=excluded_set,
-        )
-        row.update(compute_spatial_features(
-            lesions_per_vessel,
-            slice_positions=meta.slice_positions,
-            slice_thickness_mm=meta.slice_thickness,
-        ))
+        row.update(canonical)
+        row["category"] = category
 
         # ── PyRadiomics on whole-mask ─────────────────────────────────
-        # Graceful degrade per D010: if PyRadiomics refuses (mask below
-        # minimumROISize, typically very-low-burden patients already flagged
-        # by low_burden_flag), keep the row with XML-derived features and
-        # leave PyRadiomics columns missing (NaN in the CSV).
+        # Graceful degrade per D010, decided BEFORE extraction: a mask that
+        # PyRadiomics' own minimumROISize / minimumROIDimensions would reject
+        # keeps its XML-derived features and leaves the PyRadiomics columns
+        # missing (NaN in the CSV). Anything the extractor raises (input
+        # guardrail, shape mismatch, PyRadiomics bug) fails the patient
+        # instead of passing as a skip.
         extractor = extractor_holder.get("e")
         if extractor is None:
             extractor = create_extractor()
             extractor_holder["e"] = extractor
 
-        radiomics_status = "ok"
-        radiomics_reason = "ok"
-        try:
+        if mask.sum() == 0:
+            raise ValueError("empty mask (stage 2 guarantees a non-empty mask)")
+        skip_reason = roi_too_small(mask, extractor)
+        if skip_reason is None:
             radiomics = extract_pyradiomics(ct, mask, target_spacing, extractor, pid=pid)
             row.update(radiomics)
-        except ValueError as exc:
-            # Almost always "Size of the ROI is too small" for tiny masks.
-            radiomics_status = "skipped"
-            radiomics_reason = str(exc)
+            radiomics_status, radiomics_reason = "ok", "ok"
+        else:
             radiomics = {}
+            radiomics_status, radiomics_reason = "skipped", skip_reason
 
         row["radiomics_status"] = radiomics_status
         row["radiomics_reason"] = radiomics_reason
-
-        # ── Optional per-vessel PyRadiomics ───────────────────────────
-        per_vessel_voxels: dict[str, int] = {}
-        if include_per_vessel_radiomics:
-            masks_pv = build_per_artery_masks(
-                parse_result, _LoadedShim(meta, ct.shape),
-                excluded_roi_ids=excluded_set,
-            )
-            per_vessel_voxels = per_artery_voxel_counts(masks_pv)
-            for vessel, vmask in masks_pv.items():
-                if vmask.sum() == 0:
-                    continue
-                pv_feats = extract_pyradiomics(
-                    ct, vmask, target_spacing, extractor, pid=f"{pid}/{vessel}",
-                )
-                for k, v in pv_feats.items():
-                    row[f"{vessel}_{k}"] = v
 
         # ── Lesion audit rows ─────────────────────────────────────────
         lesion_rows = [
@@ -248,9 +206,6 @@ def _process_one(
             "n_lesions": sum(len(v) for v in lesions_per_vessel.values()),
             "mask_voxels": int(mask.sum()),
             "low_burden_flag": row["low_burden_flag"],
-            "per_vessel_voxels": ";".join(
-                f"{k}={v}" for k, v in per_vessel_voxels.items()
-            ) if per_vessel_voxels else "",
         }
 
         return {"status": "ok", "row": row, "lesions": lesion_rows, "log": log_row}
@@ -264,32 +219,6 @@ def _process_one(
         }
 
 
-class _LoadedShim:
-    """Minimal LoadedPatient-like adapter for ``build_per_artery_masks``.
-
-    The mask_builder reads ``loaded.ct_sitk`` only to discover the volume
-    shape. We can fabricate a zero SimpleITK image of the right shape and
-    spacing from ``meta`` + the resampled CT shape without paying for a
-    full image load.
-    """
-
-    def __init__(self, meta: PatientMetadata, ct_shape: tuple[int, int, int]):
-        import SimpleITK as sitk
-        z, y, x = ct_shape
-        arr = np.zeros((z, y, x), dtype=np.int16)
-        img = sitk.GetImageFromArray(arr)
-        img.SetSpacing(meta.pixel_spacing)
-        img.SetOrigin((0.0, 0.0, 0.0))
-        self.ct_sitk = img
-        self.pid = meta.pid
-        self.slice_positions = meta.slice_positions
-        self.pixel_spacing = meta.pixel_spacing
-        self.slice_thickness = meta.slice_thickness
-        self.n_slices = meta.n_slices
-        self.scanner_model = meta.scanner_model
-        self.kernel = meta.kernel
-        self.manufacturer = meta.manufacturer
-        self.series_uid = meta.series_uid
 
 
 # Worker-process scope: cache the extractor across patients to avoid
@@ -307,11 +236,12 @@ def _worker(args) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=None)
-    parser.add_argument("--n-workers", type=int, default=min(16, mp.cpu_count()))
+    parser.add_argument("--n-workers", type=int, default=default_n_jobs(cap=16),
+                        help="Worker processes. Defaults to the scheduler allocation "
+                             "(PBS_NCPUS / PBS_NODEFILE), capped at 16 because each "
+                             "worker holds a full CT volume in RAM.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Process only the first N patients.")
-    parser.add_argument("--per-vessel-radiomics", action="store_true",
-                        help="Also run PyRadiomics on each per-vessel mask (slow).")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -321,14 +251,17 @@ def main() -> int:
     log = logging.getLogger("features")
 
     cfg: Config = load_config(args.config)
-    out_dir = cfg.paths.outputs / "03_features"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    publish_dir = cfg.paths.outputs / "03_features"
+    out_dir = fresh_partial(publish_dir)
     preproc_dir = cfg.paths.outputs / "02_preprocessed"
+    # D007 lesion grouping, from the config (never the function defaults).
+    grouping = grouping_from_config(cfg)
 
     # Write a run header for reproducibility (D-feature provenance).
     header = build_run_header(
         repo_root=cfg.paths.outputs.parent,
         params_yaml=cfg.paths.outputs.parent / "params.yaml",
+        grouping=grouping,
     )
     (out_dir / "run_header.json").write_text(json.dumps(header, indent=2) + "\n",
                                               encoding="utf-8")
@@ -346,6 +279,11 @@ def main() -> int:
     )
     quality_by_pid = dict(zip(preproc_report["pid"].astype(str),
                               preproc_report["roundtrip_quality"]))
+    missing = [p for p in pids if p not in quality_by_pid]
+    if missing:
+        log.error("%d manifest patient(s) missing from stage 2 (%s); rerun stage 2.",
+                  len(missing), ", ".join(missing[:10]))
+        return 1
 
     # Load roundtrip CSV and group failures per patient.
     trips = pd.read_csv(preproc_dir / "xml_roundtrip.csv", dtype={"pid": str})
@@ -360,8 +298,8 @@ def main() -> int:
     target_spacing = load_spacing_metadata(preproc_dir / "spacing.json")
 
     log.info(
-        "Features: %d patients | workers=%d | per-vessel-radiomics=%s",
-        len(pids), args.n_workers, args.per_vessel_radiomics,
+        "Features: %d patients | workers=%d | lesion_grouping=%s",
+        len(pids), args.n_workers, grouping,
     )
 
     rows: list[dict] = []
@@ -373,11 +311,12 @@ def main() -> int:
         (
             pid,
             str(cfg.paths.data_raw.parent),
+            str(cfg.paths.data_xml),
             str(preproc_dir),
             excluded_by_pid.get(pid, set()),
             target_spacing,
-            quality_by_pid.get(pid, "ok"),
-            args.per_vessel_radiomics,
+            quality_by_pid[pid],
+            grouping,
         )
         for pid in pids
     ]
@@ -391,12 +330,9 @@ def main() -> int:
             for fut in tqdm(as_completed(futures), total=len(futures), desc="features"):
                 _consume(fut.result(), rows, lesion_rows, log_rows, errors)
 
-    if rows:
-        pd.DataFrame(rows).to_csv(out_dir / "features.csv", index=False)
-    if lesion_rows:
-        pd.DataFrame(lesion_rows).to_csv(out_dir / "lesions.csv", index=False)
-    if log_rows:
-        pd.DataFrame(log_rows).to_csv(out_dir / "feature_extraction_log.csv", index=False)
+    pd.DataFrame(rows).to_csv(out_dir / "features.csv", index=False)
+    pd.DataFrame(lesion_rows).to_csv(out_dir / "lesions.csv", index=False)
+    pd.DataFrame(log_rows).to_csv(out_dir / "feature_extraction_log.csv", index=False)
     if errors:
         pd.DataFrame(errors).to_csv(out_dir / "errors.csv", index=False)
 
@@ -407,6 +343,19 @@ def main() -> int:
         len(errors),
         len(rows[0]) if rows else 0,
     )
+
+    if errors:
+        log.error(
+            "%d patient(s) failed (%s); see %s. %s NOT updated.",
+            len(errors), ", ".join(sorted(str(e["pid"]) for e in errors)),
+            out_dir / "errors.csv", publish_dir,
+        )
+        return 1
+    if args.limit:
+        log.warning("--limit smoke run: outputs left in %s, not published.", out_dir)
+        return 0
+    publish(out_dir, publish_dir)
+    log.info("Published %s", publish_dir)
     return 0
 
 

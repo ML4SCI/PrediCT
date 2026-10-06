@@ -122,6 +122,7 @@ def _audit_total_consistency(features: pd.DataFrame) -> dict:
 def _audit_per_vessel_voxel_sum(
     features: pd.DataFrame,
     data_root: Path,
+    xml_dir: Path,
     trips_csv: Path,
 ) -> dict:
     """For each patient, sum per-vessel mask voxels at NATIVE spacing and
@@ -147,7 +148,7 @@ def _audit_per_vessel_voxel_sum(
     for _, row in features.iterrows():
         pid = str(row["pid"])
         loaded = load_patient_dicom(pid, data_root)
-        parse_result = parse_calcium_xml(pid, data_root / "calcium_xml")
+        parse_result = parse_calcium_xml(pid, xml_dir)
         excluded = excluded_by_pid.get(pid, set())
 
         whole_native, _ = build_3d_mask(parse_result, loaded, excluded_roi_ids=excluded)
@@ -223,6 +224,7 @@ def main() -> int:
         audits.append(_audit_per_vessel_voxel_sum(
             features,
             cfg.paths.data_raw.parent,
+            cfg.paths.data_xml,
             preproc_dir / "xml_roundtrip.csv",
         ))
 
@@ -234,7 +236,7 @@ def main() -> int:
 
     for a in audits:
         marker = "OK" if a["ok"] else "FAIL"
-        log.info("%s — %s", marker, a["name"])
+        log.info("%s: %s", marker, a["name"])
         if not a["ok"]:
             log.info("  details: %s", json.dumps(a, indent=2))
 

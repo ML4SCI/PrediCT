@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "predict"
 version = "0.1.0"
-description = "PrediCT v2 — coronary calcium radiomics phenotyping pipeline"
+description = "PrediCT: coronary calcium radiomics phenotyping pipeline"
 requires-python = ">=3.8"
 readme = "README.md"
 dependencies = [

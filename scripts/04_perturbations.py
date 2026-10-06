@@ -2,7 +2,7 @@
 """Stage 4a, perturbation re-extraction.
 
 For each eligible patient and each of the 14 perturbations (D014), apply the
-perturbation to the preprocessed CT (mask held fixed per D014 / Option B),
+perturbation to the preprocessed CT (mask held fixed per D014),
 re-extract the 107 PyRadiomics features, and write one CSV per perturbation.
 
 Per D015, eligible patients are those with ``radiomics_status == "ok"`` in
@@ -19,8 +19,17 @@ Outputs (under ``outputs/04_perturbations/``):
   - ``run_header.json``             reproducibility breadcrumbs.
   - ``perturbation_log.csv``        per-(pid, pert) runtime + status row.
 
-The script is **resumable**: a per-perturbation CSV that already contains all
-eligible patient IDs is skipped on rerun.
+The script is **resumable**: a per-perturbation CSV is skipped on rerun only
+if its sidecar ``{perturbation_name}.json`` carries the current fingerprint
+(all src/predict code, params.yaml, configs/default.yaml, this script, the
+perturbation spec, the eligible pid list and the published stage-2 folder)
+and recorded zero errors, and the CSV holds exactly the eligible pids with an
+empty ``error`` column.
+
+Any patient error (including an empty mask, which stage 2 rules out) makes
+the script exit 1 without ``COMPLETE.json``; stage 5 (05_icc_gate.py) refuses
+to gate without a ``COMPLETE.json`` that matches the current features.csv.
+``--limit`` and ``--only-perturbation`` never write it.
 """
 from __future__ import annotations
 
@@ -29,7 +38,6 @@ import hashlib
 import json
 import logging
 import multiprocessing as mp
-import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -41,7 +49,11 @@ import pandas as pd
 import SimpleITK as sitk
 from tqdm import tqdm
 
-from predict.config import Config, load_config
+from predict.completion import (
+    clear_marker, digest, file_sha, upstream_fingerprint, write_json_atomic, write_marker,
+)
+from predict.provenance import code_revision
+from predict.config import REPO_ROOT, Config, default_n_jobs, load_config
 from predict.features.radiomics import create_extractor, extract_pyradiomics
 from predict.io.spacing import load_spacing_metadata
 from predict.stability.perturbations import (
@@ -52,17 +64,6 @@ from predict.stability.perturbations import (
 
 
 # ───────────────────── reproducibility breadcrumbs ─────────────────────
-
-
-def _git_hash(repo_root: Path) -> str:
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=str(repo_root), capture_output=True, text=True, check=False,
-        )
-        return out.stdout.strip() or "unknown"
-    except Exception:
-        return "unknown"
 
 
 def _file_sha(path: Path) -> str:
@@ -82,7 +83,7 @@ def build_run_header(
     import sys as _sys
     info = {
         "run_timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": _git_hash(repo_root),
+        "git_commit": code_revision(repo_root),
         "params_yaml_sha": _file_sha(params_yaml),
         "config_yaml_sha": _file_sha(config_yaml),
         "python_version": _sys.version.split()[0],
@@ -131,15 +132,16 @@ def _process_one(
         ct_img = sitk.GetImageFromArray(ct_np.astype(np.float32))
         ct_img.SetSpacing(spacing)
 
-        # Apply perturbation (mask not touched, D014 Option B).
+        # Apply perturbation (mask not touched, D014).
         perturbed_ct = apply_perturbation(ct_img, pert, pid=pid, cfg=cfg)
         perturbed_arr = sitk.GetArrayFromImage(perturbed_ct).astype(np.int16)
 
         if mask_np.sum() == 0:
+            # Stage 2 guarantees a non-empty mask, so this is an error.
             return {
                 "pid": pid,
                 "perturbation": pert.name,
-                "status": "skipped",
+                "status": "error",
                 "error": "mask is empty",
                 "runtime_sec": round(time.perf_counter() - t0, 2),
                 "features": {},
@@ -186,14 +188,50 @@ def _eligible_pids(features_csv: Path) -> list[str]:
     return eligible
 
 
-def _csv_is_complete(csv_path: Path, expected_pids: list[str]) -> bool:
-    if not csv_path.exists():
+def _stage2_stamp(preproc: Path, pids: list[str]) -> dict:
+    """Identity of the published stage-2 folder: its reports by content and
+    each eligible patient's arrays by size and modification time (stage 2
+    republishes the whole folder on every run, so a rerun changes them)."""
+    def stamp(p: Path) -> str:
+        st = p.stat() if p.exists() else None
+        return f"{st.st_size}:{st.st_mtime_ns}" if st else "missing"
+    return {
+        "reports": [file_sha(preproc / n) for n in
+                    ("spacing.json", "preprocess_report.csv", "xml_roundtrip.csv")],
+        "arrays": {p: [stamp(preproc / f"{p}_ct.npy"), stamp(preproc / f"{p}_mask.npy")]
+                   for p in pids},
+    }
+
+
+def run_fingerprint(cfg: Config, pids: list[str]) -> str:
+    """Stage 4a run fingerprint: stage 1-4 code and config (including this
+    script), the eligible pid list and the published stage-2 folder.
+    Recorded in COMPLETE.json; stage 5 recomputes it with this function."""
+    return digest({
+        "upstream": upstream_fingerprint(cfg, extra=[REPO_ROOT / "scripts" / "04_perturbations.py"]),
+        "pids": list(pids),
+        "stage2": _stage2_stamp(cfg.paths.outputs / "02_preprocessed", list(pids)),
+    })
+
+
+def _csv_is_complete(csv_path: Path, expected_pids: list[str], fingerprint: str) -> bool:
+    """True if the CSV may be reused: matching sidecar fingerprint, zero
+    recorded errors, exactly the expected pids once each, no error text."""
+    meta_path = csv_path.with_suffix(".json")
+    if not (csv_path.exists() and meta_path.exists()):
         return False
     try:
-        existing = pd.read_csv(csv_path, usecols=["pid"], dtype={"pid": str})
-    except Exception:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        existing = pd.read_csv(csv_path, usecols=["pid", "error"], dtype={"pid": str},
+                               keep_default_na=False)
+    except Exception:  # noqa: BLE001  (unreadable = recompute)
         return False
-    return set(existing["pid"].astype(str)) == set(expected_pids)
+    if meta.get("fingerprint") != fingerprint or meta.get("n_error") != 0:
+        return False
+    pids = existing["pid"].astype(str)
+    if pids.duplicated().any() or set(pids) != set(expected_pids):
+        return False
+    return bool((existing["error"].astype(str).str.strip() == "").all())
 
 
 # ───────────────────── main ─────────────────────
@@ -202,7 +240,10 @@ def _csv_is_complete(csv_path: Path, expected_pids: list[str]) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=None)
-    parser.add_argument("--n-workers", type=int, default=min(16, mp.cpu_count()))
+    parser.add_argument("--n-workers", type=int, default=default_n_jobs(cap=16),
+                        help="Worker processes. Defaults to the scheduler allocation "
+                             "(PBS_NCPUS / PBS_NODEFILE), capped at 16 because each "
+                             "worker holds a full CT volume in RAM.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Cap eligible patient count (for smoke tests).")
     parser.add_argument("--only-perturbation", type=str, default=None,
@@ -221,6 +262,7 @@ def main() -> int:
     cfg: Config = load_config(args.config)
     out_dir = cfg.paths.outputs / "04_perturbations"
     out_dir.mkdir(parents=True, exist_ok=True)
+    clear_marker(out_dir)   # set again only if this run finishes cleanly
     features_csv = cfg.paths.outputs / "03_features" / "features.csv"
 
     # Eligible cohort (D015).
@@ -255,11 +297,14 @@ def main() -> int:
 
     # Aggregate per-(pid, pert) log across all perturbations in this run.
     all_logs: list[dict] = []
+    run_fp = run_fingerprint(cfg, pids)
+    total_errors = 0
 
     for spec in specs:
         out_csv = out_dir / f"{spec.name}.csv"
-        if not args.no_resume and _csv_is_complete(out_csv, pids):
-            log.info("[SKIP] %s: complete CSV already on disk", spec.name)
+        spec_fp = digest({"run": run_fp, "spec": repr(spec)})
+        if not args.no_resume and _csv_is_complete(out_csv, pids, spec_fp):
+            log.info("[SKIP] %s: verified complete CSV already on disk", spec.name)
             continue
 
         tasks = [(pid, spec) for pid in pids]
@@ -302,13 +347,20 @@ def main() -> int:
         # Ensure pid is first, error is last.
         cols = ["pid"] + [c for c in df.columns if c not in ("pid", "error")] + ["error"]
         df = df[cols]
-        df.to_csv(out_csv, index=False)
+        tmp = out_csv.with_suffix(".csv.tmp")
+        df.to_csv(tmp, index=False)
+        tmp.replace(out_csv)
 
         ok = sum(1 for r in rows if r["status"] == "ok")
-        skipped = sum(1 for r in rows if r["status"] == "skipped")
-        errors = sum(1 for r in rows if r["status"] == "error")
-        log.info("[DONE] %s -> %s | ok=%d skipped=%d errors=%d",
-                 spec.name, out_csv.name, ok, skipped, errors)
+        errors = sum(1 for r in rows if r["status"] != "ok")
+        total_errors += errors
+        # Sidecar last: its presence means the CSV above is complete.
+        write_json_atomic(out_csv.with_suffix(".json"), {
+            "fingerprint": spec_fp, "n_error": errors, "n_ok": ok,
+            "revision": code_revision(cfg.paths.outputs.parent),
+            "written_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        })
+        log.info("[DONE] %s -> %s | ok=%d errors=%d", spec.name, out_csv.name, ok, errors)
 
     # Append per-(pid, pert) log.
     if all_logs:
@@ -319,6 +371,21 @@ def main() -> int:
             log_df = pd.concat([existing, log_df], ignore_index=True)
         log_df.to_csv(log_path, index=False)
 
+    if total_errors:
+        log.error("Stage 4a FAILED: %d patient-perturbation errors (see perturbation_log.csv). "
+                  "No COMPLETE.json; stage 5 will refuse to gate.", total_errors)
+        return 1
+    if args.limit or args.only_perturbation:
+        log.warning("partial run (--limit / --only-perturbation): no COMPLETE.json written.")
+        return 0
+    write_marker(out_dir, {
+        "features_csv_sha": file_sha(features_csv),
+        "run_fingerprint": run_fp,
+        "perturbations": [s.name for s in specs],
+        "n_patients": len(pids),
+        "revision": code_revision(cfg.paths.outputs.parent),
+        "written_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    })
     log.info("Stage 4a complete. Outputs in %s", out_dir)
     return 0
 

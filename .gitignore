@@ -4,6 +4,7 @@ data/calcium_xml/
 outputs/
 !outputs/.gitkeep
 !outputs/**/.gitkeep
+outputs_*/
 
 # Python
 __pycache__/
@@ -39,11 +40,5 @@ Thumbs.db
 *.npy
 *.npz
 
-# Local-only agent memory (not part of the public deliverable)
-CLAUDE.md
-
-# Presentation / mentor artefacts (kept out of the code repo)
-presentation/
-mentor_deepdive.html
-mentor_presentation.html
-pixel_spacing_histogram.png
+# Written at sync time; records the code revision on the run machine
+REVISION

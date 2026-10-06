@@ -22,10 +22,16 @@ Pipeline (in order):
   9. Cross-cohort feature consistency (D027 three-rule criterion)
  10. Partition-level ARI on shared pids (D027 complementary check)
  11. Main paper table (D028: 15 rows)
- 12. Robust sensitivity table (D028: 5 rows, low_burden_flag=False subset)
+ 12. Low-burden sensitivity (D028, low_burden_flag=False subset of the full
+     cohort, full-cohort spatial labels): D024, D025 primary rule,
+     signatures, the 5-row table and an explicit sensitivity verdict
  13. run_header_analyse.json with SHA of every seam file consumed
 
-Outputs land in outputs/07_analyse/.
+Before anything is computed, every cohort's stage 6 record and the raw
+features.csv (against the hash stage 5 recorded) are verified. Outputs are
+written to outputs/07_analyse.partial/ and published to outputs/07_analyse/
+with COMPLETE_stage7.json only after a complete run; a failed run leaves the
+last complete result in place.
 """
 from __future__ import annotations
 
@@ -33,7 +39,6 @@ import argparse
 import hashlib
 import json
 import logging
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,6 +46,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from predict.provenance import code_revision
+from predict.completion import files_manifest, write_marker
+from predict.publish import fresh_partial, publish
+from predict.analyse.sensitivity import ROBUST_LABEL, low_burden_sensitivity
+from predict.analyse.stage7 import (
+    COHORT_DIRS,
+    STAGE7_MARKER,
+    cohort_dir,
+    features_csv_path,
+    stage7_fingerprint,
+    stage7_inputs,
+)
 from predict.analyse.cross_cohort import (
     consistency_table,
     partition_ari_table,
@@ -78,15 +95,6 @@ from predict.analyse.signatures import top_n_signatures
 from predict.config import Config, load_config
 
 
-# Cohort directory mapping. The Qr36d/2 directory has the slash replaced
-# with an underscore.
-COHORT_DIRS: dict[str, str] = {
-    "full": "",
-    "Qr36d/2": "stratified_Qr36d_2",
-    "I30f/3": "stratified_I30f_3",
-}
-
-
 # The 13 spatial-distribution features used as RAW inputs to the spatial PCA
 # (matches scripts/07_discover.py SPATIAL_FEATURES_AFTER_D017).
 SPATIAL_FEATURES_AFTER_D017: tuple[str, ...] = (
@@ -104,28 +112,12 @@ SPATIAL_FEATURES_AFTER_D017: tuple[str, ...] = (
 # ─────────────────────── reproducibility ───────────────────────
 
 
-def _git_hash(repo_root: Path) -> str:
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=str(repo_root), capture_output=True, text=True, check=False,
-        )
-        return out.stdout.strip() or "unknown"
-    except Exception:
-        return "unknown"
-
-
 def _file_sha(path: Path) -> str:
     if not path.exists():
         return "missing"
     h = hashlib.sha256()
     h.update(path.read_bytes())
     return h.hexdigest()[:16]
-
-
-def _ensure_dir(p: Path) -> Path:
-    p.mkdir(parents=True, exist_ok=True)
-    return p
 
 
 def _save_json(path: Path, payload: dict | list) -> None:
@@ -135,14 +127,10 @@ def _save_json(path: Path, payload: dict | list) -> None:
 # ─────────────────────── seam loading ───────────────────────
 
 
-def _cohort_dir(reduce_root: Path, cohort: str) -> Path:
-    sub = COHORT_DIRS[cohort]
-    return reduce_root if sub == "" else reduce_root / sub
-
-
-def _load_cohort_seam(reduce_root: Path, cohort: str) -> dict:
-    """Read the stage 5 + stage 6 seam files for one cohort."""
-    cdir = _cohort_dir(reduce_root, cohort)
+def _load_cohort_seam(reduce_root: Path, cohort: str, cfg: Config) -> dict:
+    """Read the stage 5 + stage 6 seam files for one cohort. main() has
+    already verified the cohort's stage 6 record (stage7_inputs)."""
+    cdir = cohort_dir(reduce_root, cohort)
     paths = {
         "cohort_metadata": cdir / "cohort_metadata.csv",
         "spatial_labels": cdir / "cluster_labels_spatial_k2.csv",
@@ -244,18 +232,26 @@ def main() -> int:
 
     cfg = load_config(args.config)
     reduce_root = cfg.paths.outputs / "06_reduce"
-    out_dir = _ensure_dir(cfg.paths.outputs / "07_analyse")
+    target = cfg.paths.outputs / "07_analyse"
     repo_root = cfg.paths.outputs.parent
+
+    # Stage 6 records of every cohort, and features.csv against stage 5's
+    # recorded hash, before anything is computed.
+    inputs = stage7_inputs(cfg)
+    out_dir = fresh_partial(target)
+    settings = {
+        "include_robust_sensitivity": bool(args.include_robust_sensitivity),
+        "top_n_signatures": int(args.top_n_signatures),
+        "paper_table_top_features": int(args.paper_table_top_features),
+    }
 
     # ── Load all cohorts ───────────────────────────────────────────
     per_cohort: dict[str, dict] = {}
     for cohort in COHORT_DIRS:
         log.info("loading seam for cohort %s", cohort)
-        per_cohort[cohort] = _load_cohort_seam(reduce_root, cohort)
+        per_cohort[cohort] = _load_cohort_seam(reduce_root, cohort, cfg)
 
-    raw_features = _load_raw_features(
-        cfg.paths.outputs / "03_features" / "features.csv"
-    )
+    raw_features = _load_raw_features(features_csv_path(cfg))
     log.info("loaded raw features: shape=%s", raw_features.shape)
 
     # D019 derived features (high_density_fraction, vessel_burden_gini) are
@@ -526,23 +522,50 @@ def main() -> int:
     paper_table.to_csv(out_dir / "phenotype_paper_table.csv", index=False)
     log.info("paper table written: %d rows", len(paper_table))
 
-    # ── Step 12: robust sensitivity table ─────────────────────────
+    # ── Step 12: low-burden sensitivity (D028) ────────────────────
+    robust_verdict = None
     if args.include_robust_sensitivity:
-        full_inputs = paper_inputs["full"]
+        full_bundle = per_cohort["full"]
+        full_pids = full_bundle["cohort_metadata"]["pid"].tolist()
+        full_ortho = next(r for r in ortho_rows if r["cohort"] == "full")
+        sens = low_burden_sensitivity(
+            raw_features.loc[raw_features.index.intersection(full_pids)],
+            full_bundle["spatial_labels"],
+            full_bundle["cohort_metadata"],
+            feature_list,
+            full_d024_interpretation=full_ortho["interpretation"],
+            full_d025_primary_passes=primary["passes"],
+            top_n=args.top_n_signatures,
+        )
+        sens["orthogonality"].to_csv(
+            out_dir / "burden_orthogonality_robust_sensitivity.csv", index=False)
+        sens["hypotheses"].to_csv(
+            out_dir / "directional_hypotheses_robust_sensitivity.csv", index=False)
+        sens["profiles"].to_csv(
+            out_dir / "cluster_profiles_robust_sensitivity.csv", index=False)
+        sens["signatures"].to_csv(
+            out_dir / "signature_features_robust_sensitivity.csv", index=False)
+        robust_verdict = sens["verdict"]
+        _save_json(out_dir / "robust_sensitivity_verdict.json", robust_verdict)
         robust_table = build_robust_sensitivity_table(
-            full_inputs, hennig_lookup=hennig_lookup,
+            paper_inputs["full"], hennig_lookup=hennig_lookup,
+            robust_cohort_label=ROBUST_LABEL, robust_signatures=sens["signatures"],
         )
         robust_table.to_csv(
             out_dir / "phenotype_paper_table_robust_sensitivity.csv",
             index=False,
         )
-        log.info("robust sensitivity table: %d rows", len(robust_table))
+        log.info("low-burden sensitivity: N=%d, D024 %s (full %s), D025 primary %d/6 "
+                 "(same as full: %s)", robust_verdict["n_patients"],
+                 robust_verdict["d024_interpretation"], full_ortho["interpretation"],
+                 robust_verdict["d025_primary"]["n_confirmed"],
+                 robust_verdict["d025_primary_same_as_full"])
 
     # ── Step 13: run header ───────────────────────────────────────
     header = {
         "stage": "analyse",
         "run_timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": _git_hash(repo_root),
+        "git_commit": code_revision(repo_root),
         "config_yaml_sha": _file_sha(repo_root / "configs" / "default.yaml"),
         "args": vars(args),
         "n_cross_cohort_robust_features": int(len(cross_cohort_reps)),
@@ -557,6 +580,8 @@ def main() -> int:
             cohort: bundle["seam_sha"]
             for cohort, bundle in per_cohort.items()
         },
+        "inputs": inputs,
+        "robust_sensitivity_verdict": robust_verdict,
     }
     for mod in ("numpy", "pandas", "scipy", "sklearn", "statsmodels"):
         try:
@@ -566,7 +591,20 @@ def main() -> int:
             header[f"{mod}_version"] = "n/a"
     _save_json(out_dir / "run_header_analyse.json", header)
 
-    log.info("stage 7 (analyse) complete. outputs in %s", out_dir)
+    # Inputs must still be the ones verified at the start.
+    if stage7_inputs(cfg) != inputs:
+        raise SystemExit("hard stop: stage 7 inputs changed during the run; nothing published")
+    write_marker(out_dir, {
+        "stage": 7,
+        "stage7_fingerprint": stage7_fingerprint(),
+        "inputs": inputs,
+        "settings": settings,
+        "outputs": files_manifest(out_dir, [f.name for f in out_dir.iterdir() if f.is_file()]),
+        "revision": code_revision(repo_root),
+        "written_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }, name=STAGE7_MARKER)
+    publish(out_dir, target)
+    log.info("stage 7 (analyse) complete. outputs in %s", target)
     return 0
 
 

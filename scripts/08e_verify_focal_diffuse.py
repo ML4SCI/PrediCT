@@ -92,6 +92,10 @@ def main() -> int:
     analyse_root = cfg.paths.outputs / "07_analyse"
     features_csv = cfg.paths.outputs / "03_features" / "features.csv"
 
+    # The stage 7 record covers the stage 6 records and features.csv too.
+    from predict.analyse.stage7 import require_stage7_complete
+    require_stage7_complete(analyse_root, cfg)
+
     # ── Load orchestrator outputs ─────────────────────────────────
     header = json.loads(
         (analyse_root / "run_header_analyse.json").read_text()
@@ -129,6 +133,21 @@ def main() -> int:
         for cid in cluster_ids:
             vals = rfc.loc[srl == cid, "n_calcified_arteries"].dropna()
             medians_nca[cid] = float(np.median(vals))
+        # This harness deliberately re-derives the D023 rule by hand rather
+        # than calling predict.analyse.profiles.determine_focal_diffuse_mapping;
+        # importing the helper would check it against itself. The tie guard
+        # below is therefore also hand-written. It matters because min() and
+        # max() return the SAME key on equal medians, which would collapse
+        # manual_map to a single entry and make every downstream comparison
+        # meaningless. Production raises on a tie, so this branch should be
+        # unreachable in a normal run; if it fires, that is the finding.
+        if len(set(medians_nca.values())) < len(medians_nca):
+            raise ValueError(
+                f"[{cohort}] independent re-derivation: identical median "
+                f"n_calcified_arteries across spatial clusters "
+                f"({medians_nca}); focal/diffuse mapping is undefined. "
+                f"Production should have raised before reaching this harness."
+            )
         focal_id_manual = min(medians_nca, key=medians_nca.get)
         diffuse_id_manual = max(medians_nca, key=medians_nca.get)
         manual_map = {focal_id_manual: "focal", diffuse_id_manual: "diffuse"}

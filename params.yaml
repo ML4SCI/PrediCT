@@ -1,7 +1,7 @@
 imageType:
   Original: {}
 
-# ── PyRadiomics feature extraction — v0.5.2 full set (D026) ──────────────
+# ── PyRadiomics feature extraction: full set (D009) ──────────────
 # All 7 IBSI-compliant feature families. Empty value = extract all features
 # in that class (PyRadiomics convention).
 featureClass:
@@ -19,7 +19,7 @@ setting:
   label: 1                   # mask label value
   geometryTolerance: 0.0001
   correctMask: true          # correct minor mask-geometry issues silently
-  normalize: false           # CRITICAL: do not normalise CT (v0.3.0 bug lesson)
+  normalize: false           # CRITICAL: do not normalise CT (keeps HU meaning)
   force2D: false             # 3D extraction throughout
   minimumROIDimensions: 1
   minimumROISize: 14         # H1: IBSI minimum for reliable texture features (was 1)

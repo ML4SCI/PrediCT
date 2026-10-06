@@ -16,9 +16,8 @@ End-to-end pipeline for the dimensionality-reduction stage:
   8. Persist everything under outputs/06_reduce/ (or stratified subdir)
 
 Cluster discovery, gap statistic, Monti consensus, forced-k characterisation,
-and Hennig stability checks (D021) moved to ``scripts/07_discover.py`` on
-2026-06-05 (Phase B). This script writes the seam files that 07_discover.py
-consumes:
+and Hennig stability checks (D021) are in ``scripts/07_discover.py``. This
+script writes the seam files that 07_discover.py consumes:
 
   * pca_scores.csv            -> X_full (PC matrix)
   * prepared_matrix.csv       -> post-D019 features (for spatial PCA)
@@ -36,7 +35,6 @@ import argparse
 import hashlib
 import json
 import logging
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -44,8 +42,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from predict.config import Config, load_config
-from predict.discover.clusterability import hopkins_statistic
+from predict.provenance import code_revision
+from predict.config import Config, default_n_jobs, gate_dir, load_config
+from predict.discover.clusterability import assess_clusterability
 from predict.features.feature_schema import feature_names
 from predict.reduce.pca import (
     explained_variance_table,
@@ -53,7 +52,14 @@ from predict.reduce.pca import (
     pc_external_correlation,
     top_loadings_table,
 )
-from predict.reduce.prepare_matrix import run_matrix_prep
+from predict.completion import file_sha, files_manifest, write_marker
+from predict.discover.stage6 import STAGE5_MARKER
+from predict.publish import fresh_partial, publish_keeping_subdirs
+from predict.reduce.prepare_matrix import (
+    STAGE5_TRANSFORMED,
+    production_prep_kwargs,
+    run_matrix_prep,
+)
 from predict.reduce.redundancy import (
     DEFAULT_BLOCKS,
     build_icc_lookup,
@@ -62,9 +68,10 @@ from predict.reduce.redundancy import (
 )
 
 
-DERIVED_FEATURE_CANDIDATES: tuple[str, ...] = (
-    "high_density_fraction", "vessel_burden_gini",
-)
+# Features stage 5 creates (D018 binarisation + D019 derived); all have
+# canonical (XML) lineage. Their reliability comes from stage 5b's
+# derived_icc.csv under the D033 gate (D040).
+DERIVED_FEATURE_CANDIDATES: tuple[str, ...] = STAGE5_TRANSFORMED
 
 # Raw metadata columns to persist for downstream stages (07_discover.py
 # needs raw agatston_total for burden residualisation; the z-scored feature
@@ -77,17 +84,6 @@ METADATA_COLS_FOR_DOWNSTREAM: tuple[str, ...] = (
 
 
 # ─────────────────────── reproducibility breadcrumbs ───────────────────────
-
-
-def _git_hash(repo_root: Path) -> str:
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=str(repo_root), capture_output=True, text=True, check=False,
-        )
-        return out.stdout.strip() or "unknown"
-    except Exception:
-        return "unknown"
 
 
 def _file_sha(path: Path) -> str:
@@ -104,7 +100,7 @@ def build_run_header(
     info: dict = {
         "stage": "reduce",
         "run_timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": _git_hash(repo_root),
+        "git_commit": code_revision(repo_root),
         "config_yaml_sha": _file_sha(repo_root / "configs" / "default.yaml"),
         "python_version": sys.version.split()[0],
         "args": vars(args),
@@ -133,8 +129,8 @@ def _save_json(path: Path, payload: dict | list) -> None:
 def _load_inputs(cfg: Config) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
     """Return (eligible features dataframe, ICC report, gated feature list)."""
     features_csv = cfg.paths.outputs / "03_features" / "features.csv"
-    icc_csv = cfg.paths.outputs / "05_icc" / "icc_report.csv"
-    gated_csv = cfg.paths.outputs / "05_icc" / "gated_features.csv"
+    icc_csv = gate_dir(cfg) / "icc_report.csv"
+    gated_csv = gate_dir(cfg) / "gated_features.csv"
 
     if not features_csv.exists():
         raise FileNotFoundError(f"missing {features_csv}")
@@ -162,9 +158,11 @@ def main() -> int:
                         help="Restrict the cohort to a single kernel for the "
                              "D021 kernel-stratified sensitivity rerun. "
                              "Outputs land in outputs/06_reduce/stratified_<kernel>/.")
-    parser.add_argument("--n-jobs", type=int, default=16,
+    parser.add_argument("--n-jobs", type=int, default=default_n_jobs(),
                         help="Reserved for future parallel sections; reduce "
-                             "stage itself is fast and single-threaded.")
+                             "stage itself is fast and single-threaded. "
+                             "Defaults to the scheduler allocation "
+                             "(PBS_NCPUS / PBS_NODEFILE).")
     parser.add_argument("--block-mode", choices=("multi", "single"),
                         default="multi",
                         help="D022: multi-block redundancy clustering is the "
@@ -178,11 +176,17 @@ def main() -> int:
 
     cfg = load_config(args.config)
     base_out = cfg.paths.outputs / "06_reduce"
+    # The D020 single-block sensitivity never writes over the D022 primary.
+    if args.block_mode == "single":
+        base_out = base_out / "sensitivity_single_block"
     if args.kernel_filter is not None:
         kernel_slug = args.kernel_filter.replace("/", "_")
-        out_dir = _ensure_dir(base_out / f"stratified_{kernel_slug}")
+        publish_dir = base_out / f"stratified_{kernel_slug}"
     else:
-        out_dir = _ensure_dir(base_out)
+        publish_dir = base_out
+    # Everything is written to <cohort>.partial/ and replaces the cohort's
+    # files only when the whole run succeeds.
+    out_dir = fresh_partial(publish_dir)
     repo_root = cfg.paths.outputs.parent
 
     # ── Run header ────────────────────────────────────────────────
@@ -192,6 +196,7 @@ def main() -> int:
              header["git_commit"], header["config_yaml_sha"])
 
     # ── 1 / 2. Load inputs + eligible cohort ──────────────────────
+    features_sha = file_sha(cfg.paths.outputs / "03_features" / "features.csv")
     eligible, icc_report, gated_features = _load_inputs(cfg)
     log.info("eligible cohort: N=%d (D015)", len(eligible))
     log.info("gated features from stage 4: %d", len(gated_features))
@@ -202,8 +207,31 @@ def main() -> int:
                       "low_burden_flag", "roundtrip_quality", "category",
                       "radiomics_status", "radiomics_reason")
                      if c in eligible.columns]
-    keep_cols = metadata_cols + [c for c in gated_features if c in eligible.columns]
+    missing_gated = [c for c in gated_features if c not in eligible.columns]
+    if missing_gated:
+        raise SystemExit(f"{len(missing_gated)} gated feature(s) missing from features.csv "
+                         f"(e.g. {missing_gated[:5]}); the gate and stage 3 disagree")
+    keep_cols = metadata_cols + list(gated_features)
     eligible = eligible[keep_cols].copy()
+
+    # D040: measured reliability of the stage-5 transformed features. The
+    # D033 gate (5b) writes derived_icc.csv; a D014 classic gate has none,
+    # and there canonical inputs are invariant by construction.
+    derived_icc_csv = gate_dir(cfg) / "derived_icc.csv"
+    if derived_icc_csv.exists():
+        derived_icc = pd.read_csv(derived_icc_csv)
+        missing_tf = sorted(set(DERIVED_FEATURE_CANDIDATES) - set(derived_icc["feature"]))
+        if missing_tf:
+            raise SystemExit(f"{derived_icc_csv} lacks {missing_tf}; rerun stage 5b")
+        reliable_transformed = set(derived_icc.loc[derived_icc["passes_gate"].astype(bool), "feature"])
+        log.info("D040 transformed-feature reliability: %s", {
+            r.feature: round(float(r.icc), 4) for r in derived_icc.itertuples()})
+    elif cfg.stability.primary_gate == "realistic":
+        raise SystemExit(f"{derived_icc_csv} missing; rerun stage 5b (D040)")
+    else:
+        derived_icc = None
+        reliable_transformed = None
+        log.info("classic (D014) gate: transformed features invariant by construction")
 
     # Stash RAW agatston_total BEFORE D019 z-scores it. 07_discover.py needs
     # the raw value for burden residualisation.
@@ -249,12 +277,11 @@ def main() -> int:
 
     # ── 3. D019 matrix prep ───────────────────────────────────────
     log.info("D019 matrix preparation...")
+    prep_kwargs = production_prep_kwargs(cfg)    # shared with stage 8
+    if prep_kwargs["reliable_transformed"] != reliable_transformed:
+        raise SystemExit("D040 reliable set differs between 06_reduce and production_prep_kwargs")
     prep_df, prep_features, prep_log = run_matrix_prep(
-        eligible, [c for c in gated_features if c in eligible.columns],
-        variance_threshold=cfg.reduce.variance_threshold,
-        yj_skew_threshold=cfg.raw["reduce"].get("yeo_johnson_skewness_fallback", 1.0),
-        combat_max_post_r2=0.02,
-        add_derived=True,
+        eligible, list(gated_features), **prep_kwargs,
     )
     _save_json(out_dir / "matrix_prep_log.json", prep_log.to_dict())
     if prep_log.combat_audit:
@@ -267,8 +294,12 @@ def main() -> int:
     # ── 4. D020 / D022 redundancy clustering ──────────────────────
     log.info("D020/D022 redundancy clustering (mode=%s)...", args.block_mode)
     icc_lookup = build_icc_lookup(
-        icc_report, derived_names=DERIVED_FEATURE_CANDIDATES,
+        icc_report, derived_report_df=derived_icc,
+        invariant_names=DERIVED_FEATURE_CANDIDATES if derived_icc is None else (),
     )
+    no_icc = [f for f in prep_features if f not in icc_lookup]
+    if no_icc:
+        raise SystemExit(f"features without an ICC entry after matrix prep: {no_icc}")
     canonical_set = set(feature_names()) | set(DERIVED_FEATURE_CANDIDATES)
 
     if args.block_mode == "multi":
@@ -354,13 +385,14 @@ def main() -> int:
 
     # ── Diagnostic: in-memory Hopkins on pca.scores ────────────────
     # If this matches 07_discover.py's reported H exactly, the NPY/CSV seam
-    # is byte-exact. If it differs from Phase A's locked value, the drift
-    # is upstream (D019 or PCA), not the seam.
-    diag_H = hopkins_statistic(
+    # is byte-exact. If it differs, the drift is upstream (D019 or PCA),
+    # not the seam. Same function and sample-size
+    # rule as stage 6 (int() here gave 43 vs stage 6's 44 rows at N=436).
+    diag_H = assess_clusterability(
         pca.scores,
-        sample_size=max(2, int(cfg.raw["hopkins"]["sample_frac"] * pca.scores.shape[0])),
+        sample_frac=cfg.raw["hopkins"]["sample_frac"],
         random_state=args.random_state,
-    )
+    ).H
     log.info("DIAG: in-memory Hopkins on pca.scores = %.6f (N=%d, n_retain=%d)",
              diag_H, pca.scores.shape[0], pca.n_retain)
 
@@ -426,8 +458,27 @@ def main() -> int:
              len(prep_df), prep_df.shape[1],
              len(cohort_meta), cohort_meta.shape[1])
 
-    log.info("stage 5 (reduce) complete. outputs in %s", out_dir)
-    log.info("next: python scripts/07_discover.py --cohort-dir %s", out_dir)
+    # Completion record (stage 6 copies exactly these files and checks them).
+    if file_sha(raw_features_csv) != features_sha:
+        raise SystemExit(f"hard stop: {raw_features_csv} changed during the stage 5 run")
+    stage5_files = sorted(f.name for f in out_dir.iterdir() if f.is_file())
+    write_marker(out_dir, {
+        "stage": 5,
+        "files": files_manifest(out_dir, stage5_files),
+        "cohort": str(publish_dir.relative_to(cfg.paths.outputs)).replace("\\", "/"),
+        "kernel_filter": args.kernel_filter,
+        "block_mode": args.block_mode,
+        "gated_features_sha": file_sha(gate_dir(cfg) / "gated_features.csv"),
+        "derived_icc_sha": file_sha(gate_dir(cfg) / "derived_icc.csv"),
+        # Stage 7 joins raw features.csv measurements to these cohorts'
+        # labels and refuses a features.csv other than this one.
+        "features_csv_sha": features_sha,
+        "revision": code_revision(repo_root),
+        "written_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }, name=STAGE5_MARKER)
+    publish_keeping_subdirs(out_dir, publish_dir)
+    log.info("stage 5 (reduce) complete. outputs in %s", publish_dir)
+    log.info("next: python scripts/07_discover.py --cohort-dir %s", publish_dir)
     return 0
 
 

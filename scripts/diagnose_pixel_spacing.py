@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
 
-from predict.config import load_config
+from predict.config import default_n_jobs, load_config
 from predict.io.dicom_loader import load_patient_metadata
 
 
@@ -64,7 +64,7 @@ def _peek(pid: str, data_root: Path) -> dict:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config", type=Path, default=None)
-    p.add_argument("--n-jobs", type=int, default=16)
+    p.add_argument("--n-jobs", type=int, default=default_n_jobs())
     args = p.parse_args()
 
     logging.basicConfig(level=logging.INFO,

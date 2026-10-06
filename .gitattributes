@@ -1,0 +1,2 @@
+# Shell scripts run on the Linux cluster: always LF, whatever core.autocrlf says.
+*.sh text eol=lf

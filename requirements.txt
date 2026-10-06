@@ -1,4 +1,4 @@
-# PrediCT v2 Phase 2 — pip requirements
+# PrediCT: pip requirements
 #
 # Install order (because pyradiomics needs C extensions that conda handles
 # better than pip):

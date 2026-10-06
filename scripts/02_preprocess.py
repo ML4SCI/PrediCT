@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Stage 2 — preprocess.
+"""Stage 2: preprocess.
 
 Reads ``outputs/01_manifest/manifest.csv`` and for each patient:
 
-  1. Loads DICOM (Z-ascending, D012 multi-series rule).
+  1. Loads DICOM (Z-ascending, D006 multi-series rule, D039 geometry check).
   2. Parses XML.
   3. Builds the 3D mask via Z-coordinate matching (D001).
   4. Runs the XML stat round-trip (D002); Max-exact gate.
@@ -16,6 +16,15 @@ Outputs (under ``outputs/02_preprocessed/``):
   - ``spacing.json``  (target voxel grid)
   - ``preprocess_report.csv``  (per-patient counts, roundtrip, metal flag)
   - ``xml_roundtrip.csv``  (per-ROI deltas across the whole cohort)
+
+All files are written to ``outputs/02_preprocessed.partial/`` first. Only a
+run in which every manifest patient succeeds replaces
+``outputs/02_preprocessed/`` (old folder removed, partial renamed), so a
+reader never sees arrays from one run next to metadata from another. If any
+patient fails, the script exits 1, the published folder is left untouched,
+and the partial folder (with ``errors.csv``) is kept for inspection.
+Discovery already applies every exclusion, so any per-patient failure here is
+unexpected. A ``--limit`` smoke run never publishes.
 
 Usage::
 
@@ -37,12 +46,14 @@ import pandas as pd
 import SimpleITK as sitk
 from tqdm import tqdm
 
-from predict.config import Config, load_config
+from predict.config import Config, default_n_jobs, load_config
 from predict.io import (
     load_patient_dicom,
     parse_calcium_xml,
     save_spacing_metadata,
 )
+from predict.publish import fresh_partial, publish
+from predict.preprocess.slice_matcher import Z_MATCH_TOLERANCE_MM
 from predict.preprocess import (
     build_3d_mask,
     clip_hu,
@@ -84,7 +95,7 @@ def _process_one(
         parse_result = parse_calcium_xml(pid, Path(xml_dir))
         ct_native = sitk.GetArrayFromImage(loaded.ct_sitk)
 
-        # Round-trip first — uses CT + parsed XML directly, no mask required.
+        # Round-trip first: uses CT + parsed XML directly, no mask required.
         trips = xml_roundtrip_check(
             parse_result, ct_native, loaded.slice_positions,
             tolerance_mm=tolerance_mm,
@@ -159,7 +170,10 @@ def _process_one(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=None)
-    parser.add_argument("--n-workers", type=int, default=min(16, mp.cpu_count()))
+    parser.add_argument("--n-workers", type=int, default=default_n_jobs(cap=16),
+                        help="Worker processes. Defaults to the scheduler allocation "
+                             "(PBS_NCPUS / PBS_NODEFILE), capped at 16 because each "
+                             "worker holds a full CT volume in RAM.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Process only the first N patients (for smoke runs)")
     args = parser.parse_args()
@@ -181,8 +195,8 @@ def main() -> int:
     if args.limit:
         pids = pids[: args.limit]
 
-    out_dir = cfg.paths.outputs / "02_preprocessed"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    publish_dir = cfg.paths.outputs / "02_preprocessed"
+    out_dir = fresh_partial(publish_dir)
     save_spacing_metadata(out_dir / "spacing.json", cfg.resample.target_spacing)
 
     log.info(
@@ -205,7 +219,7 @@ def main() -> int:
                 cfg.hu.clip_min,
                 cfg.hu.clip_max,
                 cfg.hu.metal_artifact_threshold,
-                tolerance_mm=cfg.resample.slice_mm / 2.0,
+                tolerance_mm=Z_MATCH_TOLERANCE_MM,
             )
             for pid in pids
         )
@@ -224,7 +238,7 @@ def main() -> int:
                     cfg.hu.clip_min,
                     cfg.hu.clip_max,
                     cfg.hu.metal_artifact_threshold,
-                    cfg.resample.slice_mm / 2.0,
+                    Z_MATCH_TOLERANCE_MM,
                 ): pid
                 for pid in pids
             }
@@ -239,7 +253,6 @@ def main() -> int:
     pd.DataFrame(trip_rows).to_csv(out_dir / "xml_roundtrip.csv", index=False)
     if errors:
         pd.DataFrame(errors).to_csv(out_dir / "errors.csv", index=False)
-        log.warning("%d patients failed; see errors.csv", len(errors))
 
     n_ok = len(records)
     n_perfect = sum(1 for r in records if r["roundtrip_pass_rate"] >= 1.0)
@@ -252,6 +265,19 @@ def main() -> int:
         "rois_cleaned=%d | metal_flagged=%d | errors=%d",
         n_ok, n_perfect, n_partial, n_poor, n_cleaned, n_metal, len(errors),
     )
+
+    if errors:
+        log.error(
+            "%d patient(s) failed (%s); see %s. %s NOT updated.",
+            len(errors), ", ".join(sorted(str(e["pid"]) for e in errors)),
+            out_dir / "errors.csv", publish_dir,
+        )
+        return 1
+    if args.limit:
+        log.warning("--limit smoke run: outputs left in %s, not published.", out_dir)
+        return 0
+    publish(out_dir, publish_dir)
+    log.info("Published %s", publish_dir)
     return 0
 
 

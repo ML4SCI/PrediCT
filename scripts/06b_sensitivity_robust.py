@@ -65,7 +65,7 @@ def main() -> int:
     log.info("robust cohort: N=%d (eligible minus low_burden_flag=True)",
              len(robust_pids))
 
-    # Write the cohort list so the user can rerun 06_reduce on this subset.
+    # Write the cohort list so 06_reduce can be rerun on this subset.
     pd.DataFrame({"pid": robust_pids}).to_csv(
         robust_out / "robust_cohort_pids.csv", index=False,
     )

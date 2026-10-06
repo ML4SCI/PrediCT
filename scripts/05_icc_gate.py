@@ -37,6 +37,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from predict.completion import file_sha, require_marker
 from predict.config import Config, load_config
 from predict.features.feature_schema import feature_names
 from predict.stability.icc import (
@@ -47,12 +48,23 @@ from predict.stability.icc import (
     invariant_by_construction_features,
 )
 from predict.stability.perturbations import enumerate_perturbations
+from predict.publish import fresh_partial, publish
 
 
 METADATA_COLUMNS: set[str] = {
     "pid", "kernel", "scanner_model", "mask_voxels", "low_burden_flag",
     "roundtrip_quality", "category", "radiomics_status", "radiomics_reason",
 }
+
+
+def _load_script(name: str, alias: str):
+    import importlib.util
+    path = Path(__file__).resolve().parent / name
+    spec = importlib.util.spec_from_file_location(alias, path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[alias] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def _load_baseline(features_csv: Path) -> pd.DataFrame:
@@ -82,6 +94,16 @@ def _load_perturbation_csvs(
                 f"{path.name} missing {len(missing)} eligible pids "
                 f"(first few: {sorted(missing)[:5]}). Rerun stage 4a."
             )
+        # A row with an error has NaN features; the ICC would silently drop
+        # that patient. Errors are failures, never missing data.
+        if "error" in df.columns:
+            err = df["error"].fillna("").astype(str).str.strip() != ""
+            bad = sorted(set(df.loc[err, "pid"].astype(str)) & expected_pids)
+            if bad:
+                raise ValueError(
+                    f"{path.name} has extraction errors for {len(bad)} eligible pids "
+                    f"(first few: {bad[:5]}). Fix and rerun stage 4a."
+                )
         out[name] = df
     return out
 
@@ -116,11 +138,19 @@ def main() -> int:
 
     cfg: Config = load_config(args.config)
     threshold = float(cfg.stability.icc_threshold)
-    out_dir = cfg.paths.outputs / "05_icc"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    publish_dir = cfg.paths.outputs / "05_icc"
+    features_csv = cfg.paths.outputs / "03_features" / "features.csv"
+    # Stage 4a must have finished cleanly on the current features.csv, the
+    # current stage-2 folder and the current stage 1-4 code/config.
+    stage4 = _load_script("04_perturbations.py", "_prod_stage4a")
+    require_marker(cfg.paths.outputs / "04_perturbations", {
+        "features_csv_sha": file_sha(features_csv),
+        "run_fingerprint": stage4.run_fingerprint(cfg, stage4._eligible_pids(features_csv)),
+    })
+    out_dir = fresh_partial(publish_dir)
 
     # ── Load inputs ──────────────────────────────────────────────
-    baseline = _load_baseline(cfg.paths.outputs / "03_features" / "features.csv")
+    baseline = _load_baseline(features_csv)
     eligible_pids = set(baseline["pid"].astype(str))
     log.info("Eligible cohort (D015): N=%d", len(eligible_pids))
 
@@ -248,7 +278,8 @@ def main() -> int:
              len(passing),
              by_source["invariant_by_construction"].get("passing", 0),
              by_source["empirical"].get("passing", 0))
-    log.info("Outputs in %s", out_dir)
+    publish(out_dir, publish_dir)
+    log.info("Outputs in %s", publish_dir)
     return 0
 
 

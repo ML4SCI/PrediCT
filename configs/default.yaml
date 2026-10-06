@@ -13,11 +13,19 @@ cohort:
   exclude_pids:
     - 12     # XML present, no DICOM
     - 197    # XML present, no DICOM
-    - 268    # 1.5mm annotation series replaced with 3.0mm — spatial accuracy lost
+    - 268    # 1.5mm annotation series replaced with 3.0mm: spatial accuracy lost
   exclude_ge_scanners: true  # 4 GE patients held out for external check
 
 resample:
-  in_plane_mm: 0.5
+  # D005: target voxel grid 0.375 x 0.375 x 3.0 mm.
+  #
+  # in_plane 0.375 mm is the cohort NATIVE median (0.377), so resampling to
+  # it is the minimum-interpolation choice.
+  #
+  # slice_mm stays 3.0: native Siemens thickness. Resampling z finer would
+  # synthesise data between 3 mm slabs, which D005 explicitly rejects. The
+  # grid is anisotropic BY DESIGN (z is 8x in-plane at this setting).
+  in_plane_mm: 0.375
   slice_mm: 3.0
 
 hu:
@@ -41,6 +49,9 @@ stability:
   noise_seed_multiplier: 1000   # seed = int(pid) * noise_seed_multiplier + int(sigma)
   # D013: ICC formulation + threshold (also used by stage 5 to consume the gate).
   icc_threshold: 0.75
+  # Gate feeding stages 6 onward (predict.config.gate_dir): realistic = D033
+  # composite perturbations (primary); classic = D014 (supplementary).
+  primary_gate: realistic
 
 reduce:
   # D019: preprocessing

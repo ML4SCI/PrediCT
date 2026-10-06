@@ -37,10 +37,10 @@ def _select_patients(features_csv: Path) -> list[str]:
     return [df.iloc[i]["pid"] for i in idx]
 
 
-def _count_per_setting(pid: str, data_root: Path) -> dict:
+def _count_per_setting(pid: str, data_root: Path, xml_dir: Path) -> dict:
     """Return dict of per-patient lesion counts at each (mm, gap) setting."""
     meta = load_patient_metadata(pid, data_root)
-    pr = parse_calcium_xml(pid, data_root / "calcium_xml")
+    pr = parse_calcium_xml(pid, xml_dir)
     row: dict = {"pid": pid}
     for mm in THRESHOLDS_MM:
         for gap in GAPS:
@@ -71,7 +71,8 @@ def main() -> int:
     pids = _select_patients(features_csv)
     log.info("Probing %d patients across Agatston quartiles: %s", len(pids), pids)
 
-    rows = [_count_per_setting(pid, cfg.paths.data_raw.parent) for pid in pids]
+    rows = [_count_per_setting(pid, cfg.paths.data_raw.parent, cfg.paths.data_xml)
+            for pid in pids]
     df = pd.DataFrame(rows)
 
     # Compute % change vs the default column (5mm, gap=1).
