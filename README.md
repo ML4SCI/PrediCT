@@ -34,7 +34,7 @@ tools to answer it reproducibly.
 | ML4SCI goal | Delivered |
 |---|---|
 | Shape, intensity, texture and spatial features with PyRadiomics and SimpleITK | 107 PyRadiomics features (all 7 IBSI families) and 68 canonical features (Agatston, volume, mass, density tiers, per-vessel burden, lesion count, inter-lesion distances, diffusivity, Gini concentration) for all 439 scans ([features](docs/modules/features.md)) |
-| A robust, documented pipeline with 50 to 100 key features | 166 features pass the realistic reliability gate; redundancy clustering keeps 35 representative features for the patient analysis; each of 10 stages documented in `docs/modules/` and backed by a dated decision record |
+| A robust, documented pipeline with 50 to 100 key features | 166 features pass the realistic reliability gate; redundancy clustering keeps 35 representative features for the patient analysis, 33 of them in all three cohorts (the key robust set); each of 10 stages documented in `docs/modules/` and backed by a dated decision record |
 | PCA "eigen features" | 15 principal components explain 86% of the variance of the representative features ([reduce](docs/modules/reduce.md)) |
 | Unsupervised clustering (K-means, hierarchical, GMM, DBSCAN) | K-means, Ward hierarchical and GMM with gap statistic, consensus clustering and Hennig bootstrap stability, on three feature spaces (full, burden-removed, spatial-only) and on lesions ([discover](docs/modules/discover.md)) |
 | Feature-space visualisation and Agatston correlation | PCA projections by Agatston tertile (Figure 1); burden orthogonality tests and per-feature burden monotonicity ([analyse](docs/modules/analyse.md)) |
@@ -56,6 +56,16 @@ extreme, conditions. The classic fixed-mask set (rotation, translation, noise) k
 features; every one of them also passes the realistic gate. After redundancy clustering,
 35 representative features, selected within six pre-defined blocks (burden, HU statistics,
 density tiers, spatial, texture, shape), carry the patient analysis.
+
+**The key robust feature set: 33 features** that are reliable and non-redundant in the full
+cohort and in both scanner-kernel subgroups: 15 per-vessel density-tier counts, 8 texture
+features, 4 maximum-HU values, total and left-main mass, two shape features (maximum 3D
+diameter, elongation), the number of calcified arteries and the left-main lesion count.
+Seventeen track burden, and four carry information largely independent of it: shape
+elongation, GLCM correlation, and NGTDM contrast and strength. Twenty of the 33 are
+XML-derived values that the perturbations cannot change, so their reliability holds by
+construction; the 13 measured features have ICC 0.88 to 1.00. Full table:
+[docs/modules/reduce.md](docs/modules/reduce.md#cross-cohort-robust-feature-set-33-features).
 
 ### 2. Patient level: burden is the dominant axis
 

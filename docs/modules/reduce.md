@@ -215,6 +215,45 @@ def fit_pca(
   cohort's derived features.
 - The seam file `pca_scores.npy` is byte-exact to the in-memory `pca.scores`.
 
+### Cross-cohort robust feature set (33 features)
+
+Features that pass the D033 gate AND are redundancy-cluster representatives
+in the full cohort (35) and in both kernel strata (Qr36d/2 33, I30f/3 36).
+Stage 7 writes the list to `outputs/07_analyse/cross_cohort_robust_features.csv`.
+Class = D026 relation to `agatston_total` (Spearman rho on raw values, full
+cohort). ICC = D033 ICC(1,1); "by construction" marks XML-derived values the
+perturbation cannot change (ROI counts per density tier, XML max HU, artery
+count), so their reliability is not an empirical result.
+
+| Block | Feature | Class | rho | ICC |
+|---|---|---|---|---|
+| burden | `mass_total` | burden | 0.998 | 1.000 |
+| burden | `mass_lm` | mixed | 0.405 | 0.999 |
+| density_tier | `n_rois_d1_rca`, `n_rois_d2_lcx`, `n_rois_d2_rca`, `n_rois_d3_lad`, `n_rois_d3_lcx`, `n_rois_d4_lad`, `n_rois_d4_lcx` | burden | 0.55 to 0.81 | by construction |
+| density_tier | `n_rois_d1_lad`, `n_rois_d1_lcx`, `n_rois_d1_lm`, `n_rois_d2_lad`, `n_rois_d2_lm`, `n_rois_d3_lm`, `n_rois_d4_lm` | mixed | 0.09 to 0.49 | by construction |
+| density_tier | `has_dense_calcium` | not evaluated in the reported run (absent at raw scale; re-derived from the next run, D026.1) | | by construction |
+| hu_statistics | `max_hu_global`, `max_hu_lcx`, `max_hu_rca` | burden | 0.74 to 0.90 | by construction |
+| hu_statistics | `max_hu_lm` | mixed | 0.396 | by construction |
+| shape | `original_shape_Maximum3DDiameter` | burden | 0.837 | 1.000 |
+| shape | `original_shape_Elongation` | **structure** | 0.076 | 0.988 |
+| spatial | `n_calcified_arteries` | burden | 0.807 | by construction |
+| spatial | `lesion_count_lm` | mixed | 0.365 | 0.998 |
+| texture | `original_firstorder_Kurtosis` | burden | 0.725 | 0.983 |
+| texture | `original_glcm_Idn` | burden | 0.555 | 0.898 |
+| texture | `original_glrlm_RunLengthNonUniformity` | burden | 0.991 | 1.000 |
+| texture | `original_glrlm_RunPercentage` | burden | 0.536 | 0.940 |
+| texture | `original_glszm_ZoneVariance` | mixed | 0.394 | 0.956 |
+| texture | `original_glcm_Correlation` | **structure** | -0.073 | 0.878 |
+| texture | `original_ngtdm_Contrast` | **structure** | -0.083 | 0.958 |
+| texture | `original_ngtdm_Strength` | **structure** | -0.275 | 0.943 |
+
+By block: density tiers 15, texture 8, HU statistics 4, burden 2, shape 2,
+spatial 2. By class (reported run): burden-tracking 17, mixed 11, structure-tracking
+4, not evaluated 1 (`has_dense_calcium`, D026.1). The four structure-tracking features (elongation, GLCM
+correlation, NGTDM contrast and strength) carry information largely
+independent of total burden. 20 features are reliable by construction; the
+13 measured ones have ICC 0.878 to 1.000.
+
 ## Outputs (seam to discover stage)
 
 Written under `outputs/06_reduce/` (full cohort) or
