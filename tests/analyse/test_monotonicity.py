@@ -9,7 +9,7 @@ Coverage:
 * mixed-band catches 0.3 <= |rho| < 0.5
 * density_tier block at |rho| < 0.3 -> mixed (per D026 strict reading)
 * classification_summary produces expected counts
-* NaN / constant input handled
+* NaN / constant / missing input is not_evaluable, never a class (D026.1)
 """
 from __future__ import annotations
 
@@ -75,8 +75,8 @@ def test_classify_mixed_for_unknown_block_low_rho():
     assert classify_feature(0.1, "unknown") == "mixed"
 
 
-def test_classify_mixed_on_nan():
-    assert classify_feature(float("nan"), "spatial") == "mixed"
+def test_classify_not_evaluable_on_nan():
+    assert classify_feature(float("nan"), "spatial") == "not_evaluable"
 
 
 def test_classify_boundary_exactly_at_0_3():
@@ -207,7 +207,7 @@ def test_compute_monotonicity_handles_constant_feature():
     )
     row = result.iloc[0]
     assert np.isnan(row["spearman_rho"])
-    assert row["classification"] == "mixed"
+    assert row["classification"] == "not_evaluable"
 
 
 def test_compute_monotonicity_handles_missing_feature():
@@ -219,6 +219,7 @@ def test_compute_monotonicity_handles_missing_feature():
     assert len(result) == 1
     assert np.isnan(result.iloc[0]["spearman_rho"])
     assert result.iloc[0]["n_used"] == 0
+    assert result.iloc[0]["classification"] == "not_evaluable"
 
 
 def test_compute_monotonicity_drops_nans_pairwise():
@@ -280,6 +281,6 @@ def test_classification_summary_ensures_all_columns_present():
         "classification": ["burden_tracking"],
     })
     summary = classification_summary(df)
-    # All 4 classification cols + cohort + total = 6 cols
+    # Every classification column + total
     assert {"burden_tracking", "structure_tracking", "spatial_tracking",
-            "mixed", "total"} <= set(summary.columns)
+            "mixed", "not_evaluable", "total"} <= set(summary.columns)

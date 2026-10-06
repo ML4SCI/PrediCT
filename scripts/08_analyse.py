@@ -9,16 +9,16 @@ Pipeline (in order):
   0. Label balance check (D023) on every spatial_k2 partition
   1. Focal / diffuse mapping (D023 rule: lower median n_calcified_arteries
      = focal) on each cohort's spatial labels
-  2. Biological sanity check (D023): focal median max_hu >= 0.9 * diffuse
-  3. Per-cohort cluster profiles + FDR-BH (D023) on the 41-feature bundle:
-     28 cross-cohort-intersection representatives + 13 spatial PCA inputs
+  2. Biological sanity check (D023): focal median max_hu >= 130 HU
+  3. Per-cohort cluster profiles + FDR-BH (D023) on the feature bundle:
+     the cross-cohort representative intersection + 13 spatial PCA inputs
   4. Top-5 signature features per (cohort x partition x cluster)
   5. Burden orthogonality (D024): Mann-Whitney + Levene + Cliff's delta
      on agatston_total between focal and diffuse
   6. Burden-stratified spatial replication (D024 part 2)
   7. Directional hypothesis test (D025) per cohort + primary + secondary
      + overall verdict
-  8. Monotonicity classification (D026) on the 28 robust features
+  8. Monotonicity classification (D026) on the cross-cohort robust features
   9. Cross-cohort feature consistency (D027 three-rule criterion)
  10. Partition-level ARI on shared pids (D027 complementary check)
  11. Main paper table (D028: 15 rows)
@@ -254,28 +254,33 @@ def main() -> int:
     raw_features = _load_raw_features(features_csv_path(cfg))
     log.info("loaded raw features: shape=%s", raw_features.shape)
 
-    # D019 derived features (high_density_fraction, vessel_burden_gini) are
-    # NOT in stage 3's features.csv (they live only in prepared_matrix.csv
-    # at z-scored scale). For stage 7's raw-scale analysis we re-derive
-    # them on the fly using the byte-identical formulas from
+    # Stage 5 features that are NOT in stage 3's features.csv
+    # (high_density_fraction, vessel_burden_gini, has_dense_calcium; they live
+    # only in prepared_matrix.csv at z-scored scale). For stage 7's raw-scale
+    # analysis they are re-derived with the stage 5 functions from
     # predict.reduce.prepare_matrix. Verified by
     # tests/analyse/test_derived_features.py against the stage-5 sources.
     n_cols_before = raw_features.shape[1]
     raw_features = augment_raw_with_derived(raw_features)
     n_added = raw_features.shape[1] - n_cols_before
-    log.info("raw features augmented with %d D019 derived columns; "
+    log.info("raw features augmented with %d stage 5 derived columns; "
              "shape now %s", n_added, raw_features.shape)
 
-    # ── Feature list: 28 cross-cohort intersection + 13 spatial inputs ──
+    # ── Feature list: cross-cohort intersection + 13 spatial inputs ──
     rep_sets = [set(per_cohort[c]["representatives"]) for c in per_cohort]
     cross_cohort_reps = sorted(set.intersection(*rep_sets))
     log.info("cross-cohort representative intersection: %d features",
              len(cross_cohort_reps))
+    # The cross-cohort robust feature set: stability-gated, non-redundant in
+    # the full cohort AND in each kernel stratum.
+    pd.DataFrame({"feature": cross_cohort_reps}).to_csv(
+        out_dir / "cross_cohort_robust_features.csv", index=False)
     feature_list = sorted(
         set(cross_cohort_reps) | set(SPATIAL_FEATURES_AFTER_D017)
     )
-    log.info("stage 7 feature bundle: %d features (28 robust + 13 spatial - "
-             "dedup)", len(feature_list))
+    log.info("stage 7 feature bundle: %d features (%d cross-cohort robust + %d "
+             "spatial, deduplicated)", len(feature_list), len(cross_cohort_reps),
+             len(SPATIAL_FEATURES_AFTER_D017))
 
     # ── Step 0+1+2: label balance, focal/diffuse mapping, biological sanity ──
     for cohort, bundle in per_cohort.items():

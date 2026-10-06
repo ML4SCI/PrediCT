@@ -221,16 +221,29 @@ def apply_d018_binarisation(
     """
     _assert_pid_column(df, "apply_d018_binarisation")
     new_df = df.copy()
-    if D018_BINARISE_SOURCE not in new_df.columns:
+    binary = compute_has_dense_calcium(new_df)
+    if binary is None:
         return new_df, list(feature_cols), False
 
-    new_df[D018_BINARISE_TARGET] = (new_df[D018_BINARISE_SOURCE] > 0).astype(int)
+    new_df[D018_BINARISE_TARGET] = binary
     new_df = new_df.drop(columns=[D018_BINARISE_SOURCE])
     new_feature_cols = [
         D018_BINARISE_TARGET if c == D018_BINARISE_SOURCE else c
         for c in feature_cols
     ]
     return new_df, new_feature_cols, True
+
+
+def compute_has_dense_calcium(df: pd.DataFrame) -> pd.Series | None:
+    """D018: ``has_dense_calcium = int(dense_calcium_count > 0)``.
+
+    Returns None if the source column is missing. Stage 5
+    (``apply_d018_binarisation``) and stage 7 (raw-scale re-derivation) both
+    use this function.
+    """
+    if D018_BINARISE_SOURCE not in df.columns:
+        return None
+    return (df[D018_BINARISE_SOURCE] > 0).astype(int)
 
 
 # ───────────────────────── derived features ─────────────────────────

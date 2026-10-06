@@ -21,6 +21,7 @@ from predict.analyse.derived_features import (
     derive_vessel_burden_gini,
 )
 from predict.reduce.prepare_matrix import (
+    apply_d018_binarisation,
     compute_high_density_fraction,
     compute_vessel_burden_gini,
 )
@@ -217,3 +218,23 @@ def test_augment_does_not_mutate_input():
     cols_before = set(df.columns)
     _ = augment_raw_with_derived(df)
     assert set(df.columns) == cols_before
+
+
+# ─────────────────────── has_dense_calcium (D018 at raw scale) ───────────────────────
+
+
+def test_augment_adds_has_dense_calcium_identical_to_stage5():
+    """Stage 7 must see the same has_dense_calcium stage 5 clusters on."""
+    df = _synthetic_cohort()
+    df["dense_calcium_count"] = [0, 1, 3, 0, 2] * 6
+    out = augment_raw_with_derived(df)
+    stage5, _, applied = apply_d018_binarisation(
+        df.reset_index(), ["dense_calcium_count"])
+    assert applied
+    assert out["has_dense_calcium"].tolist() == stage5["has_dense_calcium"].tolist()
+    assert "dense_calcium_count" in out.columns          # raw count kept
+
+
+def test_augment_skips_has_dense_calcium_without_its_source():
+    out = augment_raw_with_derived(_synthetic_cohort())
+    assert "has_dense_calcium" not in out.columns

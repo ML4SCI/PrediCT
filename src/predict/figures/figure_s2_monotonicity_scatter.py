@@ -1,6 +1,6 @@
 """SF2: Monotonicity classification scatter.
 
-Each of the 28 robust cross-cohort features positioned by its Spearman
+Each cross-cohort robust feature positioned by its Spearman
 rho against agatston_total, coloured by D026 classification
 (burden / structure / spatial / mixed).
 """
@@ -27,6 +27,9 @@ def build(analyse_dir: Path) -> "plt.Figure":
     df = pd.read_csv(analyse_dir / "monotonicity_classification.csv")
     # Only the full cohort for the visual; the strata are a sensitivity probe
     full = df[df["cohort"] == "full"].copy()
+    # Features without a correlation (D026.1) cannot be placed on the axis.
+    n_not_eval = int((full["classification"] == "not_evaluable").sum())
+    full = full[full["classification"] != "not_evaluable"]
     full = full.sort_values("spearman_rho")
     full["abs_rho"] = full["spearman_rho"].abs()
 
@@ -52,7 +55,8 @@ def build(analyse_dir: Path) -> "plt.Figure":
     ax.set_xlabel("Spearman $\\rho$ vs agatston_total")
     ax.set_title(
         f"Supplementary Figure 2. Monotonicity classification of the "
-        f"{len(full)} robust features (full cohort)",
+        f"{len(full)} robust features (full cohort)"
+        + (f"; {n_not_eval} not evaluable" if n_not_eval else ""),
         fontsize=11, fontweight="bold",
     )
     ax.legend(loc="lower right", fontsize=8)

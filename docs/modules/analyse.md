@@ -21,8 +21,8 @@ The analysis runs in 13 ordered steps in the orchestrator
      be >= 130 HU (the IBSI / Agatston calcium definition). Fail loud
      on a soft-tissue-mask regression.
   4. Per-cohort cluster profiles (D023): median + IQR + Cliff's delta +
-     Mann-Whitney + FDR-BH across the 41-feature bundle (28 cross-cohort
-     robust + 13 spatial PCA inputs, deduplicated).
+     Mann-Whitney + FDR-BH across the feature bundle (the cross-cohort
+     robust representatives + 13 spatial PCA inputs, deduplicated).
   5. Top-N signatures per (cohort x partition x cluster).
   6. Burden orthogonality (D024): Mann-Whitney + Levene + Cliff's delta
      on `agatston_total` between focal and diffuse, with 3-level
@@ -33,8 +33,9 @@ The analysis runs in 13 ordered steps in the orchestrator
      Mann-Whitney tests + FDR-BH on the family + two-tier verdict
      (primary 4/6 confirmed; secondary 4/6 direction-match in both strata).
   9. Monotonicity classification (D026): Spearman + Kendall vs
-     `agatston_total` for each of the 28 robust features; classify into
-     burden_tracking / structure_tracking / spatial_tracking / mixed.
+     `agatston_total` for each cross-cohort robust feature; classify into
+     burden_tracking / structure_tracking / spatial_tracking / mixed; a
+     feature with no computable rho is not_evaluable (D026.1).
  10. Cross-cohort feature consistency (D027): three-rule criterion
      (direction consistent + significance in >= 2 of 3 + |delta| >= 0.20
      in all 3).
@@ -217,6 +218,7 @@ def augment_raw_with_derived(df: pd.DataFrame) -> pd.DataFrame:
   3-level interpretation; burden-stratified replication)
 - D025 - directional hypothesis test (6 pre-registered + two-tier verdict)
 - D026 - monotonicity classification (Spearman / Kendall; 4-class rule)
+- D026.1 - no computable rho is `not_evaluable`; `has_dense_calcium` re-derived at raw scale
 - D027 - cross-cohort feature consistency (3-rule + ARI complementary)
 - D028 - low-burden sensitivity (separate output file)
 
@@ -274,8 +276,10 @@ concentration predictions that do not follow from counts are reversed.
   delta -0.819) and D025 primary 4 of 6, both the same as the full cohort.
 - D027: 150 of 215 feature x partition x cluster comparisons meet the
   three-rule cross-cohort criterion, dominated by burden-driven features.
-- D026 (33 features, full cohort): 17 burden-tracking, 12 mixed, 4
-  structure-tracking, 0 spatial-tracking.
+- D026 (33 cross-cohort robust features, full cohort): 17 burden-tracking,
+  11 mixed, 4 structure-tracking, 0 spatial-tracking; `has_dense_calcium`
+  was not evaluated in this run (counted as mixed by the code at the time;
+  D026.1).
 - Cross-cohort ARI on shared patients (D027 / D031, threshold 0.80):
   spatial k=2 Qr36d/2 .787 (below), I30f/3 .813; burden tertiles k=3
   Qr36d/2 .807, I30f/3 .785 (below).
@@ -310,6 +314,7 @@ Written under `outputs/07_analyse/`:
 | `burden_stratified_spatial.csv` | per (cohort x tertile x feature): direction match within tertile |
 | `directional_hypotheses.csv` | per (cohort x hypothesis): focal/diffuse median, observed sign, one-sided MW p, FDR-BH p, confirmed |
 | `directional_verdict.json` | primary + secondary + overall verdict |
+| `cross_cohort_robust_features.csv` | the cross-cohort robust feature set: gated, non-redundant representatives in the full cohort and in both kernel strata |
 | `monotonicity_classification.csv` | per (cohort x feature): Spearman, Kendall, classification |
 | `monotonicity_summary.csv` | per cohort: count per classification |
 | `cross_cohort_feature_consistency.csv` | per (feature x partition x cluster): 3-rule + robust_discriminator |

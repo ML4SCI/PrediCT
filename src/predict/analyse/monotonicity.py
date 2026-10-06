@@ -1,6 +1,6 @@
 """Stage 7 monotonicity test and burden-axis classification (D026).
 
-For each of the 28 robust kernel-independent features (or any other
+For each robust kernel-independent feature (or any other
 feature list passed in), compute Spearman rho and Kendall tau against
 ``agatston_total`` and classify into one of four mechanistic groups:
 
@@ -46,6 +46,10 @@ STRUCTURE_BLOCKS: frozenset[str] = frozenset({
 # Block name that qualifies for the spatial_tracking classification.
 SPATIAL_BLOCK = "spatial"
 
+# Missing feature, too few values, or a constant feature / burden: no
+# correlation exists, so no class is assigned (D026.1).
+NOT_EVALUABLE = "not_evaluable"
+
 
 def classify_feature(spearman_rho: float, block: str) -> str:
     """Apply the D026 4-class classification rule.
@@ -59,10 +63,10 @@ def classify_feature(spearman_rho: float, block: str) -> str:
     Returns
     -------
     One of "burden_tracking", "structure_tracking", "spatial_tracking",
-    "mixed". Returns "mixed" on NaN rho (treated as ambiguous).
+    "mixed", or "not_evaluable" when rho is NaN (D026.1).
     """
     if np.isnan(spearman_rho):
-        return "mixed"
+        return NOT_EVALUABLE
     abs_rho = abs(spearman_rho)
     if abs_rho >= BURDEN_TRACKING_RHO:
         return "burden_tracking"
@@ -122,7 +126,7 @@ def compute_monotonicity(
                 "spearman_p": float("nan"),
                 "kendall_tau": float("nan"),
                 "kendall_p": float("nan"),
-                "classification": "mixed",
+                "classification": NOT_EVALUABLE,
             })
             continue
         feature_vals = raw_features[feature].to_numpy(dtype=float)
@@ -141,7 +145,7 @@ def compute_monotonicity(
                 "spearman_p": float("nan"),
                 "kendall_tau": float("nan"),
                 "kendall_p": float("nan"),
-                "classification": "mixed",
+                "classification": NOT_EVALUABLE,
             })
             continue
         # If either array is constant, correlation is undefined; report NaN.
@@ -172,7 +176,8 @@ def classification_summary(
     """Count features per classification per cohort.
 
     Returns a wide-format table: rows = cohorts, columns = classification
-    labels (burden_tracking, structure_tracking, spatial_tracking, mixed).
+    labels (burden_tracking, structure_tracking, spatial_tracking, mixed,
+    not_evaluable).
     """
     summary = (
         monotonicity_df
@@ -180,13 +185,11 @@ def classification_summary(
         .size()
         .unstack(fill_value=0)
     )
-    # Ensure all 4 classification columns are present even if empty
-    for col in ("burden_tracking", "structure_tracking",
-                "spatial_tracking", "mixed"):
+    # Ensure every classification column is present even if empty
+    cols = ["burden_tracking", "structure_tracking", "spatial_tracking",
+            "mixed", NOT_EVALUABLE]
+    for col in cols:
         if col not in summary.columns:
             summary[col] = 0
-    summary["total"] = summary[
-        ["burden_tracking", "structure_tracking",
-         "spatial_tracking", "mixed"]
-    ].sum(axis=1)
+    summary["total"] = summary[cols].sum(axis=1)
     return summary.reset_index()
