@@ -256,7 +256,7 @@ def test_cluster_overlap_distinct_passes():
         "lesion_idx": [0, 1, 0, 0],
         "cluster_kmeans_k12": [0, 2, 3, 1],
     })
-    res = cluster_overlap_with_lad(["a", "b", "c"], labels)
+    res = cluster_overlap_with_lad(["a", "b", "c"], labels, (10, 11))
     assert res["overlap_fraction"] == 0.0
     assert res["passes_distinctness"] is True
 
@@ -268,7 +268,7 @@ def test_cluster_overlap_with_lad_clusters_fails_distinctness():
         "lesion_idx": [0] * 5,
         "cluster_kmeans_k12": [10, 11, 10, 0, 1],
     })
-    res = cluster_overlap_with_lad(["a", "b", "c", "d", "e"], labels)
+    res = cluster_overlap_with_lad(["a", "b", "c", "d", "e"], labels, (10, 11))
     # 3 of 5 in cluster 10/11 -> overlap 0.60 -> fails distinctness
     assert res["overlap_fraction"] == 0.6
     assert res["passes_distinctness"] is False
@@ -276,3 +276,27 @@ def test_cluster_overlap_with_lad_clusters_fails_distinctness():
 
 def test_cluster_overlap_threshold_matches_plan():
     assert P5_OVERLAP_THRESHOLD == 0.20
+
+
+def test_cluster_overlap_not_evaluable_without_lad_clusters():
+    """An empty LAD signature makes P5 not evaluable; no fixed cluster ids
+    stand in for it (D043)."""
+    labels = pd.DataFrame({"pid": ["a"], "vessel": ["LM"], "lesion_idx": [0],
+                           "cluster_kmeans_k8": [3]})
+    res = cluster_overlap_with_lad(["a"], labels, ())
+    assert res["evaluable"] is False
+    assert res["passes_distinctness"] is None
+
+
+def test_missing_or_malformed_lad_signature_stops(tmp_path):
+    import json
+    from run import _discover_lad_dominant_clusters
+    with pytest.raises(SystemExit, match="missing"):
+        _discover_lad_dominant_clusters(tmp_path)
+    sig = tmp_path / "lad_phenotype" / "lad_cluster_signature.json"
+    sig.parent.mkdir(parents=True)
+    sig.write_text(json.dumps({"passes": True}))
+    with pytest.raises(SystemExit, match="lad_dominant_cluster_ids"):
+        _discover_lad_dominant_clusters(tmp_path)
+    sig.write_text(json.dumps({"lad_dominant_cluster_ids": []}))
+    assert _discover_lad_dominant_clusters(tmp_path) == ()

@@ -1,88 +1,57 @@
 # Exploratory: lesion-level morphology clustering
 
-**Status**: exploratory; outside the production pipeline. Does not produce
-any seam file consumed by stages 1-8. Does not modify any decision.
+**Status**: exploratory, pre-registered analyses run as part of stage 9
+(`run_pipeline.sh`). Produces no file consumed by stages 1 to 8 and does not
+modify any decision. Results: [findings.md](findings.md).
 
 ## Question
 
-Stage 7 (analyse) showed the patient-level partition is a burden continuum,
-not a discrete topology phenotype. If morphology phenotypes exist at all
-(dense nodular vs soft speckled vs sheet calcification, per radiology
-intuition), they should be visible at the LESION level, not at the patient
-level. Patient-level aggregation could be masking lesion-type structure by
-averaging over heterogeneous within-patient mixtures.
+At the patient level, total burden dominates every feature space and no
+stable burden-independent subtypes are found (stages 6 and 7). Lesion-type
+structure (dense nodular vs soft speckled vs sheet-like calcification) could
+be hidden by averaging over heterogeneous lesions within a patient, so this
+experiment clusters the lesions themselves.
 
-This experiment tests two related claims:
-
-1. **Cluster tendency at the lesion level**: are there discrete morphology
-   modes in the 3179-lesion population?
-2. **Patient-level signatures**: do patients have characteristic
-   distributions over the lesion clusters that recover the focal vs
-   distributed topology phenotype the patient-level test refuted?
-
-## What this experiment is NOT
-
-* NOT a new pipeline stage.
-* NOT a decision (no D029+).
-* NOT something CLAUDE.md or the test suite track.
-* NOT a re-run or re-design of stages 5, 6, or 7.
-
-If the experiment produces a publication-grade finding, the paper can
-reference it as a lesion-level supplementary analysis. The production
-pipeline is unchanged either way.
+1. **Lesion-level structure**: clusterability and k-means clusters of the
+   lesions on four morphology features (D037: log volume, mean HU, max HU,
+   log ROI count).
+2. **A specific lesion type**: the C8-like core (large, dense, multi-slice,
+   RCA-dominant) found by a locked signature rule, tested for robustness to
+   k, replication within each kernel stratum, disease outside it, its
+   relation to total burden, and stability under the D033 annotation
+   perturbation.
+3. **Patient-level mixtures**: whether patients' distributions over lesion
+   clusters form stable groups.
 
 ## Inputs
 
 | File | Source | Used for |
 |---|---|---|
-| `outputs/03_features/lesions.csv` | stage 3 audit file | the 3179 lesions to cluster |
-| `outputs/03_features/features.csv` | stage 3 | per-patient agatston_total + kernel for post-hoc stratification |
-| `outputs/06_reduce/cluster_labels_spatial_k2.csv` | stage 6 (full cohort) | patient-level focal/diffuse labels for cross-tab |
-| `outputs/06_reduce/cohort_metadata.csv` | stage 5 | per-patient kernel + low_burden_flag |
+| `outputs/03_features/lesions.csv` | stage 3 | the lesions to cluster |
+| `outputs/03_features/features.csv` | stage 3 | per-patient Agatston and kernel |
+| `outputs/06_reduce/cluster_labels_spatial_k2.csv` | stage 6 | patient focal / diffuse labels for cross-tabs |
+| `outputs/06_reduce/cohort_metadata.csv` | stage 5 | kernel, low_burden_flag |
 
-## Outputs
+## Scripts (run in this order by stage 9)
 
-All under `outputs/exploratory/lesion_morphology/`:
+| Script | Purpose | Main outputs |
+|---|---|---|
+| `run.py` | features, Hopkins, gap statistic, k-means at the gap-selected k, Hennig, vessel chi-square | `lesion_features.csv`, `lesion_cluster_labels.csv`, `cluster_profiles.csv`, `cluster_vessel_chi_square.csv`, `hopkins.json`, `gap_statistic.json`, `hennig_stability.json` |
+| `analyse.py` | patient lesion-mixture signatures, mixture clusterability, burden trends | `patient_lesion_signatures.csv`, `mixture_*.json/csv` |
+| `finalise.py` | broad classes, C8 deep dive, per-stratum replication, Jonckheere-Terpstra trends, mixture k=4 | `finalise/` |
+| `k_sensitivity.py` | C8 at every k from 7 to 12, full cohort and strata | `k_sensitivity/` |
+| `c8_other_lesions.py` | disease outside the C8 lesions of carriers | `c8_other_lesions/` |
+| `c8_burden_matched.py` | C8 carriers vs burden-matched non-carriers | `c8_burden_matched/` |
+| `lesion_stability_d033.py` | lesion features and C8 membership under D033 M1 jitter | `lesion_stability_d033/` |
 
-| File | Content |
-|---|---|
-| `lesion_features.csv` | per-lesion engineered morphology features (raw + transformed) |
-| `hopkins.json` | clusterability verdict on the morphology subspace |
-| `gap_statistic.json` | gap curves and selected k |
-| `lesion_cluster_labels.csv` | per-lesion cluster assignment at gap-selected k |
-| `cluster_profiles.csv` | per-cluster median + IQR of every morphology feature |
-| `cluster_vessel_distribution.csv` | per-cluster lesion count per vessel (anatomical stratification) |
-| `hennig_stability.json` | Hennig median Jaccard per cluster |
-| `patient_lesion_signatures.csv` | per-patient cluster-fraction vector (over the lesion cluster ids) |
-| `patient_phenotype_crosstab.csv` | crosstab of patient-level focal/diffuse vs dominant lesion cluster |
-| `report.txt` | human-readable summary printed by the script |
-| `run_header.json` | git hash + library versions + CLI args + seam SHAs |
-
-## How to run
-
-```bash
-python experiments/lesion_morphology/run.py            # full experiment
-python experiments/lesion_morphology/run.py --k 3      # force k=3 (3 morphology types prior)
-python experiments/lesion_morphology/run.py --no-hennig  # skip bootstrap stability for a faster smoke
-```
-
-Wall-clock: ~2 minutes at default parameters (gap statistic on 3179
-lesions + 100 Hennig bootstraps) on the 80-core remote box.
+All outputs are written under `outputs/exploratory/lesion_morphology/` and
+published with the stage 9 completion record (D043).
 
 ## Methodological consistency with the production pipeline
 
-This experiment reuses the production-tested helpers from
-`predict.discover`:
-
-* `assess_clusterability` for Hopkins (k=2-for-both convention,
-  pyclustertend rule)
-* `gap_statistic` with the Maitra-Ramler 1-SE-from-argmax rule
-* `fit_cluster` for k-means / Ward / GMM
-* `hennig_clusterboot` for stability
-
-This keeps the lesion-level result methodologically comparable to the
-patient-level result from stages 6 and 7. If the lesion-level Hopkins
-also shows H ~ 0.7 and the lesion-level gap is also monotonic to k_max,
-the conclusion "no discrete phenotypes" extends below the patient
-resolution. If the lesion level shows a clear elbow and high Hennig
-stability, that is a genuine morphology phenotype claim worth pursuing.
+The experiment reuses the production helpers from `predict.discover`
+(`assess_clusterability`, `gap_statistic`, `fit_cluster` / `fit_kmeans`,
+`hennig_clusterboot`), so lesion-level and patient-level results use the
+same definitions (including the D021.1 corrections). Cluster identities are
+found per run by the locked signature rules in
+`predict.figures._lesion_classes`; no cluster id is hard-coded.

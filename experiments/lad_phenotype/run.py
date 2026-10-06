@@ -34,6 +34,7 @@ from scipy import stats
 
 from predict.analyse import cliffs_delta, mannwhitney_u_pval
 from predict.config import load_config
+from predict.stage9 import stage9_root
 from statsmodels.stats.multitest import multipletests
 
 
@@ -76,6 +77,51 @@ def _save_json(path: Path, payload) -> None:
     path.write_text(
         json.dumps(payload, indent=2, default=str) + "\n", encoding="utf-8",
     )
+
+
+# ─── Step 1 inputs: per-cluster tables ───
+
+KEYS = ["pid", "vessel", "lesion_idx"]
+
+
+def _lesion_analyse_module():
+    """experiments/lesion_morphology/analyse.py (producer of
+    cluster_vessel_chi_square.csv), loaded by path."""
+    import importlib.util
+    path = Path(__file__).resolve().parents[1] / "lesion_morphology" / "analyse.py"
+    spec = importlib.util.spec_from_file_location("_lesion_analyse", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def cluster_tables(clustered: pd.DataFrame, primary_col: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Per-cluster medians (as lesion_morphology/run.py writes
+    cluster_profiles.csv) and vessel obs/exp (lesion_morphology/analyse.py's
+    function) for the given clustered lesions with their shared-partition
+    labels. Stratum runs use these on the stratum's own lesions, so the
+    stratum signature is not a copy of the full-cohort one (D043)."""
+    labels = clustered[primary_col].to_numpy()
+    rows = []
+    for cid in sorted(np.unique(labels)):
+        part = clustered[labels == cid]
+        row = {"cluster": int(cid), "n_lesions": int(len(part))}
+        for c in ("max_hu", "volume_mm3"):
+            vals = part[c].dropna()
+            row[f"{c}_median"] = float(np.median(vals)) if len(vals) else float("nan")
+        rows.append(row)
+    vessel = _lesion_analyse_module().per_cluster_vessel_chi_square(
+        clustered.reset_index(drop=True), labels)
+    return pd.DataFrame(rows), vessel
+
+
+def _require_same(stored: pd.DataFrame, recomputed: pd.DataFrame, cols: list[str], what: str) -> None:
+    a = stored.set_index("cluster")[cols].sort_index()
+    b = recomputed.set_index("cluster")[cols].sort_index()
+    if not (a.index.equals(b.index) and np.allclose(a.to_numpy(float), b.to_numpy(float),
+                                                    rtol=1e-9, atol=1e-9, equal_nan=True)):
+        raise SystemExit(f"hard stop: recomputed {what} differ from the stored full-cohort "
+                         "table; the stratum recompute would not use the same definitions")
 
 
 # ─── Step 1: signature discovery ───
@@ -341,14 +387,19 @@ def main() -> int:
 
     cfg = load_config(args.config)
     repo_root = cfg.paths.outputs.parent
-    out_dir = cfg.paths.outputs / "exploratory" / "lad_phenotype"
+    out_dir = stage9_root(cfg) / "lad_phenotype"
     if args.stratum:
         slug = args.stratum.replace("/", "_")
         out_dir = out_dir / f"stratified_{slug}"
     out_dir.mkdir(parents=True, exist_ok=True)
+    # No result of an earlier run may survive this one (D043).
+    for stale in ("axial_within_lad.csv", "axial_summary.json", "carrier_profile.csv",
+                  "carrier_summary.json", "lad_cluster_signature.json",
+                  "stratum_cluster_profiles.csv", "stratum_vessel_chi_square.csv"):
+        (out_dir / stale).unlink(missing_ok=True)
 
     # Inputs.
-    lesion_root = (cfg.paths.outputs / "exploratory" / "lesion_morphology")
+    lesion_root = (stage9_root(cfg) / "lesion_morphology")
     profiles_path = lesion_root / "cluster_profiles.csv"
     vessel_chi_path = lesion_root / "cluster_vessel_chi_square.csv"
     labels_path = lesion_root / "lesion_cluster_labels.csv"
@@ -381,12 +432,33 @@ def main() -> int:
         features = features[features["pid"].astype(str).isin(keep_pids)]
         _log.info("stratum=%s -> %d pids", args.stratum, len(keep_pids))
 
+    # Step 1 inputs: the full cohort uses the stored lesion-morphology tables
+    # (checked against a recompute); a stratum recomputes them on its own
+    # lesions with the shared partition.
+    primary_col = next(
+        c for c in lesion_labels.columns if c.startswith("cluster_kmeans_k")
+    )
+    clustered = lesions.merge(lesion_labels[KEYS + [primary_col]], on=KEYS,
+                              how="inner", validate="one_to_one")
+    rec_profiles, rec_vessel = cluster_tables(clustered, primary_col)
+    if args.stratum:
+        profiles, vessel_chi = rec_profiles, rec_vessel
+        profiles.to_csv(out_dir / "stratum_cluster_profiles.csv", index=False)
+        vessel_chi.to_csv(out_dir / "stratum_vessel_chi_square.csv", index=False)
+    else:
+        _require_same(profiles, rec_profiles, ["max_hu_median", "volume_mm3_median"],
+                      "cluster profiles")
+        _require_same(vessel_chi, rec_vessel, ["lad_obs_over_exp", "rca_obs_over_exp"],
+                      "vessel obs/exp")
+
     # Step 1.
     lad_clusters = discover_lad_dominant_clusters(profiles, vessel_chi)
     _log.info("Step 1: LAD-dominant clusters (pre-reg signature) = %s",
               lad_clusters)
     _save_json(out_dir / "lad_cluster_signature.json", {
         "lad_dominant_cluster_ids": lad_clusters,
+        "tables": ("recomputed on this stratum's lesions (shared partition)"
+                   if args.stratum else "stored full-cohort lesion-morphology tables"),
         "thresholds": {
             "lad_obs_over_exp_min": P1_LAD_OBS_OVER_EXP_MIN,
             "rca_obs_over_exp_max": P1_RCA_OBS_OVER_EXP_MAX,
@@ -407,9 +479,6 @@ def main() -> int:
         return 0
 
     # Merge cluster labels onto lesions.
-    primary_col = next(
-        c for c in lesion_labels.columns if c.startswith("cluster_kmeans_k")
-    )
     merged_lesions = lesions.merge(
         lesion_labels[["pid", "vessel", "lesion_idx", primary_col]],
         on=["pid", "vessel", "lesion_idx"], how="left",

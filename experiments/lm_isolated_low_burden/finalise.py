@@ -17,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from predict.config import load_config
+from predict.stage9 import stage9_root
 
 
 def _load_json(path: Path):
@@ -54,7 +55,7 @@ def _report_text(out_dir: Path) -> str:
     lines.append("")
 
     # ── P2 Fisher test ──
-    lines.append("P2 — Fisher exact (displaced vs non-displaced LM rate)")
+    lines.append("P2: Fisher exact (displaced vs non-displaced LM rate)")
     lines.append(f"  Contingency table              = {fisher.get('table')}")
     lines.append(f"  Displaced LM rate              = {fisher.get('displaced_lm_rate', 0)*100:.1f}%")
     lines.append(f"  Non-displaced LM rate          = {fisher.get('non_displaced_lm_rate', 0)*100:.1f}%")
@@ -64,7 +65,7 @@ def _report_text(out_dir: Path) -> str:
     lines.append("")
 
     # ── P3 cross-stratum ──
-    lines.append("P3 — cross-stratum replication")
+    lines.append("P3: cross-stratum replication")
     for kern, info in (cs.get("per_stratum") or {}).items():
         lines.append(f"  [{kern}]")
         lines.append(f"    n_low                       = {info.get('n_low')}")
@@ -79,7 +80,7 @@ def _report_text(out_dir: Path) -> str:
     lines.append("")
 
     # ── P4 density ──
-    lines.append("P4 — density profile of displaced patients' LM lesions")
+    lines.append("P4: density profile of displaced patients' LM lesions")
     lines.append(f"  n                              = {dprof.get('n')}")
     lines.append(f"  Median max-HU                  = {dprof.get('median_max_hu_lm')}")
     lines.append(f"  Min / max max-HU               = "
@@ -91,10 +92,17 @@ def _report_text(out_dir: Path) -> str:
     lines.append("")
 
     # ── P5 cluster overlap ──
-    lines.append("P5 — overlap with LAD-phenotype clusters (10, 11)")
+    lad_ids = coverlap.get("lad_dominant_clusters_used", "?")
+    lines.append(f"P5 - overlap with LAD-phenotype clusters {lad_ids} (discovered by signature)")
+    if coverlap.get("evaluable") is False:
+        lines.append(f"  NOT EVALUABLE: {coverlap.get('reason')}")
+        lines.append("")
+        coverlap = {}
     lines.append(f"  Total LM lesions               = {coverlap.get('lesion_count')}")
-    lines.append(f"  In clusters 10 or 11           = {coverlap.get('n_in_lad_clusters_10_11')}")
-    lines.append(f"  Overlap fraction               = {coverlap.get('overlap_fraction', 0)*100:.1f}%")
+    lines.append(f"  In LAD-phenotype clusters      = {coverlap.get('n_in_lad_dominant_clusters')}")
+    frac = coverlap.get("overlap_fraction")
+    lines.append(f"  Overlap fraction               = "
+                 f"{'n/a' if frac is None else f'{frac * 100:.1f}%'}")
     lines.append(f"  Threshold for distinctness     = "
                  f"{coverlap.get('overlap_threshold', 0)*100:.0f}%")
     lines.append(f"  Cluster breakdown              = {coverlap.get('cluster_breakdown')}")
@@ -127,7 +135,7 @@ def main() -> int:
     args = parser.parse_args()
 
     cfg = load_config(args.config)
-    out_dir = (cfg.paths.outputs / "exploratory" / "lm_isolated_low_burden")
+    out_dir = (stage9_root(cfg) / "lm_isolated_low_burden")
     if not out_dir.exists():
         print(f"missing {out_dir}; nothing to finalise.")
         return 2

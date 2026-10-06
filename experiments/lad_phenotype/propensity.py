@@ -40,8 +40,15 @@ class MatchResult:
         standardised mean difference between cases and controls BEFORE
         matching.
     smd_post : float
-        standardised mean difference between matched cases and matched
-        controls. PASS criterion: < 0.1.
+        standardised mean difference between the matched cases (each once)
+        and the matched controls (each once): the two populations the
+        post-match outcome tests compare. PASS criterion: < 0.1.
+        Repeating each case once per matched control would weight the
+        comparison differently from the outcome tests, so with variable
+        1:1-1:3 matching the check could pass on an imbalanced comparison
+        (D043).
+    smd_post_pair_weighted : float
+        the pair-weighted value, reported for reference.
     n_cases_in : int
     n_controls_in : int
     n_cases_matched : int
@@ -59,6 +66,7 @@ class MatchResult:
     n_cases_matched: int
     n_controls_used: int
     caliper: float
+    smd_post_pair_weighted: float = float("nan")
 
 
 def standardised_mean_difference(
@@ -190,9 +198,13 @@ def caliper_match(
 
     pairs = pd.DataFrame(pair_records)
     if pairs.empty:
-        smd_post = float("nan")
+        smd_post = smd_pairs = float("nan")
     else:
-        smd_post = standardised_mean_difference(
+        # Balance of the populations actually compared: each matched case
+        # once, each matched control once (controls are used at most once).
+        cases_once = pairs.drop_duplicates("case_pid")["case_value"].to_numpy()
+        smd_post = standardised_mean_difference(cases_once, pairs["control_value"].to_numpy())
+        smd_pairs = standardised_mean_difference(
             pairs["case_value"].to_numpy(),
             pairs["control_value"].to_numpy(),
         )
@@ -208,6 +220,7 @@ def caliper_match(
         n_cases_matched=int(len(matched_case_pids)),
         n_controls_used=int(len(pairs)),
         caliper=float(caliper),
+        smd_post_pair_weighted=float(smd_pairs),
     )
 
 

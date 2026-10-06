@@ -1,25 +1,32 @@
 #!/usr/bin/env python
 """Stage-7-equivalent rigour applied to the lesion-morphology exploration.
 
-Closes the 8-item plan handed over after the k=12 rerun:
+Closes the 8-item plan handed over after the k=12 rerun at 0.5 mm. The
+primary partition k is whatever run.py's gap vote selects, so NO cluster id
+is hardcoded: broad classes and the C8-like cluster are discovered from each
+run's cluster medians by the locked signature rules in
+predict.figures._lesion_classes (the same rules the figures use). "C8" below means the C8-like cluster, whatever its label.
 
-  1. Lock the 3 broad GMM-class names (density-based: soft_microspots /
-     moderate_nodules / dense_plaques). Primary clusters stay C0..C11.
+  1. Lock the 3 broad class names (density-based: soft_microspots /
+     moderate_nodules / dense_plaques), assigned per cluster by signature.
+     Primary clusters stay C0..C{k-1}.
   2. C8 deep dive: per-patient burden distribution + Mann-Whitney; within
-     RCA z-position relative to each patient's RCA z-range (proxy for
-     proximal/mid/distal).
+     RCA z-position relative to each carrier's RCA z-range ((z - min z) /
+     range, 0 = lowest lesion, +z superior). This is the superior-inferior
+     coordinate; it does not establish proximal / distal position along the
+     curving RCA (D044).
   3. Jonckheere-Terpstra trend test for each cluster fraction across
      burden tertiles. Formal monotone-trend p-value.
   4. Patient mixture GMM k=4 phenotype claim (Finding 5 candidate):
      fit on CLR-transformed mixtures + Hennig stability + per-cluster
      mean-fraction profile + crosstab against stage-6 focal/diffuse +
      burden tertile + kernel.
-  5. C0 and C6 secondary anatomical biases (documentation table).
+  5. Secondary anatomical biases: every vessel-biased cluster (table).
   6. Why GMM separates by density not size: Spearman rho of cluster_id
      against max_hu vs against volume_mm3.
   7. (Folded into 4: the mixture GMM k=4 IS the new patient phenotype claim.)
-  8. Sensitivity: do the 3 broad GMM classes and C8 replicate when the
-     analysis is repeated on each kernel stratum separately?
+  8. Sensitivity: does the C8-like signature replicate when the partition
+     is refit on each kernel stratum separately?
 
 NOT part of the production pipeline. Outputs land in
 ``outputs/exploratory/lesion_morphology/finalise/``.
@@ -41,34 +48,20 @@ from scipy import stats
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import adjusted_rand_score
 
-from predict.analyse.profiles import cliffs_delta, mannwhitney_u_pval
-from predict.config import load_config
+from predict.analyse.profiles import (
+    cliffs_delta,
+    determine_focal_diffuse_mapping,
+    mannwhitney_u_pval,
+)
+from predict.config import default_n_jobs, load_config
+from predict.stage9 import stage9_root
 from predict.discover.cluster_discovery import fit_cluster
 from predict.discover.clusterability import assess_clusterability
 from predict.discover.validity import hennig_clusterboot
-
-
-# ─────────────────────── locked taxonomy ───────────────────────
-
-
-# Density-based names for the 3 broad GMM classes (per the user's item 1).
-# Primary cluster labels stay numeric C0..C11 throughout.
-GMM_K3_NAMES: dict[int, str] = {
-    0: "dense_plaques",
-    1: "soft_microspots",
-    2: "moderate_nodules",
-}
-
-
-# Locked-from-cluster-profiles mapping of primary cluster id -> broad class.
-# Matches the corrected HYPOTHESISED_K3_GROUPING in analyse.py.
-PRIMARY_TO_BROAD: dict[int, str] = {
-    1: "soft_microspots",  5: "soft_microspots",  9: "soft_microspots",
-    2: "moderate_nodules", 3: "moderate_nodules", 7: "moderate_nodules",
-    10: "moderate_nodules", 11: "moderate_nodules",
-    0: "dense_plaques", 4: "dense_plaques", 6: "dense_plaques",
-    8: "dense_plaques",
-}
+from predict.figures._lesion_classes import (
+    discover_broad_classes,
+    discover_c8_like_cluster,
+)
 
 
 # ─────────────────────── helpers ───────────────────────
@@ -224,7 +217,7 @@ def vessel_chi_square_per_cluster(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=None)
-    parser.add_argument("--n-jobs", type=int, default=16)
+    parser.add_argument("--n-jobs", type=int, default=default_n_jobs())
     parser.add_argument("--random-state", type=int, default=42)
     parser.add_argument("--mixture-k", type=int, default=4,
                         help="patient-mixture GMM k for Finding-5 phenotype probe")
@@ -238,7 +231,7 @@ def main() -> int:
     log = logging.getLogger("finalise")
 
     cfg = load_config(args.config)
-    in_dir = cfg.paths.outputs / "exploratory" / "lesion_morphology"
+    in_dir = stage9_root(cfg) / "lesion_morphology"
     out_dir = _ensure_dir(in_dir / "finalise")
     repo_root = cfg.paths.outputs.parent
 
@@ -247,11 +240,12 @@ def main() -> int:
     labels_csv = in_dir / "lesion_cluster_labels.csv"
     morph_csv = in_dir / "lesion_features.csv"
     profiles_csv = in_dir / "cluster_profiles.csv"
+    vessel_chi_csv = in_dir / "cluster_vessel_chi_square.csv"
     cohort_meta_csv = cfg.paths.outputs / "06_reduce" / "cohort_metadata.csv"
     spatial_csv = cfg.paths.outputs / "06_reduce" / "cluster_labels_spatial_k2.csv"
     features_csv = cfg.paths.outputs / "03_features" / "features.csv"
 
-    for p in (lesions_csv, labels_csv, morph_csv, profiles_csv,
+    for p in (lesions_csv, labels_csv, morph_csv, profiles_csv, vessel_chi_csv,
               cohort_meta_csv, spatial_csv, features_csv):
         if not p.exists():
             log.error("missing %s", p)
@@ -261,6 +255,7 @@ def main() -> int:
     labels_df = pd.read_csv(labels_csv, dtype={"pid": str})
     morph_df = pd.read_csv(morph_csv, dtype={"pid": str})
     profiles = pd.read_csv(profiles_csv)
+    vessel_chi = pd.read_csv(vessel_chi_csv)
     meta = pd.read_csv(cohort_meta_csv, dtype={"pid": str})
     spatial = pd.read_csv(spatial_csv, dtype={"pid": str})
     features = pd.read_csv(features_csv, dtype={"pid": str})
@@ -281,34 +276,61 @@ def main() -> int:
     meta_indexed = meta.set_index("pid")
     spatial_indexed = spatial.set_index("pid")["spatial_only_gmm_k2"].astype(int)
     n_calc = features.set_index("pid")["n_calcified_arteries"]
-    # focal/diffuse mapping by stage-6 rule
-    cm = {}
-    for cid in sorted(spatial_indexed.unique()):
-        pids_in = spatial_indexed[spatial_indexed == cid].index
-        vals = n_calc.loc[n_calc.index.intersection(pids_in)].dropna()
-        cm[cid] = float(np.median(vals))
-    focal_cid = min(cm, key=cm.get)
-    diffuse_cid = max(cm, key=cm.get)
-    focal_diffuse = spatial_indexed.map({focal_cid: "focal", diffuse_cid: "diffuse"})
-    log.info("focal/diffuse mapping: cluster %d=focal, %d=diffuse",
-             focal_cid, diffuse_cid)
+    # focal/diffuse mapping (D023). Delegates to the canonical production
+    # helper rather than reimplementing the rule here.
+    #
+    # The previous local implementation was `min(cm, key=cm.get)` paired with
+    # `max(...)`. `n_calcified_arteries` is an integer in {1,2,3,4}, so the two
+    # arms sharing a median is an ordinary outcome, not an edge case. On a tie
+    # both calls return the SAME key, the dict literal
+    # {focal_cid: "focal", diffuse_cid: "diffuse"} collapses to one entry, and
+    # the other cluster silently mapped to NaN. The canonical helper validates
+    # the 2-cluster precondition and RAISES on identical medians, which is the
+    # correct behaviour: if the arms are indistinguishable on the mapping
+    # variable, the focal/diffuse label has no basis and the run should stop.
+    shared_pids = spatial_indexed.index.intersection(n_calc.dropna().index)
+    if len(shared_pids) == 0:
+        raise ValueError(
+            "focal/diffuse mapping: no pids shared between the spatial-k2 "
+            "labels and n_calcified_arteries"
+        )
+    mapping = determine_focal_diffuse_mapping(
+        pd.DataFrame(
+            {"n_calcified_arteries": n_calc.loc[shared_pids]},
+            index=shared_pids,
+        ),
+        spatial_indexed.loc[shared_pids],
+    )
+    focal_cid = next(c for c, lab in mapping.items() if lab == "focal")
+    diffuse_cid = next(c for c, lab in mapping.items() if lab == "diffuse")
+    focal_diffuse = spatial_indexed.map(mapping)
+    log.info("focal/diffuse mapping: cluster %d=focal, %d=diffuse "
+             "(n=%d pids used for the mapping)",
+             focal_cid, diffuse_cid, len(shared_pids))
 
     agatston = meta_indexed["agatston_total"].astype(float)
     kernel = meta_indexed["kernel"].astype(str)
 
-    # ── 1. Lock 3-class GMM names (already in constants) ──────────
+    # ── 1. Broad class per primary cluster, by signature ──────────
+    primary_to_broad = discover_broad_classes(profiles)
     primary_to_broad_df = pd.DataFrame(
-        [(cid, PRIMARY_TO_BROAD.get(cid, "unassigned"))
+        [(cid, primary_to_broad.get(cid, "unassigned"))
          for cid in range(k_primary)],
         columns=["primary_cluster", "broad_class"],
     )
     primary_to_broad_df.to_csv(out_dir / "broad_class_mapping.csv", index=False)
-    log.info("3-class GMM names locked: %s",
-             list(set(PRIMARY_TO_BROAD.values())))
+    log.info("broad classes by signature: %s", primary_to_broad)
 
     # ── 2. C8 deep dive ────────────────────────────────────────────
     log.info("--- 2. C8 deep dive ---")
-    c8_lesions = lesions[primary_labels == 8]
+    c8_id = discover_c8_like_cluster(profiles, vessel_chi)
+    if c8_id is None:
+        raise SystemExit(
+            "no cluster matches the C8-like signature in this run "
+            "(predict.figures._lesion_classes); the C8 deep dive has no subject"
+        )
+    log.info("C8-like cluster by signature: C%d (of k=%d)", c8_id, k_primary)
+    c8_lesions = lesions[primary_labels == c8_id]
     c8_patients = c8_lesions["pid"].unique()
     non_c8_patients = [p for p in meta["pid"] if p not in set(c8_patients)]
 
@@ -322,6 +344,8 @@ def main() -> int:
     c8_burden_delta = cliffs_delta(c8_burden.to_numpy(), non_c8_burden.to_numpy())
 
     c8_deep = {
+        "c8_like_cluster_id": int(c8_id),
+        "k_primary": int(k_primary),
         "n_c8_lesions": int(len(c8_lesions)),
         "n_c8_patients": int(len(c8_patients)),
         "c8_patient_burden_median": float(np.median(c8_burden)),
@@ -347,7 +371,7 @@ def main() -> int:
             rel = (row["centroid_z_mm"] - zmin) / (zmax - zmin)
             rel_z_records.append({
                 "pid": pid,
-                "in_c8": bool(row[primary_col] == 8),
+                "in_c8": bool(row[primary_col] == c8_id),
                 "relative_z_within_RCA": float(rel),
             })
     rel_z_df = pd.DataFrame(rel_z_records)
@@ -398,7 +422,7 @@ def main() -> int:
         jt = jonckheere_terpstra(groups)
         jt_rows.append({
             "cluster": c,
-            "broad_class": PRIMARY_TO_BROAD.get(c, "unassigned"),
+            "broad_class": primary_to_broad.get(c, "unassigned"),
             "median_low": float(np.median(groups[0])),
             "median_mid": float(np.median(groups[1])),
             "median_high": float(np.median(groups[2])),
@@ -441,7 +465,7 @@ def main() -> int:
     log.info("mixture k=%d Hennig: %d of %d clusters stable",
              args.mixture_k, n_stable, len(hen_records))
 
-    # Per-mix-cluster profile (mean fractions over the 12 primary clusters)
+    # Per-mix-cluster profile (mean fractions over the k_primary clusters)
     mix_pids = list(common)
     mix_assign = pd.Series(mix_labels, index=mix_pids, name="mix_cluster")
     mix_profile = (
@@ -467,7 +491,7 @@ def main() -> int:
         # Average fraction within each broad class
         broad_frac = {}
         for c in range(k_primary):
-            bc = PRIMARY_TO_BROAD.get(c, "unassigned")
+            bc = primary_to_broad.get(c, "unassigned")
             broad_frac[bc] = broad_frac.get(bc, 0.0) + float(pf[f"frac_C{c}"])
         dominant_broad[cid] = max(broad_frac, key=broad_frac.get)
     mix_profile["dominant_primary_cluster"] = [
@@ -510,17 +534,15 @@ def main() -> int:
                     "dominant_primary_cluster", "dominant_broad_class"]
              ].to_string())
 
-    # ── 5. C0 + C6 secondary anatomical biases (just report) ──────
-    # Already in cluster_vessel_chi_square.csv from analyse.py; copy a
-    # focused subset for visibility.
-    chi_csv = in_dir / "cluster_vessel_chi_square.csv"
-    if chi_csv.exists():
-        vc = pd.read_csv(chi_csv)
-        biased = vc[vc["vessel_biased"]]
-        biased.to_csv(out_dir / "vessel_biased_clusters_full_cohort.csv",
-                      index=False)
-        log.info("vessel-biased clusters (full cohort): %d total",
-                 len(biased))
+    # ── 5. Secondary anatomical biases (just report) ──────────────
+    # Every vessel-biased cluster from analyse.py's cluster_vessel_chi_square
+    # (no hardcoded cluster ids), annotated with its broad class.
+    biased = vessel_chi[vessel_chi["vessel_biased"]].assign(
+        broad_class=lambda d: d["cluster"].map(primary_to_broad),
+        is_c8_like=lambda d: d["cluster"] == c8_id,
+    )
+    biased.to_csv(out_dir / "vessel_biased_clusters_full_cohort.csv", index=False)
+    log.info("vessel-biased clusters (full cohort): %d total", len(biased))
 
     # ── 6. Why GMM separates by density (rho cluster_id vs feature) ──
     log.info("--- 6. GMM-k=3 separates by density not size: check ---")
@@ -554,9 +576,22 @@ def main() -> int:
                     cluster_medians[feat].max() / max(cluster_medians[feat].min(), 1e-9)
                 )),
         })
+    # Component names by the same signature rule as the primary clusters
+    # (GMM component order is arbitrary, so names are never hardcoded).
+    gmm3_profile = (
+        lesions.assign(gmm3=gmm3).groupby("gmm3")[["max_hu", "volume_mm3"]]
+        .median().reset_index()
+        .rename(columns={"gmm3": "cluster", "max_hu": "max_hu_median",
+                         "volume_mm3": "volume_mm3_median"})
+    )
+    gmm3_names = discover_broad_classes(gmm3_profile)
+    for rec in rho_records:
+        for i in range(3):
+            rec[f"cluster_{i}_broad_class"] = gmm3_names.get(i, "unassigned")
     pd.DataFrame(rho_records).to_csv(
         out_dir / "gmm3_density_vs_size_separation.csv", index=False,
     )
+    log.info("GMM k=3 component names by signature: %s", gmm3_names)
     log.info("GMM-k=3 per-cluster medians (size vs density):\n%s",
              pd.DataFrame(rho_records).to_string(index=False))
 
@@ -578,7 +613,7 @@ def main() -> int:
             log.warning("[%s] too few lesions; skipping", stratum_name)
             continue
 
-        # Refit k=12 within the stratum, on the same morphology features
+        # Refit at k_primary within the stratum, on the same morphology features
         Xs = morph_in[[c for c in morph_in.columns
                        if c not in ("pid", "vessel", "lesion_idx")]
                       ].to_numpy(float)
@@ -595,36 +630,27 @@ def main() -> int:
             lesions_in, lesions_in["cluster"].to_numpy(),
             cohort_label=stratum_name,
         )
-        # Identify "C8-like" cluster: highest RCA obs/exp AND zero LM
-        # AND large median volume AND high max_hu
         vc_csv_path = out_dir / f"stratum_{stratum_name}_vessel_chi_square.csv"
         vc.to_csv(vc_csv_path, index=False)
 
-        # Compute median volume + max_hu per cluster within stratum
+        # C8-like cluster within the stratum by the same locked signature
+        # rule as the full cohort (predict.figures._lesion_classes).
         per_cluster_med = (
-            lesions_in.groupby("cluster")
-            [["volume_mm3", "max_hu", "n_rois"]].median()
-            .reset_index()
+            lesions_in.groupby("cluster")[["volume_mm3", "max_hu", "n_rois"]]
+            .median().reset_index()
         )
+        prof_s = per_cluster_med.rename(columns={
+            "volume_mm3": "volume_mm3_median", "max_hu": "max_hu_median",
+            "n_rois": "n_rois_median"})
+        c8_s = discover_c8_like_cluster(prof_s, vc)
         vc_with_med = vc.merge(per_cluster_med, on="cluster", how="left")
-
-        # Score each cluster as "C8-like": composite of high RCA obs/exp
-        # AND zero LM AND large vol AND high max_hu
-        rca_vol_med = lesions_in.loc[lesions_in["vessel"] == "RCA",
-                                      "volume_mm3"].median()
-        scored = vc_with_med.assign(
-            c8_like_score=(
-                vc_with_med["rca_obs_over_exp"]
-                * (vc_with_med["lm_obs_over_exp"] < 0.3).astype(float)
-                * (vc_with_med["volume_mm3"] > rca_vol_med * 2.0).astype(float)
-                * (vc_with_med["max_hu"] > 500).astype(float)
-            )
-        ).sort_values("c8_like_score", ascending=False)
-        scored.to_csv(out_dir / f"stratum_{stratum_name}_c8_like_score.csv",
-                      index=False)
-
-        top = scored.iloc[0] if len(scored) > 0 else None
+        vc_with_med["c8_signature_match"] = vc_with_med["cluster"] == c8_s
+        vc_with_med.to_csv(out_dir / f"stratum_{stratum_name}_c8_like.csv",
+                           index=False)
+        top = (vc_with_med[vc_with_med["cluster"] == c8_s].iloc[0]
+               if c8_s is not None else None)
         stratum_results[stratum_name] = {
+            "c8_like_found": top is not None,
             "n_lesions": int(len(lesions_in)),
             "n_patients": int(lesions_in["pid"].nunique()),
             "n_clusters_vessel_biased": int(vc["vessel_biased"].sum()),
@@ -679,7 +705,9 @@ def main() -> int:
         "mixture_k4_hennig_n_stable": n_stable,
         "mixture_k4_hennig_n_total": len(hen_records),
         "per_stratum_c8_replication": stratum_results,
-        "broad_class_names": GMM_K3_NAMES,
+        "c8_like_cluster_id": int(c8_id),
+        "primary_to_broad": primary_to_broad,
+        "gmm3_broad_class_names": gmm3_names,
     }
     for mod in ("numpy", "pandas", "scipy", "sklearn"):
         try:

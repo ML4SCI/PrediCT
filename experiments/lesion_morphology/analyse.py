@@ -3,26 +3,25 @@
 
 Consumes the outputs of ``run.py``. Does NOT re-cluster; reads
 ``lesion_cluster_labels.csv`` and the seam files. Numeric cluster labels
-(C0..C7) only - clinical naming is DEFERRED until k=7 sensitivity confirms
-the final cluster count. Naming a phenotype before its stability is
-confirmed is the wrong order.
+only; clinical naming is not attempted (cluster ids are arbitrary across
+fits).
 
 Pipeline (9 sections):
 
-  1. Lock numeric labels + footnote descriptions
+  1. Numeric labels + per-cluster medians
   2. Per-cluster vessel composition + chi-square against COHORT base
      rates (not uniform) + Cramer's V
-  3. Patient mixture matrix (444 patients x 8 cluster fractions)
+  3. Patient mixture matrix (patients x cluster fractions)
   4. CLR (centred log-ratio) transform of the mixture matrix
      (Aitchison compositional data analysis; standard practice for
      fractions that sum to 1)
   5. Hopkins + gap + Hennig on the CLR mixture vectors:
         does a discrete patient mixture-phenotype exist?
   6. Burden-stratified mixture composition + per-cluster Spearman rho
-     against agatston_total: the maturation trajectory
-  7. k=7 sensitivity refit + ARI vs k=8 + cluster-4 fate
-  8. GMM k=3 forced + ARI vs manual {C7+C1+C3, C2+C5+C4, C0+C6} grouping
-  9. Write structured findings.md outline for the user to lock
+     against agatston_total (cross-sectional)
+  7. k=7 sensitivity refit + ARI vs the primary partition
+  8. GMM k=3 forced + ARI vs the signature {soft, moderate, dense} grouping
+  9. Write a generated findings outline (findings.md in the output folder)
 
 Outputs land in outputs/exploratory/lesion_morphology/.
 """
@@ -43,58 +42,12 @@ import pandas as pd
 from scipy import stats
 from sklearn.metrics import adjusted_rand_score
 
-from predict.config import load_config
+from predict.config import default_n_jobs, load_config
+from predict.stage9 import stage9_root
 from predict.discover.cluster_discovery import fit_cluster, gap_statistic
 from predict.discover.clusterability import assess_clusterability
 from predict.discover.validity import hennig_clusterboot
-
-
-# Per-cluster footnote descriptors (DESCRIPTIVE, not clinical names).
-# Generated post-hoc from the cluster medians at k=12. These are deliberately
-# non-clinical pending external validation. The persistent finding across
-# k=8 and k=12 reparametrisations is C8 (here): the smallest cluster,
-# largest median volume, ~ 8 ROIs per lesion, strongly RCA-biased.
-DEFAULT_DESCRIPTIONS: dict[int, str] = {
-    0: "max_hu ~514, vol ~80 mm3, n_rois ~4   (medium-dense multi-slice)",
-    1: "max_hu ~182, vol ~5  mm3, n_rois 1     (tiny low-HU single)",
-    2: "max_hu ~300, vol ~22 mm3, n_rois 2     (small moderate 2-slice)",
-    3: "max_hu ~300, vol ~13 mm3, n_rois 1     (small moderate single)",
-    4: "max_hu ~991, vol ~164 mm3, n_rois 2    (large very-high-HU)",
-    5: "max_hu ~233, vol ~9  mm3, n_rois 1     (tiny moderate single)",
-    6: "max_hu ~717, vol ~92 mm3, n_rois 2     (medium high-HU)",
-    7: "max_hu ~412, vol ~31 mm3, n_rois 2     (small-medium dense)",
-    8: "max_hu ~834, vol ~250 mm3, n_rois ~8   (massive sheet; RCA-biased; "
-       "ZERO LM lesions; Cramer's V=0.40)",
-    9: "max_hu ~185, vol ~5  mm3, n_rois 1     (tiny low-HU single; "
-       "the dominant low-burden lesion type)",
-    10: "max_hu ~476, vol ~37 mm3, n_rois 1     (small-medium dense single)",
-    11: "max_hu ~484, vol ~45 mm3, n_rois 2     (medium dense)",
-}
-
-
-# Hypothesised broad GMM-k=3 mapping based on the manual reading of the
-# k=12 cluster profile medians (vol + max_hu + n_rois). Verified by ARI
-# against the actual GMM k=3 fit in section 8: ARI ~= 0.52 on the COCA
-# cohort (manual calculation from the gmm_k3_vs_primary crosstab).
-#
-# Rationale per cluster:
-#   soft_small : vol <= 10 mm3, max_hu <= 233, n_rois = 1
-#   medium     : vol 13 to 45 mm3, max_hu 300 to 484, n_rois 1 to 2
-#   dense_large: vol >= 80 mm3, max_hu >= 514, n_rois 2 to 8
-HYPOTHESISED_K3_GROUPING: dict[int, str] = {
-    1: "soft_small",
-    5: "soft_small",
-    9: "soft_small",
-    2: "medium",
-    3: "medium",
-    7: "medium",
-    10: "medium",
-    11: "medium",
-    0: "dense_large",
-    4: "dense_large",
-    6: "dense_large",
-    8: "dense_large",
-}
+from predict.figures._lesion_classes import discover_broad_classes
 
 
 # ─────────────────────── helpers ───────────────────────
@@ -248,7 +201,7 @@ def main() -> int:
     parser.add_argument("--no-hennig", action="store_true")
     parser.add_argument("--k-range-mixture", type=int, nargs="+",
                         default=[1, 2, 3, 4, 5, 6, 7, 8])
-    parser.add_argument("--n-jobs", type=int, default=16)
+    parser.add_argument("--n-jobs", type=int, default=default_n_jobs())
     parser.add_argument("--random-state", type=int, default=42)
     args = parser.parse_args()
 
@@ -259,7 +212,7 @@ def main() -> int:
     log = logging.getLogger("analyse_lesion_morph")
 
     cfg = load_config(args.config)
-    in_dir = cfg.paths.outputs / "exploratory" / "lesion_morphology"
+    in_dir = stage9_root(cfg) / "lesion_morphology"
     out_dir = in_dir  # write into the same dir
     if not in_dir.exists():
         log.error("missing %s; run experiments/lesion_morphology/run.py first",
@@ -495,24 +448,27 @@ def main() -> int:
     else:
         log.warning("lesion_features.csv missing; skipping k=7 sensitivity")
 
-    # ── 8. GMM k=3 forced + ARI vs hypothesised grouping (item 6) ─
-    log.info("GMM k=3 forced + ARI vs manual {soft, medium, dense} grouping...")
+    # ── 8. GMM k=3 forced + ARI vs the signature grouping (item 6) ─
+    # The grouping of primary clusters into {soft, moderate, dense} comes
+    # from each run's cluster medians via the locked signature rule
+    # (predict.figures._lesion_classes.discover_broad_classes), not from a
+    # table of cluster ids: ids are arbitrary across reruns and k changes
+    # with the grid (k=12 at 0.5 mm, k=8 at 0.375 mm).
+    log.info("GMM k=3 forced + ARI vs signature {soft, moderate, dense} grouping...")
     if morphology_csv.exists():
         labels_gmm3 = fit_cluster(X, k=3, algorithm="gmm",
                                   random_state=args.random_state)
-        # Hypothesised grouping: map each primary cluster id -> broad name
-        # -> integer code
+        signature_grouping = discover_broad_classes(profiles)
         broad_codes = {n: i for i, n in enumerate(
-            sorted(set(HYPOTHESISED_K3_GROUPING.values()))
+            sorted(set(signature_grouping.values()))
         )}
         hyp_groupings = np.array([
-            broad_codes[HYPOTHESISED_K3_GROUPING.get(int(c), "medium")]
-            for c in primary_labels
+            broad_codes[signature_grouping[int(c)]] for c in primary_labels
         ])
         ari_gmm3_vs_hyp = float(
             adjusted_rand_score(hyp_groupings, labels_gmm3)
         )
-        log.info("ARI between GMM k=3 and hypothesised {soft, medium, "
+        log.info("ARI between GMM k=3 and signature {soft, moderate, "
                  "dense} grouping: %.3f", ari_gmm3_vs_hyp)
         # Crosstab GMM k=3 vs the 8-cluster primary
         gmm3_vs_primary = pd.crosstab(labels_gmm3, primary_labels)
@@ -527,8 +483,9 @@ def main() -> int:
             cols = gmm3_vs_primary.loc[gmm3_id]
             majority_primary[int(gmm3_id)] = int(cols.idxmax())
         _save_json(out_dir / "gmm_k3_summary.json", {
-            "ari_vs_hypothesised_grouping": ari_gmm3_vs_hyp,
-            "hypothesised_grouping": HYPOTHESISED_K3_GROUPING,
+            "ari_vs_signature_grouping": ari_gmm3_vs_hyp,
+            "signature_grouping": signature_grouping,
+            "grouping_rule": "predict.figures._lesion_classes.discover_broad_classes",
             "broad_class_codes": broad_codes,
             "majority_primary_cluster_per_gmm3": majority_primary,
         })
@@ -536,16 +493,21 @@ def main() -> int:
     # ── 9. Write structured findings.md outline ──────────────────
     findings_path = out_dir / "findings.md"
     lines: list[str] = []
-    lines.append("# Lesion morphology experiment — findings outline\n")
-    lines.append("Generated automatically from `analyse.py`. Locks the "
-                 "interpretation produced by the run + analyse pair. "
-                 "Updated by hand once the user reviews and signs off.\n\n")
+    lines.append("# Lesion morphology experiment: findings outline\n")
+    lines.append("Generated automatically from `analyse.py` from the "
+                 "run + analyse outputs. The interpreted findings are in "
+                 "`experiments/lesion_morphology/findings.md`.\n\n")
     lines.append("## Cluster identity (numeric, unnamed pending sensitivity)\n")
-    lines.append("Per-cluster footnote descriptions follow the k=8 medians "
-                 "from the first run. Clinical names are deferred until k=7 "
-                 "vs k=8 sensitivity confirms the final cluster count.\n")
-    for cid in sorted(DEFAULT_DESCRIPTIONS):
-        lines.append(f"- C{cid}: {DEFAULT_DESCRIPTIONS[cid]}\n")
+    lines.append(f"Per-cluster descriptions are this run's medians (k={k_primary}); "
+                 "broad class by the locked signature rule "
+                 "(predict.figures._lesion_classes). Cluster ids are arbitrary "
+                 "across reruns. Clinical names are deferred.\n")
+    broad = discover_broad_classes(profiles)
+    for r in profiles.sort_values("cluster").itertuples():
+        lines.append(f"- C{int(r.cluster)}: max_hu ~{r.max_hu_median:.0f}, "
+                     f"vol ~{r.volume_mm3_median:.0f} mm3, "
+                     f"n_rois ~{r.n_rois_median:.0f}, n={int(r.n_lesions)} "
+                     f"({broad[int(r.cluster)]})\n")
     lines.append("\n## Vessel-biased clusters\n")
     biased_rows = vessel_table[vessel_table["vessel_biased"]]
     if len(biased_rows) == 0:
@@ -570,27 +532,15 @@ def main() -> int:
     lines.append("Gap-selected k on CLR mixture:\n")
     for r in mixture_gap:
         lines.append(f"- {r['algorithm']}: k={r['selected_k']}\n")
-    lines.append("\n## Sensitivity: k=7 vs k=8\n")
+    lines.append("\n## Sensitivity: k=7 vs the primary k\n")
     lines.append(f"ARI between the primary partition (k={k_primary}) and "
                  f"the k=7 refit: see `lesion_cluster_labels_k7.csv` and "
                  f"`k7_hennig_stability.json`.\n")
     lines.append("\n## GMM k=3 hierarchical interpretation\n")
-    lines.append("If `ari_vs_hypothesised_grouping` in `gmm_k3_summary.json` "
-                 "is >= 0.85, the manual {soft, medium, dense} grouping is "
+    lines.append("If `ari_vs_signature_grouping` in `gmm_k3_summary.json` "
+                 "is >= 0.85, the signature {soft, moderate, dense} grouping is "
                  "empirically supported. See the crosstab in "
                  "`gmm_k3_vs_primary.csv`.\n")
-    lines.append("\n## Open verdicts for the user to lock\n")
-    lines.append("- Is the lesion-level Hopkins ~ 0.95 meaningful or finite-"
-                 "sample-bias? Compare to patient-level Hopkins 0.717 on "
-                 "shape-matched synthetic if needed.\n")
-    lines.append("- Did kmeans/ward plateau or hit the k=12 boundary on the "
-                 "extended run? If still at boundary, the 8-cluster solution "
-                 "is a coarse view of a finer continuum.\n")
-    lines.append("- Is C4 a genuine morphology type or a transition state? "
-                 "Compare its Jaccard at k=8 (~0.73, unstable) to its fate at "
-                 "k=7 (does it merge cleanly into another cluster?).\n")
-    lines.append("- Does any cluster survive as truly vessel-biased after "
-                 "Bonferroni-correction across the 8 clusters?\n")
     findings_path.write_text("".join(lines), encoding="utf-8")
     log.info("findings.md written: %s", findings_path)
 

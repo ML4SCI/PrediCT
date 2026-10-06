@@ -28,6 +28,7 @@ from scipy import stats
 
 from predict.analyse import cliffs_delta, mannwhitney_u_pval
 from predict.config import load_config
+from predict.stage9 import stage9_root
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from propensity import (  # noqa: E402
@@ -67,16 +68,28 @@ def main() -> int:
                         format="%(asctime)s [%(levelname)s] %(message)s")
 
     cfg = load_config(args.config)
-    out_dir = cfg.paths.outputs / "exploratory" / "lad_phenotype"
+    out_dir = stage9_root(cfg) / "lad_phenotype"
     if args.stratum:
         slug = args.stratum.replace("/", "_")
         out_dir = out_dir / f"stratified_{slug}"
 
+    # No result of an earlier run may survive this one: a terminated match
+    # must not leave an earlier comparison behind (D043).
+    for stale in ("matched_pairs.csv", "matched_comparison.csv",
+                  "matched_comparison_summary.json", "matched_diagnostics.json"):
+        (out_dir / stale).unlink(missing_ok=True)
+
+    sig_path = out_dir / "lad_cluster_signature.json"
+    if not sig_path.exists():
+        raise SystemExit(f"hard stop: {sig_path} missing; run experiments/lad_phenotype/run.py first")
+    if not json.loads(sig_path.read_text(encoding="utf-8"))["lad_dominant_cluster_ids"]:
+        # Step 1 terminated (no LAD-dominant cluster): nothing to match.
+        _save_json(out_dir / "matched_diagnostics.json", {"verdict": "no_signature"})
+        _log.warning("no LAD-dominant cluster (step 1 terminated); matching not run")
+        return 0
     carrier_path = out_dir / "carrier_profile.csv"
     if not carrier_path.exists():
-        _log.error("missing %s; run experiments/lad_phenotype/run.py "
-                   "first", carrier_path)
-        return 2
+        raise SystemExit(f"hard stop: {carrier_path} missing although step 1 found clusters")
     carrier_table = pd.read_csv(carrier_path, dtype={"pid": str})
 
     # Build matching covariate: log(agatston_total + 1).
@@ -92,7 +105,9 @@ def main() -> int:
         _save_json(out_dir / "matched_diagnostics.json", {
             "verdict": "no_carriers", "n_cases_in": 0,
         })
-        return 1
+        # A pre-registered termination is an outcome, not a failure: exit 0 so
+        # pipeline runners continue; the verdict is in matched_diagnostics.json.
+        return 0
 
     cases = pd.Series(
         cases_df["match_var"].to_numpy(),
@@ -122,7 +137,8 @@ def main() -> int:
         "n_controls_used": result.n_controls_used,
         "match_yield": yield_,
         "smd_pre": result.smd_pre,
-        "smd_post": result.smd_post,
+        "smd_post": result.smd_post,   # matched cases once vs matched controls (as compared)
+        "smd_post_pair_weighted": result.smd_post_pair_weighted,   # pre-2026-10-05 definition
         "caliper_sd": MATCH_CALIPER_SD,
         "caliper_absolute": result.caliper,
         "k": MATCH_K,
@@ -140,9 +156,9 @@ def main() -> int:
         diagnostics["smd_ok"] = bool(smd_ok)
         diagnostics["yield_ok"] = bool(yield_ok)
         _save_json(out_dir / "matched_diagnostics.json", diagnostics)
-        _log.error("match infeasible at pre-registered caliper. "
-                   "Per plan.md, experiment terminates without relaxing.")
-        return 1
+        _log.warning("match infeasible at pre-registered caliper. "
+                     "Per plan.md, experiment terminates without relaxing.")
+        return 0   # pre-registered termination (see the no_carriers branch)
     diagnostics["verdict"] = "match_ok"
     result.pairs.to_csv(out_dir / "matched_pairs.csv", index=False)
     _save_json(out_dir / "matched_diagnostics.json", diagnostics)

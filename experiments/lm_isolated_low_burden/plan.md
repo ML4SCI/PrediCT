@@ -123,7 +123,7 @@ identified in `experiments/lad_phenotype/`)?
 
 * If 0 LM lesions fall in clusters 10/11: the LM-isolated finding is
   fully distinct from the high-burden LAD/LM phenotype, and the
-  paper-2 framing of "three independent findings across the burden
+  framing of "three independent findings across the burden
   spectrum" stands.
 * If a non-trivial fraction (≥20%) of displaced LM lesions fall in
   clusters 10/11: the LM-isolated finding is a low-burden expression

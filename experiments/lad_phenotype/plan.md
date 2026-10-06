@@ -161,7 +161,7 @@ finding is "kernel-dependent" and not publication-eligible.
 |---|---|
 | P1 finds 0 LAD-dominant clusters | Experiment terminates. `findings.md` records "no LAD-dominant cluster under pre-registered signature." Negative result, still publishable as null. |
 | P4 match diagnostic SMD >= 0.1 OR match yield < 50% | Experiment terminates. `findings.md` records "burden-propensity matching infeasible at pre-registered caliper." |
-| P5 verdict flips in one stratum | Finding labelled "kernel-dependent." Not eligible for paper-2 lead claim. |
+| P5 verdict flips in one stratum | Finding labelled "kernel-dependent." Not eligible as a lead claim. |
 
 ## Hash of this document at lock time
 

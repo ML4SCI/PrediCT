@@ -29,6 +29,7 @@ from pathlib import Path
 import pandas as pd
 
 from predict.config import load_config
+from predict.stage9 import stage9_root
 
 REPLICATION_DELTA_TOL = 0.10
 STRATA = ("Qr36d_2", "I30f_3")
@@ -48,110 +49,121 @@ def _save_json(path: Path, payload) -> None:
     )
 
 
-def _gather(out_root: Path) -> dict:
-    base = {
-        "full": {
-            "signature": _load_json(out_root / "lad_cluster_signature.json"),
-            "axial": _load_json(out_root / "axial_summary.json"),
-            "carrier": _load_json(out_root / "carrier_summary.json"),
-            "match_diagnostics": _load_json(out_root / "matched_diagnostics.json"),
-            "match_comparison": _load_json(out_root / "matched_comparison_summary.json"),
-        },
+def _gather_one(d: Path) -> dict:
+    """One cohort's results. The matched comparison is read only where the
+    matching step reports success; a comparison next to a terminated match
+    is a stale or inconsistent result and stops the finaliser (D043)."""
+    sig = _load_json(d / "lad_cluster_signature.json")
+    md = _load_json(d / "matched_diagnostics.json")
+    if sig is None or md is None:
+        raise SystemExit(f"hard stop: {d} lacks lad_cluster_signature.json or "
+                         "matched_diagnostics.json; run run.py and matched.py for it")
+    mc = _load_json(d / "matched_comparison_summary.json")
+    if (md.get("verdict") == "match_ok") != (mc is not None):
+        raise SystemExit(f"hard stop: {d}: matching verdict {md.get('verdict')!r} but a matched "
+                         f"comparison is {'present' if mc is not None else 'missing'}")
+    return {
+        "signature": sig,
+        "axial": _load_json(d / "axial_summary.json"),
+        "carrier": _load_json(d / "carrier_summary.json"),
+        "match_diagnostics": md,
+        "match_comparison": mc,
     }
+
+
+def _gather(out_root: Path) -> dict:
+    base = {"full": _gather_one(out_root)}
     for s in STRATA:
-        sdir = out_root / f"stratified_{s}"
-        base[s] = {
-            "signature": _load_json(sdir / "lad_cluster_signature.json"),
-            "axial": _load_json(sdir / "axial_summary.json"),
-            "carrier": _load_json(sdir / "carrier_summary.json"),
-            "match_diagnostics": _load_json(sdir / "matched_diagnostics.json"),
-            "match_comparison": _load_json(sdir / "matched_comparison_summary.json"),
-        }
+        base[s] = _gather_one(out_root / f"stratified_{s}")
     return base
 
 
+def _status(per_stratum_ok: dict, not_evaluable: str | None = None) -> str:
+    if not_evaluable:
+        return "not_evaluable"
+    if any(v is False for v in per_stratum_ok.values()):
+        return "does_not_replicate"
+    if all(v is True for v in per_stratum_ok.values()):
+        return "replicates"
+    return "not_evaluable"
+
+
 def _compare_replication(full: dict, strata: dict) -> dict:
-    """Cross-stratum replication verdict per plan.md."""
+    """Cross-stratum replication per plan.md P5, per component (signature,
+    axial, matched) with status replicates / does_not_replicate /
+    not_evaluable. ``overall_replicates`` is True only when every component
+    replicates, False when any does not, and None otherwise; it is never
+    True for missing components (the old code returned True on no results)."""
     out: dict = {}
+    full_ids = set(full["signature"].get("lad_dominant_cluster_ids", []))
+    no_sig = None if full_ids else "no LAD-dominant cluster in the full cohort"
 
-    # Signature: same cluster ids in each stratum.
-    if full.get("signature"):
-        full_ids = set(full["signature"].get("lad_dominant_cluster_ids", []))
-        per_stratum = {}
-        for s in STRATA:
-            sig = strata.get(s, {}).get("signature")
-            if sig:
-                per_stratum[s] = sig.get("lad_dominant_cluster_ids", [])
-            else:
-                per_stratum[s] = None
-        out["signature_replication"] = {
-            "full_ids": sorted(full_ids),
-            "per_stratum": per_stratum,
-            "replicates": all(
-                per_stratum[s] is not None
-                and set(per_stratum[s]) == full_ids
-                for s in STRATA
-            ),
-        }
+    # Signature: same cluster ids, each stratum computed on its own lesions.
+    sig_ok = {s: set(strata[s]["signature"].get("lad_dominant_cluster_ids", [])) == full_ids
+              for s in STRATA}
+    out["signature_replication"] = {
+        "full_ids": sorted(full_ids),
+        "per_stratum": {s: strata[s]["signature"].get("lad_dominant_cluster_ids", []) for s in STRATA},
+        "status": _status(sig_ok, no_sig),
+    }
 
-    # Axial verdict.
-    if full.get("axial"):
-        full_pass = bool(full["axial"].get("passes"))
-        full_diff = float(full["axial"].get("median_diff") or 0.0)
-        per_stratum = {}
-        for s in STRATA:
-            ax = strata.get(s, {}).get("axial")
-            if ax is None:
-                per_stratum[s] = None
-                continue
-            per_stratum[s] = {
-                "passes": bool(ax.get("passes")),
-                "median_diff": float(ax.get("median_diff") or 0.0),
-                "within_tol": abs(
-                    float(ax.get("median_diff") or 0.0) - full_diff
-                ) <= REPLICATION_DELTA_TOL,
-            }
-        out["axial_replication"] = {
-            "full_passes": full_pass,
-            "full_median_diff": full_diff,
-            "per_stratum": per_stratum,
-            "replicates": all(
-                per_stratum[s] is not None and (
-                    per_stratum[s]["passes"]
-                    or per_stratum[s]["within_tol"]
-                )
-                for s in STRATA
-            ),
-        }
+    # Axial verdict (plan P5): the stratum reaches the FULL cohort's verdict
+    # (pass or fail), or its effect (median rel-z difference) is within
+    # +/-0.10 of the full-cohort effect. Judging the stratum's own pass
+    # instead would report a reversed verdict as replicated and a preserved
+    # negative verdict as not replicated (D043).
+    ax_ok: dict = {}
+    per_stratum: dict = {}
+    full_ax = full.get("axial")
+    full_pass = bool(full_ax.get("passes")) if full_ax else None
+    full_diff = float(full_ax.get("median_diff")) if full_ax else float("nan")
+    for s in STRATA:
+        ax = strata[s].get("axial")
+        if ax is None or full_ax is None:   # no LAD-dominant cluster: not computed
+            per_stratum[s], ax_ok[s] = None, None
+            continue
+        diff = float(ax.get("median_diff"))
+        within = abs(diff - full_diff) <= REPLICATION_DELTA_TOL
+        same = bool(ax.get("passes")) == full_pass
+        per_stratum[s] = {"passes": bool(ax.get("passes")), "same_verdict_as_full": same,
+                          "median_diff": diff, "within_tol": bool(within)}
+        ax_ok[s] = same or bool(within)
+    out["axial_replication"] = {
+        "full_passes": full_pass,
+        "full_median_diff": full_diff,
+        "per_stratum": per_stratum,
+        "status": _status(ax_ok, no_sig),
+    }
 
-    # Matched comparison verdict.
-    if full.get("match_comparison"):
-        full_overall = bool(full["match_comparison"].get("overall_pass"))
-        per_stratum = {}
-        for s in STRATA:
-            mc = strata.get(s, {}).get("match_comparison")
-            if mc is None:
-                per_stratum[s] = None
-                continue
-            per_stratum[s] = {
-                "overall_pass": bool(mc.get("overall_pass")),
-                "interpretation": mc.get("interpretation"),
-            }
-        out["matched_replication"] = {
-            "full_overall_pass": full_overall,
-            "per_stratum": per_stratum,
-            "replicates": all(
-                per_stratum[s] is not None
-                and per_stratum[s]["overall_pass"]
-                for s in STRATA
-            ),
-        }
+    # Matched comparison: evaluable only where matching succeeded; the
+    # stratum must reach the full cohort's verdict. The summary carries no
+    # single effect-size estimate (three tests, different statistics), so
+    # the plan's tolerance alternative does not apply here.
+    full_md = full["match_diagnostics"]["verdict"]
+    full_mc = full.get("match_comparison")
+    mc_ok: dict = {}
+    per_stratum = {}
+    for s in STRATA:
+        verdict = strata[s]["match_diagnostics"]["verdict"]
+        mc = strata[s].get("match_comparison")
+        per_stratum[s] = {"verdict": verdict,
+                          "overall_pass": bool(mc["overall_pass"]) if mc else None}
+        mc_ok[s] = (bool(mc["overall_pass"]) == bool(full_mc["overall_pass"])
+                    if mc is not None and full_mc is not None else None)
+    out["matched_replication"] = {
+        "full_verdict": full_md,
+        "full_overall_pass": bool(full["match_comparison"]["overall_pass"]) if full.get("match_comparison") else None,
+        "per_stratum": per_stratum,
+        "status": _status(mc_ok, None if full_md == "match_ok"
+                          else f"full-cohort matching {full_md} (pre-registered termination)"),
+    }
 
-    out["overall_replicates"] = all(
-        sub.get("replicates", False)
-        for key, sub in out.items()
-        if isinstance(sub, dict) and "replicates" in sub
-    )
+    statuses = [v["status"] for v in out.values()]
+    out["overall_replicates"] = (False if "does_not_replicate" in statuses
+                                 else True if all(st == "replicates" for st in statuses)
+                                 else None)
+    out["not_evaluable_components"] = [k for k, v in out.items()
+                                       if isinstance(v, dict) and v.get("status") == "not_evaluable"]
     return out
 
 
@@ -213,10 +225,11 @@ def _report_text(bundle: dict, replication: dict) -> str:
 
     lines.append("")
     lines.append("STEP 5: cross-stratum replication")
-    lines.append(f"  overall replicates: {replication.get('overall_replicates')}")
+    lines.append(f"  overall replicates: {replication.get('overall_replicates')} "
+                 f"(not evaluable: {replication.get('not_evaluable_components')})")
     for key, sub in replication.items():
-        if isinstance(sub, dict) and "replicates" in sub:
-            lines.append(f"  {key}: replicates={sub['replicates']}")
+        if isinstance(sub, dict) and "status" in sub:
+            lines.append(f"  {key}: {sub['status']}")
     lines.append("")
     return "\n".join(lines)
 
@@ -229,7 +242,7 @@ def main() -> int:
                         format="%(asctime)s [%(levelname)s] %(message)s")
 
     cfg = load_config(args.config)
-    out_root = cfg.paths.outputs / "exploratory" / "lad_phenotype"
+    out_root = stage9_root(cfg) / "lad_phenotype"
     if not out_root.exists():
         _log.error("missing %s; nothing to finalise.", out_root)
         return 2

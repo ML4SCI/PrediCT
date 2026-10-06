@@ -40,7 +40,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from predict.config import load_config
+from predict.config import default_n_jobs, load_config
+from predict.stage9 import stage9_root
 from predict.discover.cluster_discovery import (
     fit_cluster,
     gap_statistic,
@@ -89,11 +90,16 @@ MORPHOLOGY_FEATURES_RAW = (
 
 
 def build_morphology_matrix(lesions: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
-    """Return a (lesions x 6 features) z-scored morphology matrix.
+    """Return a (lesions x 4 features) z-scored morphology matrix (D037).
 
     Features:
-      log1p_volume, log1p_area, mean_hu_weighted, max_hu, log1p_n_rois,
-      log1p_volume_area_ratio  (proxy for axial thickness)
+      log1p_volume, mean_hu_weighted, max_hu, log1p_n_rois
+
+    D037 removed two features that are deterministic functions of the others:
+    lesion volume is total_area x slice thickness (lesion_ccl.py), so
+    log1p_area duplicated log1p_volume, and the volume / area ratio was the
+    constant slice thickness (3.0 mm for all 3201 lesions), which z-scoring
+    turned into floating-point noise.
 
     Centroid coordinates and vessel id are EXCLUDED (they are anatomical,
     not morphological). They are retained on the input frame for post-hoc
@@ -101,24 +107,19 @@ def build_morphology_matrix(lesions: pd.DataFrame) -> tuple[pd.DataFrame, list[s
     """
     df = lesions.copy()
     df["log1p_volume"] = np.log1p(df["volume_mm3"])
-    df["log1p_area"] = np.log1p(df["total_area_mm2"])
     df["log1p_n_rois"] = np.log1p(df["n_rois"])
-    # Avoid divide-by-zero on degenerate lesions; clip area at 1e-6
-    safe_area = df["total_area_mm2"].clip(lower=1e-6)
-    df["log1p_volume_area_ratio"] = np.log1p(df["volume_mm3"] / safe_area)
-    feature_cols = [
-        "log1p_volume", "log1p_area", "mean_hu_weighted", "max_hu",
-        "log1p_n_rois", "log1p_volume_area_ratio",
-    ]
-    # z-score each column (independent of other lesions in the same patient)
+    feature_cols = ["log1p_volume", "mean_hu_weighted", "max_hu", "log1p_n_rois"]
+    # z-score each column (independent of other lesions in the same patient).
+    # A near-constant column is an error, never silently scaled: dividing
+    # rounding noise by a tiny SD is how the ratio feature entered the
+    # clustering before D037.
     z = df[feature_cols].copy()
     for c in feature_cols:
         mu = z[c].mean()
         sigma = z[c].std(ddof=1)
-        if sigma == 0:
-            z[c] = 0.0
-        else:
-            z[c] = (z[c] - mu) / sigma
+        if not sigma > 1e-9 * max(1.0, abs(mu)):
+            raise ValueError(f"morphology feature {c!r} is (near-)constant: sd {sigma:.3g}")
+        z[c] = (z[c] - mu) / sigma
     return z, feature_cols
 
 
@@ -178,9 +179,7 @@ def main() -> int:
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--k-range", type=int, nargs="+",
                         default=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                        help="extended to 12 to match the patient-level analysis "
-                             "and detect whether the k=8 boundary-hit at the "
-                             "first run was meaningful or arbitrary")
+                        help="1..12, the same range as the patient-level analysis")
     parser.add_argument("--gap-bootstraps", type=int, default=200,
                         help="lower than the production 500 since lesion N=3179 "
                              "and we are in an exploratory mode")
@@ -190,7 +189,7 @@ def main() -> int:
     parser.add_argument("--hennig-bootstraps", type=int, default=100)
     parser.add_argument("--no-hennig", action="store_true",
                         help="skip Hennig bootstrap stability (faster smoke)")
-    parser.add_argument("--n-jobs", type=int, default=16)
+    parser.add_argument("--n-jobs", type=int, default=default_n_jobs())
     parser.add_argument("--random-state", type=int, default=42)
     args = parser.parse_args()
 
@@ -201,7 +200,7 @@ def main() -> int:
     log = logging.getLogger("lesion_morph")
 
     cfg = load_config(args.config)
-    out_dir = _ensure_dir(cfg.paths.outputs / "exploratory" / "lesion_morphology")
+    out_dir = _ensure_dir(stage9_root(cfg) / "lesion_morphology")
     repo_root = cfg.paths.outputs.parent
 
     # Run header

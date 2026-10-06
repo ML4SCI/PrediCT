@@ -30,6 +30,7 @@ from scipy import stats
 from statsmodels.stats.proportion import proportion_confint
 
 from predict.config import load_config
+from predict.stage9 import stage9_root
 
 
 # ─── Pre-registered thresholds (locked in plan.md) ───
@@ -45,46 +46,26 @@ P3_STRATUM_NONDISP_LM_RATE_MAX = 0.50
 
 P5_OVERLAP_THRESHOLD = 0.20
 
-# Reference clusters from the LAD-phenotype experiment. K-means cluster
-# labels are arbitrary across reruns, so the actual LAD-dominant cluster
-# ids must be discovered at runtime by reading the LAD-phenotype
-# experiment's lad_cluster_signature.json. The constant below is the
-# historical 0.5 mm-locked value, used only as a fallback if the LAD
-# experiment hasn't been run yet.
-LAD_DOMINANT_CLUSTERS_FALLBACK = (10, 11)
+# The LAD-dominant clusters come from the CURRENT run's LAD-phenotype
+# signature (k-means labels are arbitrary across fits). There is no
+# fallback to fixed cluster ids: a missing, corrupt or empty signature
+# stops the analysis or makes P5 not evaluable (D043).
 
 
-def _discover_lad_dominant_clusters(outputs_root: Path) -> tuple[int, ...]:
-    """Read the LAD-dominant cluster ids from the LAD-phenotype
-    experiment's signature output. If the file is missing, fall back to
-    the historical 0.5 mm-locked values (10, 11).
+def _discover_lad_dominant_clusters(stage9_dir: Path) -> tuple[int, ...]:
+    """LAD-dominant cluster ids from this run's LAD signature.
+
+    A missing or malformed signature stops the run. An empty signature
+    (no cluster matched the pre-registered criteria) returns ``()``, and
+    P5 is then not evaluable.
     """
-    sig_path = (outputs_root / "exploratory" / "lad_phenotype"
-                 / "lad_cluster_signature.json")
+    sig_path = stage9_dir / "lad_phenotype" / "lad_cluster_signature.json"
     if not sig_path.exists():
-        _log.warning(
-            "LAD signature file not found at %s; falling back to "
-            "historical 0.5 mm cluster ids %s. Run the LAD phenotype "
-            "experiment first for accurate cluster overlap analysis.",
-            sig_path, LAD_DOMINANT_CLUSTERS_FALLBACK,
-        )
-        return LAD_DOMINANT_CLUSTERS_FALLBACK
-    try:
-        sig = json.loads(sig_path.read_text(encoding="utf-8"))
-        ids = sig.get("lad_dominant_cluster_ids") or []
-        if not ids:
-            _log.warning(
-                "LAD signature found 0 dominant clusters; using fallback %s",
-                LAD_DOMINANT_CLUSTERS_FALLBACK,
-            )
-            return LAD_DOMINANT_CLUSTERS_FALLBACK
-        return tuple(int(i) for i in ids)
-    except Exception as exc:
-        _log.warning(
-            "Could not parse %s (%s); using fallback %s",
-            sig_path, exc, LAD_DOMINANT_CLUSTERS_FALLBACK,
-        )
-        return LAD_DOMINANT_CLUSTERS_FALLBACK
+        raise SystemExit(f"hard stop: {sig_path} missing; run the LAD phenotype experiment first")
+    sig = json.loads(sig_path.read_text(encoding="utf-8"))
+    if "lad_dominant_cluster_ids" not in sig or not isinstance(sig["lad_dominant_cluster_ids"], list):
+        raise SystemExit(f"hard stop: {sig_path} has no lad_dominant_cluster_ids list")
+    return tuple(int(i) for i in sig["lad_dominant_cluster_ids"])
 
 # Agatston tier bin edges per IBSI calcium convention.
 HU_TIER_EDGES = (130, 200, 300, 400, float("inf"))
@@ -307,16 +288,24 @@ def density_profile(displaced_with_features: pd.DataFrame) -> dict:
 def cluster_overlap_with_lad(
     displaced_pids: list,
     lesion_labels: pd.DataFrame,
-    lad_dominant_clusters: tuple[int, ...] = LAD_DOMINANT_CLUSTERS_FALLBACK,
+    lad_dominant_clusters: tuple[int, ...],
 ) -> dict:
     """For every LM lesion belonging to a displaced patient, look up its
     cluster id. Report breakdown and the LAD-cluster overlap fraction
     per plan.md P5.
 
-    The ``lad_dominant_clusters`` argument must be supplied by the caller
-    based on the CURRENT-RUN LAD experiment output (cluster labels are
-    arbitrary across k-means reruns).
+    ``lad_dominant_clusters`` comes from the CURRENT run's LAD signature
+    (cluster labels are arbitrary across k-means reruns). If it is empty
+    (no LAD-dominant cluster this run), P5 is not evaluable and
+    ``passes_distinctness`` is None.
     """
+    if len(lad_dominant_clusters) == 0:
+        return {
+            "evaluable": False,
+            "reason": "no LAD-dominant cluster in this run's LAD signature",
+            "lad_dominant_clusters_used": [],
+            "passes_distinctness": None,
+        }
     primary_col = next(
         (c for c in lesion_labels.columns
          if c.startswith("cluster_kmeans_k")),
@@ -344,6 +333,7 @@ def cluster_overlap_with_lad(
     n_total = int(len(sub))
     overlap_frac = n_in_lad / n_total if n_total else 0.0
     out = {
+        "evaluable": True,
         "lesion_count": n_total,
         "cluster_breakdown": {int(k): int(v) for k, v in cluster_breakdown.items()},
         "lad_dominant_clusters_used": list(lad_dominant_clusters),
@@ -378,7 +368,7 @@ def main() -> int:
         format="%(asctime)s [%(levelname)s] %(message)s",
     )
     cfg = load_config(args.config)
-    out_dir = (cfg.paths.outputs / "exploratory" / "lm_isolated_low_burden")
+    out_dir = (stage9_root(cfg) / "lm_isolated_low_burden")
     out_dir.mkdir(parents=True, exist_ok=True)
     repo_root = cfg.paths.outputs.parent
 
@@ -387,8 +377,7 @@ def main() -> int:
     pca_pid_csv = cfg.paths.outputs / "06_reduce" / "pca_scores_pid_order.csv"
     meta_csv = cfg.paths.outputs / "06_reduce" / "cohort_metadata.csv"
     features_csv = cfg.paths.outputs / "03_features" / "features.csv"
-    lesion_labels_csv = (cfg.paths.outputs / "exploratory"
-                          / "lesion_morphology" / "lesion_cluster_labels.csv")
+    lesion_labels_csv = (stage9_root(cfg) / "lesion_morphology" / "lesion_cluster_labels.csv")
     for p in (pca_npy, pca_pid_csv, meta_csv, features_csv, lesion_labels_csv):
         if not p.exists():
             _log.error("missing input: %s", p)
@@ -452,7 +441,7 @@ def main() -> int:
 
     # Step 5: cluster overlap (with LAD-dominant clusters discovered at
     # runtime; k-means labels are arbitrary across reruns)
-    lad_dominant = _discover_lad_dominant_clusters(cfg.paths.outputs)
+    lad_dominant = _discover_lad_dominant_clusters(stage9_root(cfg))
     _log.info("Step 5: LAD-dominant clusters discovered at runtime = %s",
               lad_dominant)
     coverlap = cluster_overlap_with_lad(
@@ -489,10 +478,11 @@ def main() -> int:
         "cross_stratum_passes_P3": cs["passes"],
         "density_framing_P4": dprof.get("framing"),
         "cluster_distinctness_passes_P5": coverlap.get("passes_distinctness"),
-        "overall_passes_all_criteria": bool(
-            fisher_result.get("passes")
-            and cs["passes"]
-            and coverlap.get("passes_distinctness")
+        # None when P5 is not evaluable (no LAD-dominant cluster this run).
+        "overall_passes_all_criteria": (
+            None if coverlap.get("passes_distinctness") is None
+            else bool(fisher_result.get("passes") and cs["passes"]
+                      and coverlap["passes_distinctness"])
         ),
     }
     _save_json(out_dir / "summary.json", summary)
