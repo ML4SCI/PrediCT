@@ -2,7 +2,7 @@
 ## Coronary Calcium Scoring CT Dataset
 **Generated:** 2026-06-01  
 **Environment:** predict_env (Python 3.8, pydicom, numpy)  
-**Project Path:** `/home/student/Test/runtime_meta/session_index/predict/project2`
+
 
 ---
 
