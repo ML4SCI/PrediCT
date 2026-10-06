@@ -2,24 +2,27 @@
 
 ## What this stage does
 
-Filters the 175-feature output of stage 3 down to a stability-gated subset by
-computing intra-class correlation under 14 deterministic CT perturbations.
-Features that are unstable across plausible registration errors are dropped
-before any clustering or phenotype analysis in stage 5 and beyond.
+Filters the 175-feature output of stage 3 down to a stability-gated subset.
+Features that are unstable under plausible acquisition, reconstruction and
+annotation variation are dropped before any clustering or phenotype analysis
+in stage 5 and beyond. Two gates are computed:
 
-The gate is split into two paths per D016:
+1. **D033 realistic gate (primary; feeds stage 5).** Each eligible patient
+   receives 20 composite draws; every draw applies positioning, grid offset,
+   mask/image misalignment, field-of-view resampling, kernel blur, dose noise,
+   HU calibration drift and annotator-boundary jitter (M1) at random
+   magnitudes anchored to COCA's own protocol. A feature passes at
+   ICC(1,1) >= 0.75 over the draws. Canonical features are recomputed from the
+   jittered annotation; those that never vary are tagged
+   `invariant_by_construction`.
+2. **D014 fixed-mask gate (supplementary).** 14 deterministic CT
+   perturbations with the mask held fixed, ICC(3,1) >= 0.75. The 68 canonical
+   features never read the CT and are asserted ICC 1.0
+   (`icc_source = invariant_by_construction`, D016); the 107 PyRadiomics
+   features are measured (`icc_source = empirical`).
 
-1. **Invariant by construction** (68 canonical features). These never read the
-   CT pixel array; they read the radiologist-annotated XML's frozen Max /
-   Mean fields plus polygon vertices. CT perturbations cannot change them.
-   ICC is asserted as 1.0 with `icc_source = invariant_by_construction`.
-2. **Empirical** (107 PyRadiomics features). These index into the CT array
-   via the PyRadiomics extractor. ICC is measured on a 422-by-15 reliability
-   matrix (baseline + 14 perturbations) and tagged `icc_source = empirical`.
-
-Both paths share the D013 threshold (ICC >= 0.75). The bypass does not exempt
-any feature from the gate; it short-circuits the computation when the answer
-is provably 1.0.
+`configs/default.yaml` `stability.primary_gate` selects the gate that stage 5
+reads (`predict.config.gate_dir`).
 
 ## Module list
 
@@ -30,6 +33,10 @@ is provably 1.0.
 - `scripts/04_perturbations.py`  parallel re-extraction of PyRadiomics on
   perturbed CTs.
 - `scripts/05_icc_gate.py`  ICC computation, gating, report writers.
+- `scripts/04b_realistic_perturbations.py`, `scripts/05b_icc_gate_realistic.py`
+  the D033 realistic gate (primary).
+- `src/predict/completion.py`  input fingerprints and `COMPLETE.json`
+  markers; `src/predict/publish.py`  all-or-nothing gate publication.
 
 ## Why these design choices
 
@@ -41,8 +48,7 @@ is provably 1.0.
   (e.g. all values bias up by 5 units) is a reliability concern, not a noise
   channel to be ignored. Penalising it is the conservative choice.
 - 0.75: Koo and Li 2016 "good reliability" floor, standard in radiomics
-  reproducibility studies (IBSI-2, Lin 2022, Kolossvary 2025). v1 D022 used
-  the same threshold; preserving comparability with v1's published numbers.
+  reproducibility studies (IBSI-2, Lin 2022, Kolossvary 2025).
 
 ### D014, 14 perturbations, mask held fixed
 
@@ -52,21 +58,21 @@ is provably 1.0.
   and gated cardiac acquisition limits z mis-registration in real workflows.
 - Magnitudes span the clinically plausible registration-error envelope.
   Smaller would not discriminate; larger would test out-of-distribution.
-- Mask is **not** transformed (Option B, locked 2026-06-03). This tests
-  mis-registration robustness ("if the patient was positioned slightly
-  differently, would the feature change?"). The alternative co-perturbation
-  design (v1 / IBSI-2 convention) would make most perturbations near-identity
-  and the gate would only filter noise-sensitive features. The fixed-mask
-  design is much stricter and is what test-retest reproducibility actually
-  means in an unsupervised phenotyping pipeline.
+- Mask is **not** transformed. This tests mis-registration robustness ("if
+  the patient was positioned slightly differently, would the feature
+  change?"). The co-perturbation design (IBSI-2 convention) would make most
+  perturbations near-identity and the gate would only filter noise-sensitive
+  features. D033 combines both: positioning moves CT and mask together (P1,
+  P2), and a sub-voxel CT-only shift (P3) models mask/image misalignment.
 
-### D015, eligible cohort N=422
+### D015, eligible cohort (437 patients)
 
-- Full 444 minus 22 patients with `radiomics_status == "skipped"` from
-  stage 3 (whole-mask voxel count below PyRadiomics' minimumROISize = 14).
-- These 22 already have NaN PyRadiomics columns in baseline; ICC is
-  undefined for them and they would contribute no information.
-- Includes the 142 `low_burden_flag == True` patients (mask 14 to 100
+- The 439 stage 1 patients minus the 2 with `radiomics_status == "skipped"`
+  from stage 3 (whole-mask voxel count at or below PyRadiomics'
+  minimumROISize = 14).
+- These already have NaN PyRadiomics columns in baseline; ICC is undefined
+  for them and they would contribute no information.
+- Includes the 97 `low_burden_flag == True` patients (mask below 100
   voxels). Their PyRadiomics is numerically defined but biologically
   suspect; we keep them in the ICC computation because the gate is meant
   to identify features that are unstable across the whole cohort, not the
@@ -87,13 +93,15 @@ empirical confirmation:
   canonical feature values. Empirically confirmed on patient 306, 2026-06-03:
   68 keys, 0 diffs across two calls.
 
-The original D016 lock split the canonical features into 31 pure-geometry
-(bypass) plus 37 HU-touching (empirical gate). That was retracted after the
-architectural audit found that the HU-touching canonical features read XML,
-not CT. Forcing them through the empirical gate would require re-deriving
-HU statistics by sampling the perturbed CT through the polygon, a code path
-that does not exist in production. The ICC measured on such a re-derived
-quantity would describe a hypothetical alternative pipeline, not v2.
+Splitting the canonical features into pure-geometry (bypass) and
+HU-touching (empirical gate) would be wrong: the HU-touching canonical
+features read XML, not CT. Forcing them through the empirical gate would
+require re-deriving HU statistics by sampling the perturbed CT through the
+polygon, a code path that does not exist in production. The ICC measured on
+such a re-derived quantity would describe a hypothetical alternative
+pipeline, not this one. Under D033 the annotation itself is perturbed (M1),
+so canonical features are recomputed per draw and gated empirically unless
+they never vary.
 
 ## Module contracts
 
@@ -190,160 +198,142 @@ conda activate predict_env
 python scripts/04_perturbations.py --only-perturbation noise_5 --limit 5 --no-resume
 ```
 
-Full run (all 14 perturbations, 422 patients, parallel):
+Full run (normally through `run_pipeline.sh`, stage 4):
 
 ```bash
-python scripts/04_perturbations.py --n-workers 16
-python scripts/05_icc_gate.py
+python scripts/04_perturbations.py            # D014 draws
+python scripts/05_icc_gate.py                 # D014 gate
+python scripts/calibrate_realistic.py         # D033 calibration
+python scripts/04b_realistic_perturbations.py --arms all
+python scripts/05b_icc_gate_realistic.py      # D033 gate (primary)
+python scripts/05c_robustness_tiers.py        # D034 tiers
 ```
 
-Resume is automatic: a per-perturbation CSV that already contains all 422
-eligible pids is skipped on rerun unless `--no-resume` is passed.
+Resume is automatic but verified (see "Run safeguards" below); `--no-resume`
+forces re-extraction.
+
+## Run safeguards
+
+Both gates (D014 classic, D033 realistic) follow the same rules.
+
+- **Verified resume.** A cached result is reused only if its sidecar JSON
+  carries the current fingerprint and recorded zero errors. The fingerprint
+  covers all `src/predict` code, `params.yaml`, `configs/default.yaml` and the
+  stage script, plus, for D014, the perturbation spec, the eligible pid list
+  and the published stage-2 folder; for D033, the calibration and each
+  patient's stage-2 CT and mask, XML, `features.csv` row and D002
+  exclusions. The CSV must also be complete: every eligible pid once with no
+  error text (D014), every planned (arm, index) once (D033). The sidecar is
+  written after the CSV, so an interrupted unit is recomputed. Checking only
+  that the pids or (arm, index) pairs are present would reuse files of failed
+  rows or results from older inputs.
+- **Errors fail the stage.** D033.1: a draw is `broken` (allowed, counted by
+  the 5% exclusion rule) only when the perturbed mask is empty or rejected
+  by PyRadiomics' own ROI checks (14 voxels or fewer, a single voxel, or too
+  few dimensions), decided before extraction. Any other
+  exception is an `error`. One error (or a failed parity check) makes 4b
+  exit 1 without `COMPLETE.json`. In D014 any patient error, including an
+  empty mask, makes 4a exit 1 without `COMPLETE.json`, and 5 refuses
+  perturbation CSVs with error text (instead of silently dropping the
+  patient from that feature's ICC).
+- **Completion markers.** 4a and 4b clear `COMPLETE.json` at start and write
+  it only after a full, error-free run (never for `--limit`, `--pids`,
+  `--max-draws` or `--only-perturbation`). 5 and 5b refuse to gate unless
+  the marker exists and matches the current `features.csv` and the current
+  run fingerprint, recomputed by the stage script's own `run_fingerprint`
+  (5b also checks the calibration hash). The 4b marker also carries a
+  patients fingerprint (every patient's stage-2 CT and mask, XML,
+  `features.csv` row and exclusions); 5b recomputes it with 4b's own
+  `patient_fingerprints` (hashing the patient files, about a minute), so a
+  changed input refuses the gate even when `features.csv` is unchanged. 4a's
+  run fingerprint already covers the stage-2 folder. 5b evaluates only the
+  arms the marker lists.
+- **Fingerprint scope.** The code and config part of every stage 4
+  fingerprint is `predict.completion.upstream_fingerprint`: the stage 1-4
+  packages (`io`, `preprocess`, `features`, `stability`), `config.py` and
+  the package `__init__.py` (the only top-level modules stage 1-4
+  computation imports; the bookkeeping modules `completion`, `provenance` and
+  `publish` change no computed value and are excluded), `params.yaml`, the
+  stage script,
+  and the config sections `seed`,
+  `cohort`, `resample`, `hu`, `lesion_grouping`, `stability`. Stage 5+ code
+  and config sections cannot change a draw, so editing them does not
+  invalidate the (many-hour) stage 4 results; editing anything stage 4
+  depends on does.
+- **Prescribed draw counts.** 5b checks that every gated patient has draw
+  indices 0..N-1 exactly once in the primary arm (20) and in every secondary
+  or attribution arm (10), with N from `arm_draw_plan`, never inferred from
+  the largest index present.
+- **Smoke isolation.** `05b --allow-partial` never writes to
+  `05b_icc_realistic/` (default `05b_icc_realistic_smoke/`) and marks its
+  output `PARTIAL_SMOKE_DO_NOT_USE`; `predict.config.gate_dir`, which every
+  downstream stage uses to find the gate, refuses a marked folder.
+- **Atomic publication.** 5 and 5b write to `<gate>.partial/` and replace the
+  gate folder only when the run finishes.
 
 ## Tests
 
-64 tests total in `tests/stability/`:
+`tests/stability/`:
 
-- `test_perturbations.py` (27): perturbation enumeration, individual
-  transforms (rotation / translation / noise), determinism, geometry
-  preservation, dispatch, full-set smoke.
-- `test_icc.py` (25): ICC formula on toy matrices, NaN handling,
-  degeneracy, matrix assembly, gate application, bypass registry.
-- `test_bypass_truly_invariant.py` (11): static check (zero CT-array refs
-  in canonical-feature modules) + functional check (each canonical function
+- `test_perturbations.py`: perturbation enumeration, individual transforms
+  (rotation / translation / noise), determinism, geometry preservation,
+  dispatch, full-set smoke.
+- `test_icc.py`: ICC formulas on toy matrices, NaN handling, degeneracy,
+  matrix assembly, gate application, bypass registry.
+- `test_bypass_truly_invariant.py`: static check (zero CT-array refs in
+  canonical-feature modules) and functional check (each canonical function
   produces byte-identical output across repeated calls).
+- realistic-gate, tier and stage 4 safeguard tests (draw plan, seeds,
+  parity, markers, smoke isolation).
 
-## Empirical results (2026-06-03 run)
+## Results on the analysis cohort
 
-First full run on N = 422 eligible patients (D015), 14 perturbations
-(D014), single seed pass per perturbation.
+437 eligible patients (PyRadiomics `ok`, D015), 175 features (68 canonical,
+107 PyRadiomics). Numbers are from the published stage 4 and 5 outputs
+(`outputs/05b_icc_realistic/`, `outputs/05_icc/`).
 
-### Overall pass count at D013 threshold 0.75
+### D033 realistic gate (primary)
 
-| Track | Total | Passing | Notes |
-|---|---|---|---|
-| Canonical bypass (D016) | 68 | 68 | All XML-driven; ICC = 1.0 by construction. |
-| PyRadiomics empirical | 107 | 20 | Measured ICC(3,1) absolute agreement. |
-| **Total gated features for stage 5** | **175** | **88** | Of which 6 are non-shape PyRadiomics. |
+| | value |
+|---|---|
+| Draws | 69,920 (20 primary per patient plus the secondary and attribution arms) |
+| Broken draws | 542, all perturbed masks below PyRadiomics' minimum ROI size (32 in the primary arm) |
+| Parity | 437 / 437 patients rebuild the stage 2 mask and `features.csv` exactly; 0 errors |
+| **Features passing ICC(1,1) >= 0.75** | **166 of 175** (68 canonical, 98 PyRadiomics) |
+| Realism (primary arm, mean pairwise relative difference between draws) | Agatston 4.60%, volume 4.43%, mask voxels 3.82% |
 
-Empirical ICC distribution (107 features):
+The 9 failing features are PyRadiomics low-intensity and zone-size
+descriptors (`firstorder_10Percentile` .499, `firstorder_Minimum` .745,
+`gldm_LowGrayLevelEmphasis` .746, `gldm_LargeDependenceLowGrayLevelEmphasis`
+.540, `glrlm_LongRunLowGrayLevelEmphasis` .709,
+`glszm_LargeAreaLowGrayLevelEmphasis` .500,
+`glszm_SizeZoneNonUniformityNormalized` .720, `glszm_SmallAreaEmphasis`
+.655, `glszm_SmallAreaLowGrayLevelEmphasis` .744). Three sit within .006 of
+the threshold; the locked point rule applies and none is rescued.
 
-- min 0.000 (`original_ngtdm_Coarseness`)
-- median 0.518
-- max 1.000 (shape features)
-- mean 0.518
-- no NaN
+The primary composite stays below published rescan variability (Agatston
+20.1%, volume 18.3%; Detrano 2005), as D033 requires. Secondary arms (passing
+features): S1 z-phase 153, S2 167, S3 68 (excluded from the D034 tiers),
+S4 168, S5 168, S6 168. Robustness tiers (D034) T1 to T5: 166 / 164 / 153 /
+153 / 150. ICC(3,1) and ICC(1,1) give the same pass / fail for every
+feature.
 
-### Sanity checks (passed)
+### D014 fixed-mask gate (supplementary)
 
-- All 14 PyRadiomics shape features ICC = 1.0 exactly. Mask is genuinely
-  held fixed; perturbation pipeline is correct.
-- n_subjects = 422 for every empirical feature. No listwise NaN deletion.
-- No NaN ICCs; no degenerate features.
+89 of 175 features pass (68 canonical, 21 PyRadiomics). Every D014 survivor
+also passes D033; 77 features pass only D033. The fixed-mask translations of
+up to 5 mm move most lesions off their own outline (median lesion radius
+1.22 mm), so voxel-identity texture features collapse under D014; D033's
+magnitudes are anchored to COCA's own acquisition and annotation variation
+instead.
 
-### Per-family pass rate at 0.75
-
-| family | total | passing | pass % | icc min | median | max |
-|---|---|---|---|---|---|---|
-| shape | 14 | 14 | 100% | 1.0000 | 1.0000 | 1.0000 |
-| firstorder | 18 | 1 | 6% | 0.0832 | 0.4007 | 0.7687 |
-| glcm | 24 | 0 | 0% | 0.1729 | 0.4866 | 0.6975 |
-| glszm | 16 | 1 | 6% | 0.0628 | 0.4617 | 0.8839 |
-| glrlm | 16 | 2 | 12% | 0.2498 | 0.5540 | 0.9729 |
-| ngtdm | 5 | 0 | 0% | 0.0000 | 0.3107 | 0.6726 |
-| gldm | 14 | 2 | 14% | 0.0690 | 0.5145 | 0.9294 |
-
-### The 6 non-shape PyRadiomics survivors
-
-| feature | ICC | interpretation |
-|---|---|---|
-| `original_glrlm_RunLengthNonUniformity` | 0.973 | aggregate run-length spread |
-| `original_gldm_DependenceEntropy` | 0.929 | entropy of dependence histogram |
-| `original_glszm_ZoneEntropy` | 0.884 | entropy of zone-size histogram |
-| `original_glrlm_GrayLevelNonUniformity` | 0.862 | spread of gray levels |
-| `original_gldm_GrayLevelNonUniformity` | 0.792 | spread of gray levels |
-| `original_firstorder_Range` | 0.769 | max-HU minus min-HU |
-
-These six share a structural property: they are aggregate-distribution
-statistics that do not depend on the identity of specific voxels. Features
-that depend on which voxel is sampled (Mean, Median, percentiles,
-position-aware texture descriptors) collapse under the fixed-mask
-translation, because translating the CT pushes calcium voxels in and out
-of the fixed polygon.
-
-### Threshold sensitivity (transparency, D013 threshold is locked at 0.75)
-
-The numbers below are produced by re-applying alternative thresholds to the
-existing ICC report. They are reported for reviewer transparency; the gate
-is locked at 0.75 by D013 before any data inspection (this is the
-standard discipline; do not retroactively pick a threshold).
-
-| threshold | bypass passing | empirical passing | total passing | % of 175 |
-|---|---|---|---|---|
-| 0.50 | 68 | 56 | 124 | 70.9% |
-| 0.60 | 68 | 36 | 104 | 59.4% |
-| **0.75 (locked)** | **68** | **20** | **88** | **50.3%** |
-| 0.85 | 68 | 18 | 86 | 49.1% |
-
-Reproduce with `python scripts/05c_threshold_sensitivity.py`. The locked
-threshold (0.75) sits on a relatively flat part of the ICC distribution
-(0.75 -> 0.85 loses only 2 features), so the result is robust to small
-threshold perturbations. The steepest drop is between 0.50 and 0.60
-(56 -> 36 empirical features, a 20-feature loss), confirming that 0.75 is
-not picked from a knife-edge region.
-
-### Why the 19% PyRadiomics pass rate
-
-v1 saw ~70% under co-perturbation (mask and CT moved together). v2's
-fixed-mask design (Option B, D014) is strictly stricter and was chosen for
-that reason: under co-perturbation most non-noise perturbations become
-near-identity for the extractor, so the gate filters very little. Under our
-design, translations of +/- 5 mm genuinely shift the CT relative to the
-fixed mask. For COCA's small lesions (median per-vessel ROI area ~5 mm²
-per dataset insights), calcium voxels translate out of the polygon
-entirely on a single shift, sampling background instead. Features that
-depend on specific voxel intensities (most first-order, most texture)
-collapse; features that only summarise distribution shape (Range, entropy,
-non-uniformity) survive.
-
-This is the gate doing what it was designed to do. Lin 2022 (CCTA culprit
-lesions) and Mackin 2015 (NSCLC) report similar pass rates (30-50%) under
-test-retest reproducibility designs. The v2 rate sits at the low end of
-the literature range, explained by COCA's small-lesion profile.
-
-### Implications for stage 5
-
-- The 88 features going into stage 5 include all clinically interpretable
-  canonical features (Agatston, mass, density tiers per vessel,
-  lesion counts, distances, diffusivity, volume, COM, etc.) plus shape +
-  6 aggregate texture descriptors.
-- 88 features for 422 patients = n:p ratio of ~5:1, healthy for
-  unsupervised phenotype discovery.
-- The texture vocabulary has been heavily pruned, which is biologically
-  meaningful: COCA's calcium phenotypes (if they exist as discrete
-  clusters) cannot rely on registration-sensitive texture descriptors.
-  v1's published "continuum, no discrete phenotypes" finding was already
-  driven primarily by the canonical features; the texture pruning here
-  does not change that hypothesis.
-
-### Output artefacts
-
-- `outputs/04_perturbations/*.csv` (14 files, one per perturbation): 422
-  rows x 108 cols (pid + 107 original_* + error).
-- `outputs/04_perturbations/run_header.json`: reproducibility breadcrumbs.
-- `outputs/04_perturbations/perturbation_log.csv`: per-(pid, pert)
-  runtime / status row.
-- `outputs/05_icc/icc_report.csv`: 175 rows, one per feature.
-- `outputs/05_icc/gated_features.csv`: 88 rows, the features that pass.
-- `outputs/05_icc/icc_summary.json`: aggregate counts.
-- `outputs/05_icc/threshold_sensitivity.csv`: sensitivity table.
+Threshold sensitivity of the D014 report (`scripts/05c_threshold_sensitivity.py`)
+and the per-arm and per-tier tables are written next to each gate.
 
 ## Edge cases
 
-- **Empty mask**: a patient with `mask.sum() == 0` would skip PyRadiomics
-  but should not be in the eligible cohort anyway (radiomics_status would
-  not be "ok"). Defensive guard in `_process_one` returns status="skipped"
-  with no features.
+- **Empty mask**: stage 2 guarantees a non-empty mask, so `_process_one`
+  records an empty mask as an error, which fails stage 4a.
 - **Perturbation that rotates calcium out of the FOV**: corner voxels get
   background fill (-1024). PyRadiomics still extracts on whatever calcium
   is inside the fixed mask; if the mask now overlaps mostly background-filled
@@ -352,20 +342,20 @@ the literature range, explained by COCA's small-lesion profile.
 - **noise_seed collision**: seed = int(pid) * 1000 + int(sigma). For
   sigma 5 vs 10 and any two patient IDs that differ, the seeds are unique
   by construction. Non-numeric pids fall back to a hash. Tested.
-- **Listwise NaN deletion**: a feature with NaN in any rater (e.g. due to
-  a single transient PyRadiomics failure on one perturbation) drops that
-  patient from the ICC computation for that feature only. Other features
-  and other patients are unaffected.
+- **Listwise NaN deletion**: a feature with NaN in any rater drops that
+  patient from the ICC computation for that feature only. A PyRadiomics
+  failure never reaches this path: error rows stop stage 5.
 - **ICC degeneracy**: if a feature is constant across all subjects and
   raters (zero total variance), ICC is NaN, treated as a gate failure.
-  Should not happen for any non-trivial feature on 422 patients.
+  Should not happen for any non-trivial feature on this cohort.
 
 ## Known limitations
 
-- The gate tests robustness to CT-side mis-registration only. It does not
-  test mask redefinition stability (intra-rater segmentation variability)
-  or scanner-day-to-day variability beyond what fits in the noise term.
-- The 14 perturbations are not exhaustive of clinically plausible noise
+- D014 tests robustness to CT-side mis-registration only. D033 adds
+  annotator-boundary jitter, but the frozen XML HU fields (Max, Mean) are
+  not perturbed, and true rescan effects such as z-phase and motion cannot
+  be simulated faithfully from 3 mm data (reported in a secondary arm).
+- Neither perturbation set is exhaustive of clinically plausible noise
   sources. They are a representative subset designed to discriminate
   reliable from unreliable features, not to certify a feature as stable
   under every conceivable acquisition variation.
@@ -378,5 +368,7 @@ the literature range, explained by COCA's small-lesion profile.
 
 - D013, ICC formulation and threshold.
 - D014, 14-perturbation set (mask held fixed).
-- D015, eligible cohort N=422.
+- D015, eligible cohort (PyRadiomics `ok`).
 - D016, bypass scope (68 canonical bypass, 107 PyRadiomics empirical).
+- D033 / D033.1, the realistic gate and its broken-draw definition.
+- D034, robustness tiers on the D033 gate.

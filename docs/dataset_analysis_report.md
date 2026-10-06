@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This is a **cardiac CT calcium scoring dataset** consisting of **449 patients** with gated cardiac CT scans, each paired with expert-annotated XML files marking calcified lesions across the four major coronary vessels. The dataset contains **22,993 DICOM slices** and **451 XML annotation files**. All images were acquired on Siemens CT scanners (two models) with a small GE subset, predominantly at 120 kVP, 3.0 mm slice thickness, 512×512 resolution. Every patient has at least one annotated calcium deposit — this is a **positive-only calcium dataset with no zero-calcium controls**.
+This is a **cardiac CT calcium scoring dataset** consisting of **449 patients** with gated cardiac CT scans, each paired with expert-annotated XML files marking calcified lesions across the four major coronary vessels. The dataset contains **22,993 DICOM slices** and **451 XML annotation files**. All images were acquired on Siemens CT scanners (two models) with a small GE subset, predominantly at 120 kVP, 3.0 mm slice thickness, 512×512 resolution. Every patient has at least one annotated calcium deposit, this is a **positive-only calcium dataset with no zero-calcium controls**.
 
 ---
 
@@ -16,11 +16,11 @@ This is a **cardiac CT calcium scoring dataset** consisting of **449 patients** 
 
 ```
 data/
-├── raw/               # DICOM images — 449 patient directories
+├── raw/               # DICOM images, 449 patient directories
 │   └── <patient_id>/
 │       └── <series_protocol_name>/
 │           └── IM-XXXX-YYYY.dcm
-└── calcium_xml/       # Calcium annotation files — 451 XML files
+└── calcium_xml/       # Calcium annotation files, 451 XML files
     └── <patient_id>.xml
 ```
 
@@ -89,7 +89,7 @@ data/
 - **Force + Qr36d**: 235 patients (52.3%)
 - **Definition Flash + I30f**: 206 patients (45.9%)
 
-These kernels differ in sharpness characteristics and may produce measurable intensity differences — this is a critical confound for cross-kernel generalization.
+These kernels differ in sharpness characteristics and may produce measurable intensity differences, this is a critical confound for cross-kernel generalization.
 
 ### 3.4 Series/Protocol Naming
 
@@ -114,7 +114,7 @@ Cardiac phase gating: predominantly **diastolic (70–75%)**, with a small numbe
 | Pixels > 130 HU (potential calcium) | ~5% of image area |
 | Pixels > 400 HU (dense calcium) | ~1.5% of image area |
 
-> Patient 45 has max HU of 3071 — likely a metal artifact (e.g., pacemaker lead) and warrants review.
+> Patient 45 has max HU of 3071, likely a metal artifact (e.g., pacemaker lead) and warrants review.
 
 ---
 
@@ -125,13 +125,13 @@ Cardiac phase gating: predominantly **diastolic (70–75%)**, with a small numbe
 Files are **Apple plist XML** format, one per patient. Each file contains:
 - An array of `Images` (indexed CT slices)
 - Per-image `ROIs` (Regions of Interest), each with:
-  - `Name` — vessel label
-  - `NumberOfPoints` — 0 means empty/placeholder, >0 means active annotation
-  - `Area` — lesion area in cm²
-  - `Mean`, `Max`, `Min` — HU statistics of enclosed pixels
-  - `Total` — sum of all pixel HU values in ROI
-  - `Length` — diameter proxy
-  - `Point_mm` / `Point_px` — polygon boundary coordinates
+  - `Name`: vessel label
+  - `NumberOfPoints`: 0 means empty/placeholder, >0 means active annotation
+  - `Area`: lesion area in cm²
+  - `Mean`, `Max`, `Min`: HU statistics of enclosed pixels
+  - `Total`: sum of all pixel HU values in ROI
+  - `Length`: diameter proxy
+  - `Point_mm` / `Point_px`: polygon boundary coordinates
 
 ### 4.2 Annotated Vessels
 
@@ -142,7 +142,7 @@ Files are **Apple plist XML** format, one per patient. Each file contains:
 | Left Circumflex Artery | LCx |
 | Left Coronary Artery | LCA (left main trunk) |
 
-> **Note:** 5 instances of dirty/invalid vessel names were found: `'1'`, `'555614876'`, `'555831064'`, `'Unnamed'` — present in patients 238, 398, 415, 421. These appear to be annotation tool errors and should be treated as noise or manually reclassified.
+> **Note:** 5 instances of dirty/invalid vessel names were found: `'1'`, `'555614876'`, `'555831064'`, `'Unnamed'`, present in patients 238, 398, 415, 421. These appear to be annotation tool errors and should be treated as noise or manually reclassified.
 
 ### 4.3 Per-Vessel Annotation Statistics
 
@@ -165,7 +165,7 @@ This aligns with the known clinical epidemiology of coronary artery disease.
 | LCx | 0.0014 | 0.8779 | 0.0706 | 0.0412 |
 | LCA | 0.0023 | 0.7276 | 0.0846 | 0.0496 |
 
-Lesion area distribution is **heavily right-skewed** — most lesions are small (<0.05 cm²) with rare large calcifications. The median being less than half the mean confirms this skew.
+Lesion area distribution is **heavily right-skewed**: most lesions are small (<0.05 cm²) with rare large calcifications. The median being less than half the mean confirms this skew.
 
 ### 4.5 HU Density (Agatston Weight Bins) per Vessel
 
@@ -178,7 +178,7 @@ Agatston scoring weights: W1=130–199 HU, W2=200–299 HU, W3=300–399 HU, W4=
 | LCx | 23.3% | 28.7% | 19.9% | **28.1%** |
 | LCA | 20.9% | 24.5% | 17.3% | **37.4%** |
 
-All vessels show a bimodal HU distribution — mild calcifications (W1) and dense calcifications (W4) are most common, with intermediate densities less frequent. This is consistent with calcium deposit biology.
+All vessels show a bimodal HU distribution: mild calcifications (W1) and dense calcifications (W4) are most common, with intermediate densities less frequent. This is consistent with calcium deposit biology.
 
 ### 4.6 Vessel Combination Patterns
 
@@ -228,22 +228,23 @@ All vessels show a bimodal HU distribution — mild calcifications (W1) and dens
 
 | # | Issue | Patients Affected | Impact |
 |---|-------|------------------|--------|
-| 1 | XML files with no matching DICOM data | 2 (IDs: 12, 197) | Cannot be trained/tested — **exclude** |
-| 2 | Slice index in XML exceeds DICOM slice count | 1 (ID: 268) | Annotation-DICOM misalignment — verify manually |
+| 1 | XML files with no matching DICOM data | 2 (IDs: 12, 197) | Cannot be trained/tested: **exclude** |
+| 2 | Slice index in XML exceeds DICOM slice count | 1 (ID: 268) | Annotation-DICOM misalignment: verify manually |
+| 2a | Irregular or overlapping slice geometry in the selected series (D039, D039.1) | 5 (IDs: 33, 135, 156, 159, 388) | 156: two pixel spacings (0.381 and 0.596 mm) with an in-plane origin shift in one series (D039.1). 135: one slice exported as a separate series. 159: scan split over two series, 11 slices missing from the selected one, one file without a position. 388: one slice missing; its folder holds a copy of pid 135's missing slice (same anonymised series UID and z), so one file is filed under two patients. 33: 3.0 mm slices every 1.5 mm (overlap). SimpleITK silently assigns a uniform spacing to such series. **Excluded** (D039). |
 
 ### 5.2 Annotation Noise
 
 | # | Issue | Patients Affected | Notes |
 |---|-------|------------------|-------|
-| 3 | Invalid/garbage vessel names ('1', numeric IDs) | 3 (IDs: 238, 398) | Numeric IDs (555614876, 555831064) are likely annotation software artefacts. Patient 238 has active ROIs under these names — calcium may be mislabeled. |
-| 4 | 'Unnamed' ROI with 0 HU, 0 area but >0 points | 2 (IDs: 415, 421) | Ghost ROIs — exclude these instances. |
+| 3 | Invalid/garbage vessel names ('1', numeric IDs) | 3 (IDs: 238, 398) | Numeric IDs (555614876, 555831064) are likely annotation software artefacts. Patient 238 has active ROIs under these names: calcium may be mislabeled. |
+| 4 | 'Unnamed' ROI with 0 HU, 0 area but >0 points | 2 (IDs: 415, 421) | Ghost ROIs: exclude these instances. |
 
 ### 5.3 Acquisition Heterogeneity (Confounds)
 
 | # | Issue | Scope | Recommendation |
 |---|-------|-------|---------------|
 | 5 | Two distinct convolution kernels (Qr36d vs I30f) | All 449 patients | Normalize by z-score per kernel group, or use kernel as a covariate. |
-| 6 | GE vs Siemens scanners (4 GE patients) | 4 patients | GE STANDARD kernel differs significantly — consider excluding or treating separately. |
+| 6 | GE vs Siemens scanners (4 GE patients) | 4 patients | GE STANDARD kernel differs significantly: consider excluding or treating separately. |
 | 7 | Variable pixel spacing (0.26–0.71 mm) | All 449 patients | Resample to a fixed isotropic resolution before training. |
 | 8 | Variable slice counts (34–156) | All 449 patients | Use fixed-size windows or pad/crop to consistent depth. |
 | 9 | Patient sex fully anonymized (all empty) | All 449 patients | Cannot use sex as a clinical covariate. |
@@ -262,7 +263,7 @@ All vessels show a bimodal HU distribution — mild calcifications (W1) and dens
 
 | Property | Value |
 |----------|-------|
-| Domain | Cardiac CT — Coronary Calcium Scoring |
+| Domain | Cardiac CT: Coronary Calcium Scoring |
 | Task type | Segmentation / Detection / Scoring |
 | Patients | 449 (usable: 447, excluding IDs 12 & 197) |
 | Images | 22,993 DICOM slices |
@@ -338,7 +339,7 @@ def load_patient(patient_id, raw_dir, xml_dir):
             points_px = roi['Point_px']   # 2D polygon in pixel coords
 ```
 
-> **Critical:** Always skip ROIs where `NumberOfPoints == 0`. Every annotated slice contains placeholder ROI entries for vessels with no calcium — these must be filtered out before any processing.
+> **Critical:** Always skip ROIs where `NumberOfPoints == 0`. Every annotated slice contains placeholder ROI entries for vessels with no calcium, these must be filtered out before any processing.
 
 ### 7.3 Why NOT Filename Order or InstanceNumber
 
@@ -351,17 +352,17 @@ def load_patient(patient_id, raw_dir, xml_dir):
 
 ### 7.4 Special Cases and Exceptions
 
-#### Case A — Multi-Series Patients (14 patients, same Z positions)
+#### Case A: Multi-Series Patients (14 patients, same Z positions)
 
 | Patients | IDs |
 |----------|-----|
 | 14 patients | 78, 120, 146, 155, 165, 192, 194, 228, 276, 358, 417, and 3 others |
 
-These folders contain **two DICOM series** (different `SeriesNumber`) at **identical Z positions** — i.e., duplicate slices. Their 68–156 files each contain only 34–57 unique Z positions. OsiriX loaded one series and indexed from that.
+These folders contain **two DICOM series** (different `SeriesNumber`) at **identical Z positions**, i.e., duplicate slices. Their 68–156 files each contain only 34–57 unique Z positions. OsiriX loaded one series and indexed from that.
 
 **Fix:** Deduplicate by Z (keep first occurrence when files are sorted by filename), then sort ascending. The `index_to_file` mapping above handles this automatically since `seen_z` skips duplicates.
 
-#### Case B — Two Non-Overlapping Series Merged in One Folder (patients 398, 435)
+#### Case B: Two Non-Overlapping Series Merged in One Folder (patients 398, 435)
 
 | Patient | Series 3 Z range | Series 5 Z range | Annotation done on |
 |---------|-----------------|-----------------|-------------------|
@@ -372,13 +373,20 @@ Series 5 extends the Z coverage inferiorly, but the annotator loaded only **Seri
 
 **Fix:** Filter to Series 3 only before sorting. Identify via `SeriesNumber` DICOM tag. Alternatively, use **Z-coordinate matching** (section 7.5) which is immune to this issue.
 
-#### Case C — Duplicate Z with Annotation Spanning Both Copies (patient 159)
+#### Case C: Split series with missing slices (patient 159)
 
-This patient has 54 DICOM files with only 53 unique Z values (one duplicate Z). OsiriX presented both copies as separate entries, making the internal slice count 54. Annotations on slices 0–31 map correctly on the 53-unique-Z ascending sort; annotations on slices 34–40 are off by 1 because of the hidden duplicate.
+The 54 files are a 43-slice series, a second 10-slice series on the same
+grid, and one file with no `SeriesInstanceUID` and no `ImagePositionPatient`;
+the 53 positioned files have 53 unique z values (no duplicate). The selected
+43-slice series is missing 11 positions on its 3.0 mm grid (10 are in the
+second series, z -182 is missing everywhere), and the 3 ROIs that never match
+sit on those missing slices. Counting files in folder order therefore shifts
+the index of later annotations.
 
-**Fix:** Use Z-coordinate matching.
+**Fix:** Exclude the patient (D039): a series with missing slices cannot be
+resampled correctly.
 
-#### Case D — Replaced Series (patient 268) — Cannot be reliably indexed
+#### Case D: Replaced Series (patient 268), Cannot be reliably indexed
 
 During annotation, OsiriX loaded a **1.5 mm reconstructed series** (93 slices). The current DICOM folder contains a replacement **3.0 mm series** (47 slices). The XML `ImageIndex` values reach up to 72, which exceeds the current slice count (47). ROI center Z coordinates don't match any DICOM Z exactly (they fall between slices with 1.5 mm spacing).
 
@@ -413,7 +421,7 @@ This approach achieves **100% correct matches** across 6,232 active ROI instance
 | Multi-series, same Z (deduped) | 14 | ~580 | 100% via Z-match |
 | Non-overlapping dual series (398, 435) | 2 | ~44 | 100% via Z-match |
 | Partial duplicate Z issue (159) | 1 | 13 | 100% via Z-match |
-| Replaced series — 1.5 mm gap (268) | 1 | 14 | ~0% (unreliable) |
+| Replaced series: 1.5 mm gap (268) | 1 | 14 | ~0% (unreliable) |
 | Dirty vessel names (238, 398, 415, 421) | 4 | ~8 | Exclude |
 | **Total** | **449** | **6,232** | **~99.8% (exclude 268)** |
 
@@ -421,8 +429,8 @@ This approach achieves **100% correct matches** across 6,232 active ROI instance
 
 Each ROI contains both world coordinates (`Point_mm`) and pixel coordinates (`Point_px`):
 
-- **`Point_mm`**: 3D LPS world coordinates — `(L, P, S)` in mm. The `z` component identifies the slice (matches `ImagePositionPatient[2]`).
-- **`Point_px`**: 2D pixel coordinates — `(col, row)` within the 512×512 image. These are **floating-point** due to sub-pixel annotation precision.
+- **`Point_mm`**: 3D LPS world coordinates: `(L, P, S)` in mm. The `z` component identifies the slice (matches `ImagePositionPatient[2]`).
+- **`Point_px`**: 2D pixel coordinates: `(col, row)` within the 512×512 image. These are **floating-point** due to sub-pixel annotation precision.
 - **Conversion**: `pixel = (world - ImagePositionPatient) / PixelSpacing` along each axis. Verify against `RescaleSlope`/`RescaleIntercept` when working in HU space.
 
 ---
@@ -433,16 +441,16 @@ This dataset will feed a **radiomics feature extraction and calcium phenotyping 
 
 ### 8.1 Data Loading (Pipeline Entry Point)
 
-1. **Use Z-coordinate matching** (section 7.5) as the authoritative DICOM-to-XML loader — not `ImageIndex` lookup. Implement once, use everywhere.
-2. **Exclude patients 12, 197** (no DICOM), and **patient 268** (1.5 mm annotation series replaced with 3.0 mm — spatial accuracy lost).
+1. **Use Z-coordinate matching** (section 7.5) as the authoritative DICOM-to-XML loader: not `ImageIndex` lookup. Implement once, use everywhere.
+2. **Exclude patients 12, 197** (no DICOM), and **patient 268** (1.5 mm annotation series replaced with 3.0 mm: spatial accuracy lost).
 3. **Clean dirty annotations**: patients 238, 398, 415, 421. The numeric vessel IDs (555614876, 555831064) are OsiriX software artefacts; exclude or manually reclassify them.
 4. **Multi-series patients (14)**: deduplicate by Z using the lower-numbered series (Series 3 or equivalent) as the canonical set before sorting. For patients 398 and 435, filter to Series 3 explicitly by `SeriesNumber` DICOM tag.
 
 ### 8.2 Radiomics Feature Extraction
 
-5. **Resample all volumes** to a fixed resolution (recommended: 0.375 × 0.375 × 3.0 mm — near the dataset median pixel spacing) before extracting shape and texture features. Variable pixel spacing (0.26–0.71 mm) will artificially inflate shape features otherwise.
+5. **Resample all volumes** to a fixed resolution (recommended: 0.375 × 0.375 × 3.0 mm: near the dataset median pixel spacing) before extracting shape and texture features. Variable pixel spacing (0.26–0.71 mm) will artificially inflate shape features otherwise.
 6. **Build 3D calcium masks** by stacking per-slice ROI polygons (`Point_px`) across consecutive annotated slices per vessel. Use `scipy.ndimage` or `skimage.draw.polygon` to rasterize each polygon, then stack into a 3D binary volume.
-7. **Normalize per kernel group** (Qr36d vs I30f) before texture feature extraction — these kernels have meaningfully different noise/sharpness profiles that will dominate texture features if uncorrected. Apply z-score normalization within each kernel group, or train a domain-adversarial normalizer.
+7. **Normalize per kernel group** (Qr36d vs I30f) before texture feature extraction: these kernels have meaningfully different noise/sharpness profiles that will dominate texture features if uncorrected. Apply z-score normalization within each kernel group, or train a domain-adversarial normalizer.
 8. **Clip HU to [−200, 1200]** before feature extraction to suppress air, metal artifacts, and outlier intensities.
 9. **Agatston score proxy**: compute per-ROI Agatston weight = area_cm² × weight (1=130–199 HU, 2=200–299 HU, 3=300–399 HU, 4≥400 HU using `Max` HU from XML). Sum across all slices per vessel. This enables Agatston-correlation validation without re-reading all pixels.
 
@@ -450,7 +458,7 @@ This dataset will feed a **radiomics feature extraction and calcium phenotyping 
 
 10. **Stratify train/val/test splits by scanner kernel** (Qr36d vs I30f) to prevent kernel-leakage in clustering evaluation. Use stratified splits.
 11. **Validation without clinical endpoints** (the novel contribution): use Agatston correlation, cross-scanner reproducibility, and clinical pattern alignment (LAD-predominant vs multi-vessel vs RCA-only patterns map to known clinical subtypes).
-12. **Source zero-calcium negatives** for any binary classification baseline. Current dataset is 100% calcium-positive — unsuitable for detecting absence of calcium.
-13. **Class imbalance at vessel level**: LCA (left main) is present in only 34% of patients — weight accordingly in any vessel-level model.
+12. **Source zero-calcium negatives** for any binary classification baseline. Current dataset is 100% calcium-positive: unsuitable for detecting absence of calcium.
+13. **Class imbalance at vessel level**: LCA (left main) is present in only 34% of patients: weight accordingly in any vessel-level model.
 14. **LCA vs proximal LAD/LCx overlap**: Left main annotations spatially overlap with proximal LAD and LCx. For 3D spatial feature extraction, verify that left-main ROIs don't double-count lesions already captured in LAD/LCx masks.
-15. **Handle the 4 GE patients separately** — STANDARD kernel and 2.5 mm slice thickness differ from the Siemens majority. Consider excluding from clustering or applying domain adaptation.
+15. **Handle the 4 GE patients separately**: STANDARD kernel and 2.5 mm slice thickness differ from the Siemens majority. Consider excluding from clustering or applying domain adaptation.

@@ -2,15 +2,20 @@
 
 ## What this stage does
 
-Transforms the 88 stage-4-gated features (per D013/D016) into a low-dimensional
-PC matrix on the 420 ComBat-eligible patients, in three steps:
+Transforms the stage-4-gated features into a low-dimensional PC matrix on the
+ComBat-eligible patients, in three steps. Which gate it reads is set by
+`stability.primary_gate` in `configs/default.yaml` and resolved by
+`predict.config.gate_dir`: `realistic` = D033 (`outputs/05b_icc_realistic/`,
+the primary gate), `classic` = D014 (`outputs/05_icc/`, supplementary; also the
+layout of gate roots built by `scripts/make_gate_root.py`). Stage 8 (validate)
+reads the gate through the same helper.
 
-1. **D019 matrix preparation**: D017 sentinel drops (88 to 75), D018 dense-calcium
+1. **D019 matrix preparation**: D017 sentinel drops (13 zero-inflated per-vessel features), D018 dense-calcium
    binarisation, conditional derived features (`high_density_fraction`,
    `vessel_burden_gini`) with an R^2 < 0.95 non-redundancy gate, variance filter
-   (sd >= 0.01), ComBat on the 6 PyRadiomics texture columns with kernel
+   (sd >= 0.01), ComBat on every gated non-shape PyRadiomics column (D035) with kernel
    covariate (target post-ComBat scanner R^2 < 0.02), Yeo-Johnson with
-   rank-transform fallback on 19 sparse columns, global z-score.
+   rank-transform fallback on sparse columns, global z-score.
 2. **D020 / D022 redundancy clustering**: Spearman r^2 > 0.75 clustering. The
    primary path (D022) runs multi-block over 6 prospectively-defined blocks
    (burden / HU statistics / density tier / spatial / texture / shape). The
@@ -21,9 +26,9 @@ PC matrix on the 420 ComBat-eligible patients, in three steps:
    sign-normalised so the dominant-loading feature is non-negative per PC,
    retained at 0.85 cumulative variance.
 
-Cluster discovery, gap statistic, consensus clustering, forced-k characterisation,
-and Hennig validity were in this script until 2026-06-05. They moved to the
-**discover** stage during Phase B; see `docs/modules/discover.md`.
+Cluster discovery, gap statistic, consensus clustering, forced-k
+characterisation and Hennig validity are the **discover** stage; see
+`docs/modules/discover.md`.
 
 ## Module list
 
@@ -40,15 +45,17 @@ and Hennig validity were in this script until 2026-06-05. They moved to the
 
 ## Why these design choices
 
-### D019 ComBat on texture only (not on canonical features)
+### D019 / D035 ComBat on PyRadiomics intensity features only (not on canonical or shape)
 
 - Canonical features (Agatston, mass, volume, HU stats, density tiers, spatial,
   count, shape) read from XML's frozen `Max`/`Mean` plus the polygon vertices.
   No CT array indexing, so kernel cannot bias them. ComBat would be a no-op
   with overhead.
-- The 6 PyRadiomics texture survivors (glrlm, gldm, glszm, firstorder Range) DO
-  index into the CT array and DO exhibit pre-ComBat scanner R^2 of 0.002 to
-  0.024. ComBat reduces this to 0.0001 to 0.0024 (well below the 0.02 cut).
+- Gated PyRadiomics firstorder and texture features DO index into the CT
+  array and carry kernel effects. ComBat harmonises every one of them that
+  the gate passes; the column list is derived from the gated set by
+  `harmonisable_columns()`, so it cannot go stale when the gate changes
+  (D035). Shape features read only the mask and pass through.
 
 ### D019 Yeo-Johnson with rank fallback
 
@@ -57,24 +64,24 @@ and Hennig validity were in this script until 2026-06-05. They moved to the
 - Pure rank transform is too aggressive: it discards count magnitude in the
   continuous regime.
 - Yeo-Johnson with per-column post-transform skewness check (abs > 1.0
-  triggers rank fallback) gets the best of both. 15 of 19 sparse columns
-  succeed under YJ; 4 fall back to rank (all LM density tiers).
+  triggers rank fallback) gets the best of both; the sparse LM density tiers
+  are the columns that fall back to rank.
 
 ### D022 multi-block over D020 single-matrix
 
-The single-matrix Spearman cluster produces 23 representatives. The composition
-is the problem, not the count: all 6 PyRadiomics texture features and most
-spatial features are absorbed by the burden cluster (size 29 includes mass_*,
-volume_*, glrlm/gldm/glszm). 16 of 23 reps end up burden-flavoured.
+In a calcium-positive cohort most texture and spatial features correlate
+strongly with total burden, so a single-matrix Spearman clustering absorbs
+them into the burden cluster and most representatives end up
+burden-flavoured. The composition is the problem, not the count (numbers in
+D022).
 
 The multi-block partition runs Spearman clustering INDEPENDENTLY within 6
 prospective blocks (burden, hu_statistics, density_tier, spatial, texture,
 shape). The block boundaries are defined a priori from PyRadiomics IBSI
-taxonomy, canonical feature provenance, and Lin 2022 / Hoori 2024 / v1
-hypotheses, NOT from any stage-5 finding. Result on the full cohort: 29
-representatives, balanced (4 HU / 2 burden / 1 count / 1 dense / 14 density-tier
-/ 1 derived-density / 3 spatial / 2 shape / 2 texture). Cross-cohort
-intersection rises from 12 (single-matrix) to 28 (multi-block).
+taxonomy, canonical feature provenance, and Lin 2022 / Hoori 2024, NOT from
+any stage-5 finding. Representatives are then balanced across the blocks,
+and the representative sets of the full and kernel-stratified cohorts
+overlap far more than under the single matrix.
 
 The single-matrix variant is retained as a sensitivity probe via
 `--block-mode single`. The composition argument, not just the rep count, is
@@ -84,17 +91,50 @@ the reason multi-block is primary.
 
 PCA eigenvectors are sign-arbitrary. Without normalisation, "high PC1" can
 mean opposite things on two runs of the same code on the same data, and
-downstream clustering then assigns opposite labels. The D034-from-v1
-convention: for each PC, flip the sign so the feature with the largest
+downstream clustering then assigns opposite labels. Convention: for each PC, flip the sign so the feature with the largest
 absolute loading has a non-negative loading. Tested by
 `test_fit_pca_sign_invariant_under_input_sign_flip`.
 
+### D040 vessel Gini and measured reliability of transformed features
+
+`vessel_burden_gini` is the Gini of the four per-vessel Agatston values with
+calcium-free vessels included (0 = even, 0.75 = all burden in one vessel), as
+D019 defines it. Dropping calcium-free vessels first would give single-vessel
+patients (140 of 436 in the analysis cohort) the value of perfectly even
+disease. The stage 7 helper imports the same function.
+
+`has_dense_calcium`, `high_density_fraction` and `vessel_burden_gini` are
+created here, so the gate never saw them. Stage 5b computes them on every
+primary draw with `stage5_transformed_columns` and gates them with the D033
+rule (`derived_icc.csv`). Stage 5 admits only passing ones and uses their
+measured ICC (no assumed 1.0) when choosing representatives; with a D014
+classic gate they stay invariant by construction.
+
+### Run safeguards
+
+- Every gated feature must be present in `features.csv`, or stage 5 stops.
+- Each cohort writes to `<cohort>.partial/` and replaces the cohort's files
+  only after the whole run succeeds, by an atomic folder swap
+  (`predict.publish.publish_keeping_subdirs`: the current sub-cohort folders
+  such as `stratified_*` are copied into the partial folder first, then the
+  folder is swapped by two renames, so readers never see a mix). A failed
+  run leaves the published folder untouched; the swap drops the old
+  top-level files, including stage 6 outputs a stage 5 rerun invalidates.
+- `COMPLETE_stage5.json` lists every stage 5 file with its hash and the hash
+  of the `features.csv` the run read (checked unchanged at the end of the
+  run). Stage 7 joins raw features.csv values to the stage 6 labels and
+  refuses any other features.csv.
+- `--block-mode single` (D020 sensitivity) writes to
+  `06_reduce/sensitivity_single_block[/stratified_<kernel>]/`, never over the
+  D022 primary.
+- Every feature entering redundancy clustering must have an ICC entry.
+
 ### Single-kernel cohort exclusion (ComBat prerequisite)
 
-COCA has 4 kernels: Qr36d/2 (220), I30f/3 (200), B35f (1), I36f/3 (1).
-neuroCombat with a singleton kernel produces NaN because within-batch variance
-is undefined. The orchestrator filters to {Qr36d/2, I30f/3} before matrix
-prep. Stage 5 analysis cohort is therefore N=420, not 422. Defense-in-depth
+Among the 437 eligible patients the kernels are Qr36d/2 (231), I30f/3 (205)
+and I36f/3 (1). neuroCombat with a singleton kernel produces NaN because
+within-batch variance is undefined. The orchestrator filters to {Qr36d/2,
+I30f/3} before matrix prep, so the stage 5 analysis cohort is 436. Defense-in-depth
 assertion in `combat_harmonise` raises if any singleton slips through.
 
 ## Module contracts
@@ -103,11 +143,12 @@ assertion in `combat_harmonise` raises if any singleton slips through.
 # prepare_matrix.run_matrix_prep
 def run_matrix_prep(
     df: pd.DataFrame,              # eligible cohort, pid + metadata + features
-    feature_cols: list[str],       # gated 88 from stage 4
+    feature_cols: list[str],       # gated features from stage 4
     variance_threshold: float = 0.01,
     yj_skew_threshold: float = 1.0,
     combat_max_post_r2: float = 0.02,
     add_derived: bool = True,
+    reliable_transformed: set[str] | None = None,   # D040: 5b derived_icc passing set
 ) -> tuple[pd.DataFrame, list[str], MatrixPrepLog]:
     """Returns prepared dataframe, list of surviving feature columns, audit log."""
 
@@ -137,42 +178,42 @@ def fit_pca(
 
 ## Decisions
 
-- D017 - sentinel-prone per-vessel feature exclusion (88 to 75 at stage 5 ingestion)
+- D017 - sentinel-prone per-vessel feature exclusion at stage 5 ingestion
 - D018 - density tier and dense_calcium binarisation
-- D019 - preprocessing pipeline (variance filter, ComBat on 6 texture, YJ + rank)
+- D019 - preprocessing pipeline (variance filter, ComBat, YJ + rank)
+- D035 - ComBat columns derived from the gate (all non-shape PyRadiomics)
 - D020 - redundancy clustering and PCA
-- D022 - multi-block redundancy clustering (primary, supersedes single-matrix portion of D020)
+- D022 - multi-block redundancy clustering (primary; the single-matrix D020 variant is a sensitivity run)
+- D040 - vessel Gini over all four vessels; transformed features carry measured D033 reliability
 
 ## Tests
 
-`tests/reduce/`, all passing (as of Phase B2 close, 2026-06-05):
+`tests/reduce/`:
 
-| Module | Test file | Count |
-|---|---|---|
-| prepare_matrix | `test_prepare_matrix.py` | 57 |
-| redundancy (single + multi-block) | `test_redundancy.py` | 53 |
-| pca | `test_pca.py` | 65 |
-| **Total** | | **175** |
+| Module | Test file |
+|---|---|
+| prepare_matrix | `test_prepare_matrix.py` |
+| redundancy (single + multi-block) | `test_redundancy.py` |
+| pca | `test_pca.py` |
+| stage 5 script safeguards | `test_stage5_script.py` |
 
-(Plus 89 tests under `tests/discover/` for the cluster-discovery half, covered
-in `docs/modules/discover.md`.)
+## Results on the analysis cohort (D033 gate)
 
-## Empirical results (full cohort, N=420, Phase-B production rerun)
+| Cohort | Patients | Features after D019 | Representatives (D022) | PCs at 85% | Cumulative variance |
+|---|---|---|---|---|---|
+| Full | 436 | 155 | 35 | 15 | 85.95% |
+| Qr36d/2 | 231 | 153 | 33 | 14 | 86.60% |
+| I30f/3 | 205 | 154 | 36 | 15 | 86.23% |
 
-- D019: 88 to 77 features. Variance filter dropped 0. Derived features both
-  accepted (high_density_fraction R^2 = 0.72, vessel_burden_gini R^2 = 0.86).
-- ComBat audit on the 6 PyRadiomics textures: post-correction kernel R^2 of
-  0.0001 to 0.0024 on every column (pre-correction 0.002 to 0.024).
-- Yeo-Johnson + rank fallback: 15 of 19 sparse columns YJ-transformed cleanly;
-  4 LM density tiers fell back to rank.
-- D022 multi-block: 77 to 29 representatives across 6 non-empty blocks
-  (burden 15 to 2, hu_statistics 11 to 4, density_tier 18 to 16, spatial
-  14 to 3, texture 5 to 2, shape 14 to 2).
-- D020 single-matrix sensitivity: 77 to 23 representatives. Burden cluster of
-  size 29 absorbs all 6 PyRadiomics texture features and most spatial features.
-- PCA: n_retain = 13 at 85% cumvar.
-- Numerical reproducibility: `pca.scores` sha256[:16] = `00c2b4ee8a9df7b1`.
-  The seam file `pca_scores.npy` is byte-exact to the in-memory `pca.scores`.
+- Full cohort: 166 gated features, 13 dropped by D017; both derived features
+  admitted by the R^2 < 0.95 gate (`high_density_fraction` R^2 .864,
+  `vessel_burden_gini` .918).
+- ComBat on 84 PyRadiomics columns: largest kernel R^2 .034 before and
+  .0091 after (D019 bound 0.02).
+- In the Qr36d/2 stratum both derived features sit within .003 of the 0.95
+  cutoff and are rejected, so the strata do not share all of the full
+  cohort's derived features.
+- The seam file `pca_scores.npy` is byte-exact to the in-memory `pca.scores`.
 
 ## Outputs (seam to discover stage)
 
@@ -202,7 +243,8 @@ Written under `outputs/06_reduce/` (full cohort) or
 # Production full cohort (~1 min)
 python scripts/06_reduce.py --n-jobs 80
 
-# D022 sensitivity probe (single-matrix Spearman)
+# D022 sensitivity probe (single-matrix Spearman); writes to
+# outputs/06_reduce/sensitivity_single_block/
 python scripts/06_reduce.py --block-mode single --n-jobs 80
 
 # Kernel-stratified reruns (D021 sensitivity cohorts)

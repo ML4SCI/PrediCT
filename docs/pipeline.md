@@ -1,86 +1,99 @@
-# Pipeline Walk-through
+# Pipeline walk-through
 
-For per-stage deep dives (decisions, empirical results, edge cases), see `docs/modules/<stage>.md`:
-- [`modules/io.md`](modules/io.md)
-- [`modules/preprocess.md`](modules/preprocess.md)
-- [`modules/features.md`](modules/features.md)
-- (stability / reduce / analyse / validate — added per stage)
+`run_pipeline.sh` runs stages 1 to 10 in order (`--from N --to M` for a
+range; stage 11 self-checks run only on request). Per-stage detail
+(decisions, results, edge cases) is in `docs/modules/<stage>.md`.
 
+Every stage writes to `<folder>.partial/` and publishes the folder in one
+step together with a completion record (input hashes, code fingerprint,
+output hashes). A consumer verifies that record before reading
+(`require_stageN_complete`), so a partial, stale or smoke result is never
+used. Logs go to `outputs/_logs/`.
 
+| Stage | Package / scripts | Output folder |
+|---|---|---|
+| 1 discovery | `io` · `01_discover.py` | `outputs/01_manifest/` |
+| 2 preprocess | `preprocess` · `02_preprocess.py` | `outputs/02_preprocessed/` |
+| 3 features | `features` · `03_features.py`, `03b_cohort_sanity.py` | `outputs/03_features/` |
+| 4 stability | `stability` · `04_*`, `05_*`, `calibrate_realistic.py` | `outputs/04_perturbations/`, `04b_realistic/`, `05_icc/`, `05b_icc_realistic/` |
+| 5 reduce | `reduce` · `06_reduce.py` | `outputs/06_reduce/` (+ `stratified_<kernel>/`) |
+| 6 discover | `discover` · `07_discover.py` | written into the stage 5 cohort folders |
+| 7 analyse | `analyse` · `08_analyse.py`, `08d_stage7_results.py`, `08e_verify_focal_diffuse.py` | `outputs/07_analyse/` |
+| 8 validate | `validate` · `09_validate.py` | `outputs/08_validate/` |
+| 9 exploratory | `experiments/*` · `09_stage9.py begin / finish` | `outputs/exploratory/` |
+| 10 figures | `figures` · `10_figures.py` | `outputs/figures/` |
+| 11 self-checks | `diagnose_kernel_leak.py`, `diagnose_kernel_chi2.py`, `probe_detectability_floor.py` | `outputs/checks/`, `outputs/detectability_d0361/` |
 
-Each stage reads from the previous stage's outputs and writes its own. Stages are independent: any single stage can be rerun without recomputing upstream.
+## 1. `io`: discover and load
 
-## 1. `io` — Load and discover
+- `io.patient_discovery`: intersect `data/raw/` and `data/calcium_xml/`,
+  select one series per patient, check slice geometry, apply exclusions
+  (D004, D039, D039.1); writes `manifest.csv` and `exclusions.csv`.
+- `io.dicom_loader`: load the selected series, Z-sorted (D006).
+- `io.xml_parser`: parse the Apple plist annotations, keeping `Center` for
+  Z matching (D001) and the XML HU statistics.
+- `io.spacing`: spacing metadata I/O.
 
-**Modules**
-- `io.patient_discovery` — intersect `data/raw/` and `data/calcium_xml/`, apply exclusions.
-- `io.dicom_loader` — load DICOM series, Z-sort, handle multi-series (D012 rule).
-- `io.xml_parser` — parse Apple plist XML annotations.
-- `io.spacing` — spacing metadata I/O.
+## 2. `preprocess`: mask and resample
 
-**Output**: `outputs/01_manifest/manifest.csv` — one row per included patient with paths, scanner, kernel, slice count.
+- `preprocess.slice_matcher`: ROI to slice by Z coordinate (D001).
+- `validate.xml_roundtrip`: Max-exact XML round-trip; failing ROIs are
+  excluded from the mask (D002, D012).
+- `preprocess.mask_builder`: XML polygons to a 3D binary mask.
+- `preprocess.resampling`: CT and mask to 0.375 x 0.375 x 3.0 mm (D005).
+- `preprocess.hu_handling`: HU clip and metal flag (D003).
 
-## 2. `preprocess` — Mask, resample, harmonise
+## 3. `features`: extract
 
-**Modules**
-- `preprocess.mask_builder` — XML polygons → 3D binary mask via Z-coordinate matching (primary) with ImageIndex math as fallback.
-- `preprocess.resampling` — isotropic resampling of CT + mask.
-- `preprocess.hu_handling` — clip, metal artifact detection.
-- `preprocess.kernel_harmonise` — ComBat or within-kernel z-score across Qr36d / I30f.
+- `features.agatston`, `per_vessel_aggregates`, `density_tiers`: XML-derived
+  burden, mass, density features (D011, D018).
+- `features.lesion_ccl`: 3D lesions by BFS grouping (D007).
+- `features.spatial`: lesion count, distances, diffusivity, Gini.
+- `features.radiomics`: PyRadiomics, all 7 IBSI families (D009, D010).
+- `features.per_artery_mask`: per-vessel masks for the sanity audit (D008).
 
-**Output**: `outputs/02_preprocessed/{pid}_ct.npy`, `outputs/02_preprocessed/{pid}_mask.npy`, `outputs/02_preprocessed/spacing.json`.
+## 4. `stability`: perturb and gate
 
-## 3. `features` — Extract
+- `stability.realistic`: D033 composite draws and calibration (primary gate,
+  ICC(1,1)).
+- `stability.perturbations`: D014 fixed-mask perturbations (supplementary,
+  ICC(3,1)).
+- `stability.icc`, `stability.tiers`: ICC formulas, gate, D034 tiers.
 
-**Modules**
-- `features.radiomics` — PyRadiomics wrapper, all 7 IBSI families.
-- `features.agatston` — Agatston scoring from XML.
-- `features.lesion_ccl` — 3D lesion identification by BFS grouping.
-- `features.spatial` — lesion count, inter-lesion distances, diffusivity, Gini, per-artery aggregates.
-- `features.density_tiers` — per-artery ROI counts in Agatston tiers.
-- `features.per_artery` — per-territory mask building and aggregates.
+## 5. `reduce`: prepare, de-duplicate, project
 
-**Output**: `outputs/03_features/features.csv`, `outputs/03_features/agatston.csv`.
+- `reduce.prepare_matrix`: D017 drops, derived features, variance filter,
+  ComBat (D019, D035, D040), Yeo-Johnson with rank fallback, z-score.
+- `reduce.redundancy`: multi-block Spearman redundancy clustering and
+  representative selection (D020, D022).
+- `reduce.pca`: PCA at 85% cumulative variance, sign-normalised.
 
-## 4. `stability` — Perturb and gate
+## 6. `discover`: clusterability and validity
 
-**Modules**
-- `stability.perturbations` — 14 perturbation generators (rotations, translations, noise).
-- `stability.icc` — ICC(3,1) absolute-agreement computation.
+- `discover.clusterability`: Hopkins statistic (D021.1).
+- `discover.cluster_discovery`: kmeans / ward / GMM, gap statistic,
+  consensus clustering, burden residualisation (D021).
+- `discover.validity`: kernel association with burden adjustment, Hennig
+  bootstrap stability, ARI (D021.1).
+- `discover.detectability`, `discover.taxometric`: method checks (D036,
+  D038).
 
-**Output**: `outputs/04_perturbations/<type>/features.csv` (per perturbation), `outputs/04_perturbations/icc.csv`.
+## 7. `analyse`: characterise
 
-## 5. `reduce` — Variance, redundancy, dimensionality
+Per-cluster profiles (D023), burden orthogonality (D024), pre-registered
+directional hypotheses (D025), monotonicity (D026), cross-cohort feature
+consistency (D027), low-burden sensitivity (D028, D028.1).
 
-**Modules**
-- `reduce.variance_filter` — drop variance < threshold.
-- `reduce.r2_clustering` — hierarchical R² clustering, representative selection.
-- `reduce.pca` — PCA on cleaned features.
-- `reduce.wgcna` — optional module eigengenes (disconnected from primary path).
+## 8. `validate`: reproduce and transfer
 
-**Output**: `outputs/05_cleaned/features.csv`, `outputs/06_reduced/pca_scores.csv`.
+External GE holdout (D029), leave-k-out cross-validation (D030),
+cross-cohort ARI (D031), with production-fit parity (D041).
 
-## 6. `analyse` — Test and characterise
+## 9. Exploratory lesion analyses
 
-**Modules**
-- `analyse.clusterability` — dip test, gap statistic with k=1, density-based clusterability — runs **before** clustering.
-- `analyse.residualise` — burden-residualised feature space for sub-burden discovery.
-- `analyse.consensus` — Monti 2003 consensus clustering, gated on clusterability evidence.
-- `analyse.manifold` — continuum characterisation (only if clustering not warranted).
+Pre-registered analyses in `experiments/` (lesion morphology, LAD phenotype,
+isolated left-main disease), run as one published chain (D043).
 
-**Output**: `outputs/07_clusterability/`, `outputs/08_clusters/`.
+## 10. Figures
 
-## 7. `validate` — Endpoint-free framework
-
-**Axes**
-1. Agatston cross-tab (ARI, NMI, Fisher per cell).
-2. Cluster quality (silhouette, Davies-Bouldin, Calinski-Harabasz).
-3. Perturbation ICC reproducibility (already gated upstream, reported here).
-4. Clinical archetype alignment (spotty / dense / diffuse).
-5. **Cross-kernel replication** (Qr36d ↔ I30f) — built-in natural experiment.
-
-Plus a correctness gate:
-
-- `validate.xml_roundtrip` — rasterise polygon, recompute Mean/Max/Min HU from voxels, compare against XML-stored stats.
-
-**Output**: `outputs/09_validation/validation_report.md`.
+Paper figures built from the published stage 6, 7 and 9 outputs (D044).

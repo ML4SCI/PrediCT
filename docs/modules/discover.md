@@ -26,14 +26,15 @@ on the PC matrix:
      probe).
 6. **ARI cross-algorithm** at forced k=3.
 
-Split out from the reduce stage on 2026-06-05 (Phase B). The script seam is
+The script seam is
 `outputs/06_reduce/{pca_scores.npy, prepared_matrix.csv, cohort_metadata.csv}`
 to `scripts/07_discover.py`.
 
 ## Module list
 
-- `src/predict/discover/clusterability.py`  Hopkins statistic with pyclustertend
-  k=2-for-both convention; `assess_clusterability` returns a verdict.
+- `src/predict/discover/clusterability.py`  Hopkins statistic (real queries
+  use their 2nd neighbour, uniform queries their 1st; D021.1);
+  `assess_clusterability` returns a verdict.
 - `src/predict/discover/cluster_discovery.py`  `fit_cluster` (kmeans / ward / gmm),
   `gap_statistic` with 1-SE-from-argmax k selection, `monti_consensus`,
   `burden_residualise`, within-cluster dispersion `W`. joblib-parallel in
@@ -45,21 +46,75 @@ to `scripts/07_discover.py`.
 
 ## Why these design choices
 
-### Hopkins with k=2 for both queries (pyclustertend convention)
+### Hopkins: real queries skip themselves, uniform queries do not (D021.1)
 
-Hopkins compares nearest-neighbour distances on the real data to those of
-uniform-random points in the bounding box. Two failure modes I hit and fixed:
+Hopkins compares nearest-neighbour distances of points sampled from the data
+with those of uniform points in the data's bounding box, H = sum(w) /
+(sum(u) + sum(w)), w the uniform-query distances, u the real-query distances.
 
-- **Wrong**: plain distances with k=1 for uniform queries and k=2 for real
-  queries. Gives H near 0 on uniform random data because the uniform point
-  finds an accidentally-close real point with k=1 while the real point
-  necessarily skips self with k=2.
-- **Wrong**: d-th power distances per Hopkins 1954. At d >= 5 the
-  finite-sample asymmetry blows up; H collapses to 0 or 1.
-- **Right**: plain distances with k=2 for BOTH queries. Real query skips self
-  at distance 0; uniform query skips its accidentally-close 1-NN. H near 0.5
-  on uniform random data, H >> 0.5 on clusters. Tests pin H_uniform in
-  [0.4, 0.6] and H_clustered > 0.7.
+- A real query is a row of X, so its nearest neighbour in X is itself at
+  distance 0: it uses the 2nd neighbour.
+- A uniform query is not in X: it uses its nearest neighbour (as
+  `pyclustertend` does).
+
+Letting the uniform queries also skip their nearest neighbour inflates H on
+random data (mean 0.667 over 100 one-dimensional uniform datasets; smaller
+bias in higher dimensions). Plain distances are kept (the
+d-th power form of Hopkins 1954 is unstable at d >= 5). The 0.55 / 0.65
+bands are unchanged; tests pin the corrected H near 0.5 on uniform data in
+1 and 5 dimensions.
+
+### Gap reference box in the input's own principal axes (D021.1)
+
+Tibshirani's PCA-uniform null samples uniformly in the box spanned by the
+data's principal axes. Stage 5 PC scores already are principal axes, but the
+burden-residualised scores are not: regressing burden out of each PC makes
+the columns correlated. `gap_statistic` now rotates every input into its own
+principal axes (SVD of the centred input, all dimensions kept), samples the
+box there and maps the samples back, so the reference is right for every
+feature space. In a synthetic regression example a per-column box selects
+k = 6 and the principal-axes box k = 1, with identical pairwise distances.
+
+### Kernel confounding policy (D021.1)
+
+The cluster x kernel chi-square at the forced k is computed per algorithm.
+If it fails (p < 0.05), the likelihood-ratio test of kernel ~ cluster +
+log1p(Agatston) against kernel ~ log1p(Agatston) decides: `explained_by_burden`
+(adjusted p >= 0.05) is recorded and reported, `confounded` (adjusted
+p < 0.05) stops stage 6 with exit 1 and nothing published. Single-kernel
+cohorts record `not_applicable_single_kernel`.
+
+### Hennig refit failures raise (D021.1)
+
+A failed bootstrap refit raises. Scoring it as Jaccard 0 would make a
+software failure read as cluster instability.
+
+### Reading of gap results (D021.1)
+
+All gap-statistic results are descriptive outputs of the specified
+procedure. Selected k, including k = 1 or selection near the upper
+boundary, is not treated as evidence establishing or excluding discrete
+subtypes. Null-selection rates from the D036 / D036.1 probes (full space,
+implementation before D021.1; see the decision) are methodological context
+and are not transferred to uncalibrated feature spaces or the corrected
+implementation.
+
+### Publication, completion records and smoke runs
+
+Stage 6 writes to `<cohort-dir>.partial/` with copies of the stage 5 files
+listed in `COMPLETE_stage5.json`, then writes `COMPLETE_stage6.json` (stage 5
+record hash, stage 6 code/config fingerprint, settings, input and output
+hashes, spatial features used, kernel status) and swaps the folder in
+(`predict.publish.publish_keeping_subdirs`, which keeps other cohorts'
+sub-folders). A failed run leaves the last complete result in place.
+Stages 7, 8, the focal/diffuse verification and the figures call
+`predict.discover.stage6.require_stage6_complete`, which refuses a missing
+record, a record from other stage 5 inputs or other stage 6 code/config, and
+any changed output. The burden-residualised and spatial-only analyses are
+required: a missing input stops the stage instead of skipping the analysis.
+Any non-production setting (bootstraps, k range, forced k, seed) makes a
+smoke run, written to `outputs/07_discover_smoke/<cohort>/` and marked
+PARTIAL_SMOKE_DO_NOT_USE.
 
 ### Gap statistic with 1-SE-from-argmax (Maitra-Ramler 2010), NOT Tibshirani 2001
 
@@ -67,41 +122,53 @@ Tibshirani's classic rule "smallest k where gap(k) >= gap(k+1) - sk(k+1)"
 fails on data with strong separation: at low k the gap is negative (within-
 cluster dispersion exceeds uniform reference). gap(1) and gap(2) are both
 negative and roughly equal, so the rule picks k=1 even when the true elbow
-is at k=3. The R factoextra default (Maitra-Ramler 1-SE-from-argmax) is
-robust to this; it picks k=true_k on clustered data and k=1 on uniform
-random (whole curve flat within 1 SE).
+is at k=3. The R factoextra default (Maitra-Ramler 1-SE-from-argmax)
+avoids that failure and recovers k on the well-separated blobs of the unit
+tests. It is not reliable beyond that: on this cohort's geometry the gap
+arms failed the planted-group positive control up to delta 16 (D036.1), and
+in a thin-band scenario (300 points uniform along a line, so the data match
+the uniform reference) it selected k = 1 in only 8 of 20 null datasets
+(D021.1). Gap results are descriptive outputs only (see "Reading of gap
+results" above).
 
 ### k_range extended to 1..12
 
-Initial smoke runs at k=1..8 had 7 of 9 algorithm x space combinations
-selecting k=8 (the boundary). Extending to k=1..12 still has selected_k
-in [9, 12] on every cohort. The gap curve is monotonic with no plateau
-through k=12. This is the gap-statistic signature for a continuum, not
-a discrete-phenotype structure.
+With k=1..8, 7 of 9 algorithm x space combinations selected the boundary,
+so the range is 1..12. Extending k_max to 20 (`scripts/probe_kmax_extension.py`,
+implementation before D021.1) moved the selected k upward in 26 of 27
+cohort x algorithm x space combinations (median 11 to 18): the selected k
+tracks whatever ceiling is imposed. D036.1 found the same tracking on the
+real matrix with up to four planted groups carrying 50% of the variance, so
+selection at or near the boundary is not evidence for a continuum or for
+discrete subtypes, and a curve that keeps rising to k_max is not read as
+either.
 
 ### Algorithms (kmeans + Ward + GMM, no spectral)
 
-Spectral clustering was in the v1 design but requires a similarity-kernel
-bandwidth that is not theoretically justifiable on this feature space.
-v2 D021 drops spectral and uses three algorithms whose hyperparameters are
-unambiguous (just k).
+Spectral clustering requires a similarity-kernel bandwidth that is not
+theoretically justifiable on this feature space. D021 uses three algorithms
+whose only hyperparameter is k.
 
 ### Spatial-only k=2 as the Finding-3 probe
 
-After observing the gap-statistic continuum on the full PC space, the spatial-
-only subspace (13 features describing per-vessel lesion count and inter-lesion
-geometry) showed a different signal at GMM k=2: two robust modes with Hennig
-median Jaccard 0.85 to 0.92 across all three cohorts (full, Qr36d/2, I30f/3).
-This is the focal-vs-diffuse spatial topology phenotype, identified
-independently of total burden. Each 07_discover.py run writes the spatial
-GMM k=2 labels to `cluster_labels_spatial_k2.csv` for downstream stage 7.
+The spatial-only subspace (13 features describing per-vessel lesion count
+and inter-lesion geometry) gives a reproducible GMM k=2 partition: Hennig
+median Jaccard 0.84 to 0.94 across all three cohorts (full, Qr36d/2,
+I30f/3). k=2 was chosen by Hennig stability, never by the
+gap statistic. Reproducible is not burden-independent: the two groups
+differ strongly in total burden in all three cohorts (D024 confounded), so
+the partition is read as a burden dichotomy (focal = low burden, diffuse =
+high burden), not as a burden-independent spatial phenotype. Each
+07_discover.py run writes the spatial GMM k=2 labels to
+`cluster_labels_spatial_k2.csv` for downstream stage 7.
 
 ### Forced k=3 is descriptive, NOT discovery
 
 Forced k=3 partitions are useful for sanity (e.g., kernel chi-square at the
 same k across algorithms, ARI between algorithms at a common k). They are
-NOT a phenotype claim, since the gap statistic does not select k=3 on any
-cohort. The script's forced_k_crosstabs.csv exists to characterise the
+NOT a phenotype claim: k=3 is fixed in advance, not discovered, and the
+gap statistic is descriptive only and can neither support nor exclude it
+(D021.1). The script's forced_k_crosstabs.csv exists to characterise the
 forced partition against burden / kernel / category covariates, not to
 support phenotype existence.
 
@@ -154,79 +221,57 @@ def hennig_clusterboot(
 
 ## Decisions
 
-- D021 - cluster discovery, validity, and sensitivity cohorts (stage tag
-  changed from `reduce` to `discover` on 2026-06-05 Phase B; decision
-  number unchanged).
+- D021 - cluster discovery, validity, and sensitivity cohorts.
+- D021.1 - kernel policy; corrected Hopkins, gap reference box and Hennig
+  failure handling.
 
 ## Tests
 
-`tests/discover/`, all passing (as of Phase B2 close, 2026-06-05):
+`tests/discover/`:
 
-| Module | Test file | Count |
-|---|---|---|
-| clusterability | `test_clusterability.py` | 20 |
-| cluster_discovery (gap, monti, fit_cluster, burden_residualise, W) | `test_cluster_discovery.py` | 38 |
-| validity (chi-square, Hennig, ARI, Jaccard) | `test_validity.py` | 31 |
-| **Total** | | **89** |
+| Module | Test file |
+|---|---|
+| clusterability | `test_clusterability.py` |
+| cluster_discovery (gap, monti, fit_cluster, burden_residualise, W) | `test_cluster_discovery.py` |
+| validity (chi-square, Hennig, ARI, Jaccard) | `test_validity.py` |
+| detectability probe helpers (D036) | `test_detectability.py` |
+| taxometric test (D038) | `test_taxometric.py` |
+| stage 6 publication safeguards | `test_stage6_script.py` |
 
 Key tests: parallelism byte-identity (gap, monti, Hennig produce identical
 results at n_jobs=1 vs n_jobs=4), PC sign invariance (already in pca tests
-but the seam relies on it), Hopkins H in [0.4, 0.6] on uniform random and
-> 0.7 on three-blob synthetic.
+but the seam relies on it), Hopkins H near 0.5 on uniform random data in 1
+and 5 dimensions and > 0.7 on three-blob synthetic data.
 
-## Empirical results (full cohort, N=420, Phase-B production rerun)
+## Results on the analysis cohort
 
-Numerical reproducibility: `X_full` (loaded from `pca_scores.npy`) has
-sha256[:16] = `00c2b4ee8a9df7b1`. All three cohort numbers below come from
-identical-seed, full-bootstrap (500/100/100) runs.
+Full cohort 436, Qr36d/2 231, I30f/3 205; production settings (gap 500,
+consensus and Hennig 100 bootstraps).
 
-### Hopkins
-
-| Cohort | H (range observed across reruns) | Verdict |
-|---|---|---|
-| full (N=420) | ~0.72 (0.717-0.720) | clustered |
-| Qr36d/2 (N=220) | 0.64-0.70 | clustered / ambiguous (boundary) |
-| I30f/3 (N=200) | 0.73-0.75 | clustered |
-
-Full and I30f/3 land consistently in the clustered band (> 0.65). Qr36d/2
-is the sensitive stratum (smaller N=220, smaller signal margin) and has
-been observed at both 0.700 (original Phase-B run) and 0.642 (rebuilt-
-machine rerun 2026-06-08). The Hopkins point estimate is therefore
-treated as a Methods-section robustness check, not a published headline
-number. The locked cluster-tendency claim is the spatial-only k=2 Hennig
-median Jaccard (0.85-0.92 across cohorts), which replicates across reruns.
-
-### Gap statistic
-
-All 27 combinations (3 cohorts x 3 algorithms x 3 spaces) select selected_k
-in [7, 12]. No elbow at any k. Gap curves monotonically non-decreasing
-through k=12. This is the locked signature for a continuum (no discrete
-phenotype structure).
-
-### Kernel chi-square at forced k=3 (full cohort)
-
-- kmeans p = 0.048 (fails)
-- ward p ~ 0.02 band
-- gmm p ~ 0.03 band
-
-All three fail at p < 0.05. Combined with post-ComBat texture R^2 < 0.0025
-(D019 audit), the chi-square failure is attributed to patient-population
-bias by scanner subcohort, NOT residual technical bias.
-
-### Hennig spatial-only x GMM x k=2 (the Finding-3 phenotype)
-
-| Cohort | cluster 0 median Jaccard | cluster 1 median Jaccard | both stable? |
+| | Full | Qr36d/2 | I30f/3 |
 |---|---|---|---|
-| full | 0.880 | 0.866 | yes |
-| Qr36d/2 | 0.917 | 0.919 | yes |
-| I30f/3 | 0.853 | 0.861 | yes |
+| Hopkins H | .754 | .714 | .705 |
+| Gap selected k, full space (kmeans / ward / GMM) | 11 / 12 / 12 | 11 / 11 / 10 | 12 / 12 / 12 |
+| Gap selected k, burden-residualised | 12 / 11 / 8 | 10 / 10 / 11 | 11 / 11 / 12 |
+| Gap selected k, spatial-only | 10 / 11 / 3 | 11 / 11 / 8 | 7 / 7 / 8 |
+| Spatial-only GMM k=2, Hennig median Jaccard | .890 / .888 | .935 / .935 | .841 / .860 |
 
-All 6 cluster-medians above the 0.75 stable threshold. Replicates within
-each kernel stratum independently, ruling out scanner artefact.
+- Gap results are descriptive (D021.1); most curves are still rising at
+  k_max.
+- Forced k=3: Hennig-stable clusters kmeans 3/3 (full), 3/3 (Qr36d/2), 1/3
+  (I30f/3); ward 1/3 in each cohort; GMM 0/3 in each. ARI between
+  algorithms .26 to .72. Consensus PAC .14 to .26.
+- Kernel association at forced k=3 (full cohort): kmeans chi-square p .033,
+  burden-adjusted p .115, so `explained_by_burden` (reported, D021.1); ward
+  p .190 and GMM p .139 pass.
+- The spatial-only k=2 partition replicates within each kernel stratum, so
+  it is not driven by the kernel difference between strata; it is a burden
+  dichotomy (D024 confounded, stage 7).
 
 ## Outputs
 
-Written back into `--cohort-dir` alongside the reduce-stage outputs:
+Published into `--cohort-dir` alongside the reduce-stage outputs (whole
+folder swapped in after a complete run, with `COMPLETE_stage6.json`):
 
 | File | Content |
 |---|---|
@@ -242,53 +287,40 @@ Written back into `--cohort-dir` alongside the reduce-stage outputs:
 | `validity_checks.csv` | chi-square + Hennig (forced k AND spatial k=2) |
 | `ari_across_algorithms.csv` | pairwise ARI at forced k=3 |
 | `run_header_discover.json` | git hash, library versions, CLI args, SHA of seam files |
+| `COMPLETE_stage6.json` | completion record checked by stages 7, 8 and the figures |
 
 ## How to run
 
 ```bash
-# Production discovery on the full cohort
-python scripts/07_discover.py --cohort-dir outputs/06_reduce/ --n-jobs 80
+# Production discovery on the full cohort (workers from PREDICT_N_JOBS or the scheduler)
+python scripts/07_discover.py --cohort-dir outputs/06_reduce/
 
-# Kernel-stratified reruns (matching the strata produced by 06_reduce.py)
-python scripts/07_discover.py --cohort-dir outputs/06_reduce/stratified_Qr36d_2/ --n-jobs 80
-python scripts/07_discover.py --cohort-dir outputs/06_reduce/stratified_I30f_3/ --n-jobs 80
+# Kernel-stratified cohorts (matching the strata produced by 06_reduce.py)
+python scripts/07_discover.py --cohort-dir outputs/06_reduce/stratified_Qr36d_2/
+python scripts/07_discover.py --cohort-dir outputs/06_reduce/stratified_I30f_3/
 
-# Smoke (small bootstraps for ~2 min runtime; numerically noisy but
-# verdicts should be consistent)
+# Smoke (small bootstraps for ~2 min runtime; numerically noisy). Any
+# non-production setting writes to outputs/07_discover_smoke/<cohort>/ and
+# can never replace the cohort's published results.
 python scripts/07_discover.py --cohort-dir outputs/06_reduce/ \
-    --gap-bootstraps 20 --consensus-subsamples 20 --hennig-bootstraps 20 \
-    --n-jobs 80
+    --gap-bootstraps 20 --consensus-subsamples 20 --hennig-bootstraps 20
 ```
 
-Wall-clock at production parameters: ~3-5 min per cohort on the 80-core
-remote box.
+Wall-clock at production parameters: a few minutes per cohort on a 16-core node.
 
 ## Known limitations
 
 - Forced k=3 is descriptive characterisation only; do NOT cite it as a
-  discovery claim. The gap statistic explicitly does not support k=3.
-- The Hopkins verdict is "clustered" because H > 0.65, but a clustered
-  verdict combined with gap-curve monotonicity to k=12 is the empirical
-  signature of a continuum (cluster tendency dominated by burden as the
-  principal axis), NOT of discrete phenotypes. Reading Hopkins alone
-  without the gap context would be misleading.
-- The spatial-only Finding-3 partition uses GMM-specific k=2. It is robust
-  across cohorts at this k, but the published paper should clarify that
-  k=2 was identified by gap-statistic ambiguity on the spatial subspace
-  plus Hennig stability, not by gap-elbow selection.
-- Numerical reproducibility note (updated 2026-06-08 after machine rebuild):
-  Hopkins shows machine-dependent drift driven by BLAS / numpy / scipy
-  stack differences. Observed values across reruns:
-    full     0.717 to 0.720  (no threshold drift; consistently clustered)
-    Qr36d/2  0.642 to 0.700  (sensitive stratum; crosses 0.65 boundary)
-    I30f/3   0.728 to 0.745  (consistently clustered)
-  The drift originates from `pca_scores.npy` float64 bits being machine-
-  dependent (sha256[:16] differs across rebuilds even with identical
-  input data); Hopkins on nearest-neighbour distances is sensitive to
-  these bit-level differences in the smaller stratified cohorts. The
-  paper should cite the spatial-only k=2 Hennig medians (0.85-0.92,
-  range-stable across reruns) as the cluster-tendency headline, and
-  treat Hopkins as a supporting range, not a point estimate. All
-  verdict-level findings (gap monotonic, kernel chi-square fails, spatial
-  k=2 stable, D024 confounded, D025 refuted, 132 D027 robust
-  discriminators) are unchanged across the rebuild.
+  discovery claim. The gap statistic is descriptive and can neither
+  support nor exclude k=3.
+- Hopkins H > 0.65 ("clustered") is not evidence of discrete phenotypes: a
+  skewed burden axis raises H without separated groups. Neither Hopkins
+  nor the gap curve establishes a continuum either (D021.1, D036.1, D038).
+- The spatial-only Finding-3 partition uses GMM-specific k=2, chosen by
+  Hennig stability, not by the gap statistic. It is reproducible across
+  cohorts and is a burden dichotomy (D024 confounded).
+- Hopkins on nearest-neighbour distances is sensitive to bit-level
+  differences in `pca_scores.npy` across BLAS / numpy builds, most in the
+  smaller kernel strata. Treat it as a supporting range, not a headline
+  point estimate; the spatial-only k=2 Hennig medians are the more stable
+  cluster-tendency summary.

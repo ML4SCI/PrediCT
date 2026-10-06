@@ -40,9 +40,18 @@ The analysis runs in 13 ordered steps in the orchestrator
      in all 3).
  11. Partition ARI on shared pids (D027 complementary check).
  12. Main paper table (D028: 15 rows = 3 cohorts x 5 phenotype clusters).
- 13. Robust sensitivity table (D028: 5 rows, low_burden_flag = False
-     subset of the full cohort).
+ 13. Low-burden sensitivity (D028, D028.1): the low_burden_flag = False
+     subset of the full cohort, full-cohort spatial labels kept: D024,
+     D025 primary rule, profiles and signatures, the 5-row table, and a
+     verdict stating whether each result matches the full cohort.
  14. `run_header_analyse.json` with SHA of every seam file consumed.
+
+Before step 0 every cohort's stage 6 record is verified, and features.csv
+must be byte-identical to the file stage 5 read (hash in
+`COMPLETE_stage5.json`). Outputs go to `outputs/07_analyse.partial/` and are
+published with `COMPLETE_stage7.json` only after a complete run. The report
+(08d), the focal/diffuse verification (08e), stage 8 and the figures call
+`predict.analyse.stage7.require_stage7_complete`.
 
 ## Module list
 
@@ -55,9 +64,11 @@ The analysis runs in 13 ordered steps in the orchestrator
 | `predict/analyse/monotonicity.py` | Spearman + Kendall vs agatston; burden / structure / spatial / mixed classification. |
 | `predict/analyse/signatures.py` | Top-N ranking by FDR-adjusted Cliff's delta per (cohort x partition x cluster). |
 | `predict/analyse/cross_cohort.py` | 3-rule feature-level consistency + partition ARI on shared pids. |
-| `predict/analyse/paper_table.py` | 15-row main paper table + 5-row robust sensitivity. |
+| `predict/analyse/paper_table.py` | 15-row main paper table + 5-row robust sensitivity; Agatston categories 0, (0, 100), [100, 400), >= 400 (exhaustive for fractional scores). |
+| `predict/analyse/sensitivity.py` | Low-burden sensitivity (D028, D028.1): D024, D025 primary rule, signatures, verdict. |
+| `predict/analyse/stage7.py` | Stage 7 inputs check (stage 6 records, features.csv vs stage 5) and `COMPLETE_stage7.json` verification. |
 | `scripts/08_analyse.py` | Orchestrator. |
-| `scripts/08d_stage7_results.py` | Read-only presentation report. |
+| `scripts/08d_stage7_results.py` | Read-only presentation report; every number and verdict read from the current files (no fixed text). |
 | `scripts/08e_verify_focal_diffuse.py` | Independent re-derivation harness for the focal/diffuse chain. |
 
 ## Why these design choices
@@ -74,9 +85,9 @@ robust-discriminator floor.
 
 ### D023: biological sanity = absolute 130 HU floor (not a relative ratio)
 
-The earlier draft used `focal max_hu >= 0.9 * diffuse max_hu`. It fired
-on the real cohort (production COCA ratio is ~0.52; focal calcium is
-legitimately lower-peak than diffuse). The correct gate is the IBSI
+A relative rule such as `focal max_hu >= 0.9 * diffuse max_hu` fires on the
+real cohort (the COCA ratio is about 0.5; focal calcium is legitimately
+lower-peak than diffuse). The correct gate is the IBSI
 calcium definition: focal cluster median max_hu_global must be >= 130 HU
 (the Agatston calcium threshold). A pipeline regression that puts
 soft-tissue voxels in the focal cluster would push max_hu to near-zero,
@@ -130,8 +141,14 @@ Adding the robust cohort as a 4th row block in the main paper table
 would conflate cross-kernel replication (D027) with low-burden
 sensitivity (D028). The separate file lets the paper's Methods section
 reference it explicitly: "as a sensitivity analysis, we re-ran the
-characterisation on the 280 patients with low_burden_flag = False
+characterisation on the patients with low_burden_flag = False
 (Supplementary Table X)".
+
+D028.1 adds the orthogonality and directional-hypothesis files for the
+subset and a verdict rule: the same D024 interpretation and D025 primary rule (>= 4 of
+6 confirmed) on the restricted patients, each reported as the same as or
+different from the full cohort. No Hennig value is reported for the subset
+(stage 6 Hennig describes full-cohort clusters).
 
 ## Module contracts
 
@@ -205,87 +222,81 @@ def augment_raw_with_derived(df: pd.DataFrame) -> pd.DataFrame:
 
 ## Tests
 
-`tests/analyse/`, all passing as of Phase B2 + stage 7 close 2026-06-06:
+`tests/analyse/`:
 
-| Module | Tests |
+| Module | Covers |
 |---|---|
-| derived_features (byte-identity vs stage 5) | 16 |
-| profiles (Cliff + Mann-Whitney + FDR + sanity + balance + focal map) | 37 |
-| orthogonality (3-level interp + Levene + tertile replication) | 16 |
-| hypotheses (6 directional + primary + secondary + overall) | 23 |
-| monotonicity (Spearman + Kendall + classification + edge cases) | 23 |
-| signatures (top-N + alphabetical tiebreak + paragraph formatter) | 13 |
-| cross_cohort (3-rule + ARI on shared pids) | 18 |
-| paper_table (15 rows + sensitivity + Hennig lookup + tertile balance) | 18 |
-| **Total** | **165** |
+| derived_features | byte-identity vs stage 5 |
+| profiles | Cliff + Mann-Whitney + FDR + sanity + balance + focal map |
+| orthogonality | 3-level interpretation + Levene + tertile replication |
+| hypotheses | 6 directional + primary + secondary + overall |
+| monotonicity | Spearman + Kendall + classification + edge cases |
+| signatures | top-N + alphabetical tiebreak + paragraph formatter |
+| cross_cohort | 3-rule + ARI on shared pids |
+| paper_table | 15 rows + sensitivity + Hennig lookup + tertile balance |
+| stage 7 script | record checks, raw-feature binding, report from current results |
 
-## Empirical results on the COCA cohort (Phase B2 production, N=420)
+## Results on the analysis cohort
 
-### Biological sanity
-
-| Cohort | focal median max_hu | diffuse median max_hu | ratio | gate |
-|---|---|---|---|---|
-| full | 387 | 744 | 0.52 | PASS (warning) |
-| Qr36d/2 | 439 | 765 | 0.57 | PASS (warning) |
-| I30f/3 | 370 | 720 | 0.51 | PASS (warning) |
-
-All three exceed the 130 HU calcium floor. The ratio warning fires
-(consistent with focal disease being earlier-stage / softer-plaque).
+Spatial-only GMM k=2 partition from stage 6 (full 436, Qr36d/2 231,
+I30f/3 205). Every number below is in `outputs/07_analyse/`.
 
 ### Burden orthogonality (D024)
 
-| Cohort | n_focal | n_diffuse | focal med agat | diffuse med agat | Cliff's delta | MW p | Levene p | interpretation |
-|---|---|---|---|---|---|---|---|---|
-| full | 195 | 225 | 30 | 425 | -0.889 | 9.8e-56 | 5.2e-18 | confounded |
-| Qr36d/2 | 111 | 109 | 49 | 675 | -0.886 | 7.2e-30 | 6.2e-13 | confounded |
-| I30f/3 | 93 | 107 | 26 | 319 | -0.887 | 3.0e-27 | 1.2e-7 | confounded |
+| Cohort | focal median Agatston | diffuse median Agatston | Cliff's delta | interpretation |
+|---|---|---|---|---|
+| full | 26 | 419 | -0.900 | confounded |
+| Qr36d/2 | 34 | 630 | -0.913 | confounded |
+| I30f/3 | 20 | 318 | -0.894 | confounded |
 
-The two spatial-only k=2 clusters are **NOT orthogonal to total
-calcium burden**. Cliff's delta ~ -0.89 in every cohort.
+The two spatial clusters are **not orthogonal to total calcium burden** in
+any cohort.
 
-### Directional hypothesis verdict (D025)
+### Directional hypotheses (D025)
 
-| Hypothesis | full | Qr36d/2 | I30f/3 |
-|---|---|---|---|
-| `lesion_count_lad` focal > diffuse | REFUTED | REFUTED | REFUTED |
-| `n_calcified_arteries` focal < diffuse | confirmed | confirmed | confirmed |
-| `dist_from_top_max` focal < diffuse | confirmed | confirmed | confirmed |
-| `gini_lesion_volume` focal > diffuse | REFUTED | REFUTED | REFUTED |
-| `vessel_burden_gini` focal > diffuse | REFUTED | REFUTED | REFUTED |
-| `first_to_last_dist_lad` focal < diffuse | confirmed | confirmed | confirmed |
+Primary rule met: 4 of 6 confirmed in the full cohort; 4 of 6 direction
+matches in each kernel stratum. **Verdict: robust.**
 
-Primary: 3 of 6 confirmed in full (refuted at < 4).
-Secondary: 3 of 6 direction-match in BOTH Qr36d/2 and I30f/3 strata.
-**Overall verdict: refuted.**
+- Confirmed: `n_calcified_arteries` (focal fewer), `dist_from_top_max`,
+  `vessel_burden_gini` (focal median 0.75, the value for all burden in one
+  vessel), `first_to_last_dist_lad` (focal median 0).
+- Refuted and reversed: `lesion_count_lad` (focal 1 vs diffuse 4 to 5) and
+  `gini_lesion_volume` (focal median 0.08 / 0.19 / 0.00).
 
-### Cross-cohort feature consistency (D027)
+The confirmations follow mechanically from focal patients having one
+calcified vessel and one or two lesions (one vessel gives vessel Gini 0.75;
+one lesion gives lesion-volume Gini 0 and LAD extent 0). The two
+concentration predictions that do not follow from counts are reversed.
 
-132 robust discriminators across all 3 cohorts (out of ~570 feature x
-partition x cluster comparisons). The high count is dominated by
-burden-driven discriminators (the same features that move with agatston
-move with the focal/diffuse split).
+### Other outputs
 
-## Publication-grade interpretation (revised Finding 3)
+- Low-burden sensitivity (D028.1, 341 patients): D024 confounded (Cliff's
+  delta -0.819) and D025 primary 4 of 6, both the same as the full cohort.
+- D027: 150 of 215 feature x partition x cluster comparisons meet the
+  three-rule cross-cohort criterion, dominated by burden-driven features.
+- D026 (33 features, full cohort): 17 burden-tracking, 12 mixed, 4
+  structure-tracking, 0 spatial-tracking.
+- Cross-cohort ARI on shared patients (D027 / D031, threshold 0.80):
+  spatial k=2 Qr36d/2 .787 (below), I30f/3 .813; burden tertiles k=3
+  Qr36d/2 .807, I30f/3 .785 (below).
 
-The Hennig-stable spatial k=2 partition observed in stage 6 is real but
-is empirically a **low-burden-vs-high-burden dichotomy**, not a
-focal-vs-distributed topology phenotype. Three pieces of evidence:
+## Interpretation (Finding 3)
 
-1. Burden orthogonality = confounded in all 3 cohorts (Cliff's delta on
-   agatston = -0.89; Mann-Whitney p < 1e-26; Levene p < 1e-7).
-2. Directional hypothesis test = refuted in all 3 cohorts (3 of 6
-   pre-registered hypotheses confirmed; the 3 that confirm are
-   biology-of-fewer-vessels which is mechanical to lower burden; the
-   3 that refute are the concentration-pattern hypotheses that would
-   have indicated a true focal-vs-diffuse topology).
-3. Cluster biology: focal patients have median 1 calcified artery, 1-2
-   lesions total, agatston ~ 30; diffuse have 3 calcified arteries,
-   9-13 lesions, agatston ~ 425.
+The Hennig-stable spatial k=2 partition (median Jaccard 0.84 to 0.94
+across cohorts) is reproducible but is best described as a
+**low-burden versus high-burden dichotomy** projected through the spatial
+subspace, not a burden-independent focal-versus-distributed phenotype:
 
-The reproducibility of the partition (Hennig median Jaccard 0.85 to
-0.92 across cohorts) is preserved. The partition itself is best
-described as a stable burden dichotomy projected through the spatial
-subspace.
+1. Burden orthogonality is confounded in all three cohorts (Cliff's delta
+   about -0.9).
+2. D025 passes its pre-registered rule, but its confirmations are
+   mechanical consequences of focal patients having one calcified vessel
+   and one or two lesions, while the concentration predictions are
+   reversed. Passing D025 does not establish burden independence, so D024
+   and D025 are reported together.
+3. Focal patients have a median of one calcified artery and Agatston about
+   20 to 35; diffuse patients have three arteries and Agatston about 300 to
+   650.
 
 ## Outputs (seam to stage 8)
 
@@ -305,8 +316,13 @@ Written under `outputs/07_analyse/`:
 | `cross_cohort_robust_counts.csv` | aggregated robust discriminator counts |
 | `cross_cohort_ari.csv` | partition ARI on shared pids per (partition x stratum) |
 | `phenotype_paper_table.csv` | 15-row main paper table |
-| `phenotype_paper_table_robust_sensitivity.csv` | 5-row robust sensitivity table |
-| `run_header_analyse.json` | git hash + library versions + CLI args + seam SHA per cohort + biological sanity per cohort + verdict |
+| `phenotype_paper_table_robust_sensitivity.csv` | 5-row robust sensitivity table (signatures recomputed on the subset) |
+| `burden_orthogonality_robust_sensitivity.csv` | D024 on the low-burden-excluded subset |
+| `directional_hypotheses_robust_sensitivity.csv` | D025 hypotheses on the subset |
+| `cluster_profiles_robust_sensitivity.csv`, `signature_features_robust_sensitivity.csv` | profiles and signatures on the subset |
+| `robust_sensitivity_verdict.json` | D028.1 verdict: subset vs full cohort for D024 and the D025 primary rule |
+| `run_header_analyse.json` | git hash + library versions + CLI args + seam SHA per cohort + biological sanity per cohort + verdict + inputs |
+| `COMPLETE_stage7.json` | completion record: inputs (stage 6 record hashes, features.csv hash), settings, code fingerprint, output hashes |
 
 ## How to run
 
@@ -337,10 +353,10 @@ clustering, no bootstrapping, no parallelism.
   distribution-defined choice; the PC-space forced k=3 is reported by
   stage 6 only for ARI cross-algorithm comparison.
 - The 13 spatial features used as RAW inputs to the spatial PCA differ
-  from the 28 cross-cohort representatives. The 41-feature analysis
-  bundle is the union (39 after dedup). One PyRadiomics feature occasionally
-  falls out of the per-cluster profile when it has all-NaN values for
-  the 22 mask < 14 voxel patients (D010).
+  from the cross-cohort representatives; the analysis bundle is their
+  union. A PyRadiomics feature can fall out of the per-cluster profile when
+  it is NaN for the patients whose mask is below PyRadiomics' minimum ROI
+  size (D010).
 - Stage 7 is descriptive, not predictive. No MACE association, no
   demographic adjustment (demographics absent in COCA), no external
   cohort validation. Those are stage 8 (or beyond) concerns.
