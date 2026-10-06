@@ -7,8 +7,8 @@ Three modules:
     r^2 > 0.75 clustering and representative selection.
   * pca            - D020 PCA with sign normalisation on the representatives.
 
-Cluster discovery (D021) was split out into the discover stage on 2026-06-05
-(Phase B); see ``predict.discover`` and ``docs/modules/discover.md``.
+Cluster discovery (D021) is the discover stage; see ``predict.discover`` and
+``docs/modules/discover.md``.
 
 See ``docs/modules/reduce.md`` and decisions D017 through D020 and D022.
 """
@@ -26,8 +26,8 @@ from predict.reduce.prepare_matrix import (
     D017_DROPPED_FEATURES,
     D018_BINARISE_SOURCE,
     D018_BINARISE_TARGET,
-    PYRADIOMICS_TEXTURE_TO_HARMONISE,
     SPARSE_COLUMNS,
+    harmonisable_columns,
     MatrixPrepLog,
     run_matrix_prep,
 )
@@ -46,7 +46,7 @@ from predict.reduce.redundancy import (
 __all__ = [
     # prepare_matrix
     "D017_DROPPED_FEATURES", "D018_BINARISE_SOURCE", "D018_BINARISE_TARGET",
-    "PYRADIOMICS_TEXTURE_TO_HARMONISE", "SPARSE_COLUMNS", "MatrixPrepLog",
+    "SPARSE_COLUMNS", "MatrixPrepLog", "harmonisable_columns",
     "run_matrix_prep",
     # redundancy (single-matrix D020 + multi-block D022)
     "DEFAULT_BLOCKS", "FeatureBlock", "IccInfo", "MultiBlockResult",

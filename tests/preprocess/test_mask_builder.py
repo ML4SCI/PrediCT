@@ -1,8 +1,8 @@
 """Tests for predict.preprocess.mask_builder.
 
 The critical assertion is that the rasterised polygon lands on the *same*
-slice as where the calcium was stamped — i.e. the mask is not Z-flipped.
-This is the regression test that would have caught the v1 D011 bug.
+slice as where the calcium was stamped: i.e. the mask is not Z-flipped.
+This is the regression test for a Z-flipped slice mapping (D001).
 """
 from __future__ import annotations
 
@@ -69,6 +69,20 @@ def test_unmatched_roi_uses_fallback_when_no_center():
     assert report.n_matched_by_fallback == 1
 
 
+def test_center_outside_scan_is_not_rasterised_via_fallback():
+    """ImageIndex 5 is valid, but the ROI's Center
+    contradicts the scan, so it must stay out of the mask."""
+    loaded = make_loaded_patient(n_slices=8)
+    roi, _ = stamp_calcium_square(loaded, slice_idx=5)
+    outside = (roi.center_xyz[0], roi.center_xyz[1], max(loaded.slice_positions) + 50.0)
+    parse_result = make_parse_result("TEST", image_index=5, roi=replace(roi, center_xyz=outside))
+
+    mask, report = build_3d_mask(parse_result, loaded)
+    assert mask.sum() == 0
+    assert report.n_skipped_no_match == 1
+    assert report.n_matched_by_fallback == 0
+
+
 def test_mask_to_sitk_inherits_metadata():
     loaded = make_loaded_patient()
     mask = np.zeros((loaded.n_slices, 64, 64), dtype=np.uint8)
@@ -108,7 +122,7 @@ def test_excluded_roi_ids_only_skip_listed_rois():
 
     mask, report = build_3d_mask(
         parse_result, loaded,
-        excluded_roi_ids={(9, 5)},  # different (image_index, roi_idx) — should NOT match
+        excluded_roi_ids={(9, 5)},  # different (image_index, roi_idx), should NOT match
     )
     assert mask[2].sum() > 0
     assert report.n_excluded_by_roundtrip == 0

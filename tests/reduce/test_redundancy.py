@@ -227,14 +227,23 @@ def test_build_icc_lookup_basic():
     assert lookup["original_glcm_Contrast"].icc == pytest.approx(0.83)
 
 
-def test_build_icc_lookup_derived_inherits_one():
-    report = pd.DataFrame({
-        "feature": ["agatston_lad"],
-        "icc": [1.0],
-        "icc_source": ["invariant_by_construction"],
-    })
-    lookup = build_icc_lookup(report,
-                              derived_names=["high_density_fraction"])
+def test_build_icc_lookup_uses_measured_derived_reliability():
+    """D040: under D033 the transformed features carry their measured ICC
+    from 5b's derived_icc.csv, never an assumed 1.0."""
+    report = pd.DataFrame({"feature": ["agatston_lad"], "icc": [1.0],
+                           "icc_source": ["invariant_by_construction"]})
+    derived = pd.DataFrame({"feature": ["vessel_burden_gini"], "icc": [0.998],
+                            "icc_source": ["empirical"]})
+    lookup = build_icc_lookup(report, derived_report_df=derived)
+    assert lookup["vessel_burden_gini"].icc == pytest.approx(0.998)
+    assert lookup["vessel_burden_gini"].icc_source == "empirical"
+    assert "high_density_fraction" not in lookup     # no silent default
+
+
+def test_build_icc_lookup_invariant_names_only_for_classic_gate():
+    report = pd.DataFrame({"feature": ["agatston_lad"], "icc": [1.0],
+                           "icc_source": ["invariant_by_construction"]})
+    lookup = build_icc_lookup(report, invariant_names=["high_density_fraction"])
     assert lookup["high_density_fraction"].icc == 1.0
     assert lookup["high_density_fraction"].icc_source == "invariant_by_construction"
 
@@ -495,7 +504,7 @@ def test_default_blocks_have_six():
                      "spatial", "texture", "shape"}
 
 
-def test_default_blocks_are_mutually_exclusive_on_v2_schema():
+def test_default_blocks_are_mutually_exclusive_on_schema():
     """Every name in feature_schema must match at most one block."""
     from predict.features.feature_schema import feature_names
 

@@ -16,7 +16,7 @@ The ``Center`` field is the load-bearing primitive for D001 (Z-coordinate
 matching).
 
 Decisions referencing this module:
-    D001 — Center field is the source for Z-matching
+    D001: Center field is the source for Z-matching
 """
 from __future__ import annotations
 

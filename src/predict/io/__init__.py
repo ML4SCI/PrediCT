@@ -1,13 +1,16 @@
-"""Stage 1 — io.
+"""Stage 1: io.
 
 DICOM loading, XML parsing, patient discovery, spacing metadata.
 """
 from predict.io.dicom_loader import (
+    IrregularGeometryError,
     LoadedPatient,
     PatientMetadata,
+    SelectedSeries,
+    check_geometry,
     load_patient_dicom,
     load_patient_metadata,
-    peek_patient_header,
+    select_series,
 )
 from predict.io.patient_discovery import (
     DiscoveryResult,
@@ -24,12 +27,15 @@ from predict.io.xml_parser import ROI, ParseResult, SliceAnnotation, parse_calci
 
 __all__ = [
     "DiscoveryResult",
+    "IrregularGeometryError",
     "LoadedPatient",
     "ParseResult",
     "PatientMetadata",
     "PatientRecord",
     "ROI",
+    "SelectedSeries",
     "SliceAnnotation",
+    "check_geometry",
     "discover_patients",
     "load_patient_dicom",
     "load_patient_metadata",
@@ -37,6 +43,6 @@ __all__ = [
     "manifest_rows",
     "parse_calcium_xml",
     "parse_spacing",
-    "peek_patient_header",
+    "select_series",
     "save_spacing_metadata",
 ]

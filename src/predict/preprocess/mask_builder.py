@@ -18,8 +18,8 @@ skipped/unmatched counts so the orchestration script can surface them
 per patient.
 
 Decisions referencing this module:
-    D001 — Z-coordinate matching for slice mapping
-    D002 — Round-trip-driven exclusion of unreliable ROIs
+    D001: Z-coordinate matching for slice mapping
+    D002: Round-trip-driven exclusion of unreliable ROIs
 """
 from __future__ import annotations
 
@@ -32,8 +32,8 @@ import SimpleITK as sitk
 from predict.io.dicom_loader import LoadedPatient
 from predict.io.xml_parser import ParseResult, ROI
 from predict.preprocess.slice_matcher import (
-    fallback_image_index_to_slice,
-    match_roi_to_slice,
+    Z_MATCH_TOLERANCE_MM,
+    resolve_roi_slice,
 )
 
 
@@ -75,7 +75,7 @@ def build_3d_mask(
     parse_result: ParseResult,
     loaded: LoadedPatient,
     *,
-    tolerance_mm: float = 1.5,
+    tolerance_mm: float = Z_MATCH_TOLERANCE_MM,
     skip_dirty: bool = True,
     excluded_roi_ids: set | None = None,
     vessel_filter: str | None = None,
@@ -98,7 +98,7 @@ def build_3d_mask(
         parse_result so ``excluded_roi_ids`` remains correct.
 
     Returns a ``(n_slices, height, width)`` uint8 array (mask) and a
-    :class:`MaskBuildReport`. The mask is *not* wrapped in a SimpleITK image —
+    :class:`MaskBuildReport`. The mask is *not* wrapped in a SimpleITK image,
     callers that need spatial metadata should wrap it themselves and call
     ``CopyInformation(loaded.ct_sitk)``.
     """
@@ -128,7 +128,7 @@ def build_3d_mask(
                 continue
 
             if vessel_filter is not None and roi.vessel != vessel_filter:
-                # Not counted under any skip bucket — out of scope for this call.
+                # Not counted under any skip bucket: out of scope for this call.
                 continue
 
             poly = _polygon_to_subpixel_points(roi)
@@ -136,11 +136,11 @@ def build_3d_mask(
                 n_few += 1
                 continue
 
-            idx = match_roi_to_slice(roi, loaded.slice_positions, tolerance_mm)
-            if idx is None:
-                idx = fallback_image_index_to_slice(slice_ann.image_index, n_slices)
-                if idx is not None:
-                    n_fallback += 1
+            idx, via = resolve_roi_slice(
+                roi, slice_ann.image_index, loaded.slice_positions, tolerance_mm,
+            )
+            if via == "image_index_fallback":
+                n_fallback += 1
             if idx is None:
                 n_unmatched += 1
                 continue

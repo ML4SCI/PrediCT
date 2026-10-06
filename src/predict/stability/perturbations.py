@@ -1,7 +1,7 @@
 """Canonical CT perturbations for stage-4 ICC stability analysis (D014).
 
 Each patient's preprocessed CT volume is transformed in 14 deterministic ways.
-The mask is held fixed (D014 / Option B locked 2026-06-03), so the perturbations
+The mask is held fixed (D014), so the perturbations
 stress mis-registration robustness rather than extractor equivariance.
 
 Public API:
@@ -164,7 +164,7 @@ def rotate(
     """Rotate the CT volume about its centre on the z (axial) axis.
 
     Returns a new image with identical size, spacing, origin, and direction.
-    The mask is NOT transformed (D014 Option B). Linear interpolation, constant
+    The mask is NOT transformed (D014). Linear interpolation, constant
     background fill = ``background_hu`` for voxels rotated in from outside the
     field of view.
     """

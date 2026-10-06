@@ -1,15 +1,18 @@
 """Patient discovery and cohort manifest construction.
 
-Intersects ``data/raw/`` (DICOM folders) with ``data/calcium_xml/`` (XML
-annotations), applies the cohort exclusions from configuration (D004), and
-labels each included patient with scanner/kernel metadata for downstream
-kernel-harmonisation and stratification.
+Intersects the DICOM folders (``paths.data_raw``) with the XML annotations
+(``paths.data_xml``), applies the cohort exclusions from configuration (D004)
+and the slice geometry check (D039), and labels each included patient with
+scanner/kernel metadata for downstream kernel-harmonisation and
+stratification. The labels come from the series the loaders will use
+(:func:`predict.io.dicom_loader.select_series`), never from an arbitrary file.
 
 The output is a manifest (a list of :class:`PatientRecord`), persisted by
 the orchestration script to ``outputs/01_manifest/manifest.csv``.
 
 Decisions referencing this module:
-    D004 — Cohort exclusions at discovery
+    D004: Cohort exclusions at discovery
+    D039: Slice geometry check (irregular_geometry exclusions)
 """
 from __future__ import annotations
 
@@ -18,7 +21,7 @@ import os
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
-from predict.io.dicom_loader import peek_patient_header
+from predict.io.dicom_loader import IrregularGeometryError, check_geometry, read_selected_headers
 
 _log = logging.getLogger(__name__)
 
@@ -32,6 +35,9 @@ class PatientRecord:
     scanner_model: str
     kernel: str
     slice_thickness: float
+    series_uid: str
+    n_slices: int
+    z_step_mm: float
 
 
 @dataclass(frozen=True)
@@ -41,6 +47,8 @@ class DiscoveryResult:
     excluded_no_xml: tuple[str, ...]
     excluded_by_config: tuple[str, ...]
     excluded_ge: tuple[str, ...]
+    # (pid, reason) for patients whose selected series fails D039.
+    excluded_geometry: tuple[tuple[str, str], ...] = ()
 
 
 def _listdir_sorted_int(path: Path, *, dirs: bool = True, suffix: str | None = None) -> list[str]:
@@ -59,7 +67,8 @@ def _listdir_sorted_int(path: Path, *, dirs: bool = True, suffix: str | None = N
 
 
 def discover_patients(
-    data_root: Path,
+    raw_dir: Path,
+    xml_dir: Path,
     *,
     exclude_pids: tuple[str, ...] = (),
     exclude_ge_scanners: bool = True,
@@ -69,19 +78,18 @@ def discover_patients(
     Steps:
       1. Intersect raw DICOM folder names with XML basenames.
       2. Apply ``exclude_pids`` (config-driven, default: 12, 197, 268).
-      3. For each remaining patient, read one DICOM header to label scanner +
-         kernel + thickness.
+      3. For each remaining patient, read every header and select the series
+         the loaders will use (D006); label scanner + kernel + thickness from it.
       4. If ``exclude_ge_scanners`` is True, drop any patient whose
          ``Manufacturer`` does not start with "SIEMENS" (case-insensitive).
-      5. Return :class:`DiscoveryResult` carrying included + excluded sets.
+      5. Drop any patient whose selected series fails the geometry check
+         (D039), recording the reason.
+      6. Return :class:`DiscoveryResult` carrying included + excluded sets.
 
     Patients listed in ``exclude_pids`` are excluded silently (they are
     expected exclusions, not anomalies). Patients failing the GE filter or
     missing DICOM/XML are logged.
     """
-    raw_dir = data_root / "raw"
-    xml_dir = data_root / "calcium_xml"
-
     raw_ids = {n for n in os.listdir(raw_dir) if (raw_dir / n).is_dir()}
     xml_ids = {n[:-4] for n in os.listdir(xml_dir) if n.endswith(".xml")}
 
@@ -98,11 +106,19 @@ def discover_patients(
 
     included: list[PatientRecord] = []
     excluded_ge: list[str] = []
+    excluded_geometry: list[tuple[str, str]] = []
     for pid in eligible:
-        head = peek_patient_header(pid, data_root)
+        headers = read_selected_headers(raw_dir / pid, pid)
+        head = headers[0]
         manuf = head["manufacturer"].upper()
         if exclude_ge_scanners and not manuf.startswith("SIEMENS"):
             excluded_ge.append(pid)
+            continue
+        try:
+            z_step = check_geometry(headers, pid)
+        except IrregularGeometryError as exc:
+            _log.warning("Excluded (D039): %s", exc)
+            excluded_geometry.append((pid, str(exc)))
             continue
         included.append(PatientRecord(
             pid=pid,
@@ -111,14 +127,17 @@ def discover_patients(
             manufacturer=head["manufacturer"],
             scanner_model=head["scanner_model"],
             kernel=head["kernel"],
-            slice_thickness=head["slice_thickness"] or 0.0,
+            slice_thickness=head["slice_thickness"],
+            series_uid=head["series_uid"],
+            n_slices=len(headers),
+            z_step_mm=z_step,
         ))
 
     _log.info(
         "Discovery: %d included, %d config-excluded, %d GE-excluded, "
-        "%d no-DICOM, %d no-XML",
+        "%d geometry-excluded, %d no-DICOM, %d no-XML",
         len(included), len(excluded_by_config), len(excluded_ge),
-        len(no_dicom), len(no_xml),
+        len(excluded_geometry), len(no_dicom), len(no_xml),
     )
 
     return DiscoveryResult(
@@ -127,6 +146,7 @@ def discover_patients(
         excluded_no_xml=tuple(no_xml),
         excluded_by_config=excluded_by_config,
         excluded_ge=tuple(excluded_ge),
+        excluded_geometry=tuple(excluded_geometry),
     )
 
 

@@ -240,8 +240,8 @@ def test_gate_features_recomputes_passes_gate_field():
 
 
 def test_bypass_registry_has_68_features():
-    """D016 (updated 2026-06-03): all 68 canonical features bypass the
-    empirical gate because the v2 pipeline reads HU values from the XML's
+    """D016: all 68 canonical features bypass the empirical D014 gate
+    because the pipeline reads HU values from the XML's
     frozen Max / Mean fields, never from the CT array."""
     assert len(invariant_by_construction_features()) == 68
 
@@ -258,7 +258,7 @@ def test_bypass_registry_is_exactly_the_schema():
 
 def test_bypass_registry_includes_all_per_vessel_stems():
     """Every per-vessel canonical feature (geometric AND HU-touching) is in
-    the bypass because none of them read the CT array in v2."""
+    the bypass because none of them read the CT array."""
     bypass = set(invariant_by_construction_features())
     expected_stems = (
         "lesion_count",

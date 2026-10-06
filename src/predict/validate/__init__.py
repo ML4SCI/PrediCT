@@ -1,9 +1,9 @@
-"""Stage 8 — validate.
+"""Stage 8: validate.
 
 Phenotype + correctness validation:
 
-* :mod:`xml_roundtrip` — D002 Max-exact correctness gate (also used at stage 2).
-* :mod:`label_alignment` — D023 focal/diffuse mapping for raw GMM labels (stage 8 shared helper).
+* :mod:`xml_roundtrip`: D002 Max-exact correctness gate (also used at stage 2).
+* :mod:`label_alignment`: D023 focal/diffuse mapping for raw GMM labels (stage 8 shared helper).
 """
 from predict.validate.cross_cohort_ari import (
     ARI_PASS_THRESHOLD,

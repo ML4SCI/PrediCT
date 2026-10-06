@@ -1,11 +1,11 @@
-"""Stage 8 D031 — cross-cohort ARI consolidation.
+"""Stage 8 D031: cross-cohort ARI consolidation.
 
 Pure re-exporter of ``outputs/07_analyse/cross_cohort_ari.csv`` into
 ``outputs/08_validate/cross_cohort_ari_consolidated.csv`` with explicit
 PASS columns at the D027 threshold (0.80).
 
 No recomputation. No new statistics. This module exists so that stage 8's
-output directory is self-contained for paper Methods and reviewer audit.
+output directory is self-contained for the paper's Methods.
 """
 from __future__ import annotations
 

@@ -102,6 +102,24 @@ def test_category_percentages_all_zero():
     assert pcts["pct_cat_1_99"] == 0.0
 
 
+def test_category_percentages_fractional_boundaries():
+    """Fractional scores below 1, between 99 and 100 and
+    between 399 and 400 fell into no category. Every score now lands in
+    exactly one, and the percentages sum to 100."""
+    agatston = pd.Series([0.0, 0.4, 1.0, 99.0, 99.6, 100.0, 399.5, 400.0])
+    pcts = _category_percentages(agatston)
+    assert pcts["pct_zero"] == 12.5                  # 0
+    assert pcts["pct_cat_1_99"] == 50.0              # 0.4, 1, 99, 99.6
+    assert pcts["pct_cat_100_399"] == 25.0           # 100, 399.5
+    assert pcts["pct_cat_ge_400"] == 12.5            # 400
+    assert sum(pcts.values()) == pytest.approx(100.0)
+
+
+def test_category_percentages_negative_score_raises():
+    with pytest.raises(ValueError, match="negative"):
+        _category_percentages(pd.Series([-1.0, 10.0]))
+
+
 def test_category_percentages_empty_returns_nan():
     agatston = pd.Series([], dtype=float)
     pcts = _category_percentages(agatston)
@@ -264,6 +282,18 @@ def test_robust_sensitivity_table_recomputes_burden_tertiles():
     burden_total = table[table["partition"] == "burden_k3"]["N"].sum()
     # Robust subset is ~30 patients; tertiles should sum to ~30
     assert burden_total <= 30
+
+
+def test_robust_sensitivity_table_uses_recomputed_signatures():
+    """With the full cohort's signatures (cohort 'full')
+    the 'robust' rows had blank signature text."""
+    full_inputs = _make_cohort_inputs("full")
+    blank = build_robust_sensitivity_table(full_inputs)
+    assert (blank["top_signature_features"] == "").all()
+    robust_sigs = full_inputs["signatures"].assign(cohort="robust")
+    table = build_robust_sensitivity_table(full_inputs, robust_signatures=robust_sigs)
+    spatial = table[table["partition"] == "spatial_k2"]
+    assert spatial["top_signature_features"].str.contains("sig_feat").all()
 
 
 def test_robust_sensitivity_table_with_hennig_lookup():

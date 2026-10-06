@@ -1,4 +1,4 @@
-"""SF1 — Robust cross-cohort discriminator heatmap.
+"""SF1: Robust cross-cohort discriminator heatmap.
 
 132 features that pass the D027 three-rule criterion, shown as a heatmap
 of signed Cliff's delta across (partition, cluster) combinations. Rows

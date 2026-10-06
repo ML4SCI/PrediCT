@@ -1,6 +1,6 @@
 """Tests for predict.stability.perturbations.
 
-Verifies the v2 design lock (D014 Option B):
+Verifies the D014 design (mask held fixed):
 
 - 14 deterministic perturbation specs in fixed order.
 - Rotation and translation transform the CT only; the mask is never returned

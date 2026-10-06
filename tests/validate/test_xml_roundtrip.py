@@ -45,7 +45,7 @@ def test_roundtrip_passes_on_synthetic_stamp():
 
 
 def test_roundtrip_fails_on_z_flip_simulation():
-    """Stamp on slice 4 but point the centre at slice 7 — Max gate must fail."""
+    """Stamp on slice 4 but point the centre at slice 7: Max gate must fail."""
     loaded = make_loaded_patient(n_slices=10)
     roi, _ = stamp_calcium_square(loaded, slice_idx=4, hu=300)
     wrong_center = (roi.center_xyz[0], roi.center_xyz[1], loaded.slice_positions[7])
@@ -83,6 +83,22 @@ def test_roundtrip_falls_back_to_image_index_when_no_center():
     assert t.matched_via == "image_index_fallback"
     assert t.matched_slice_idx == 2
     assert t.passes is True
+
+
+def test_roundtrip_rejects_center_outside_scan_even_with_valid_image_index():
+    """An explicit Center that matches no slice must
+    fail, not pass through the ImageIndex fallback on the stamped slice."""
+    loaded = make_loaded_patient(n_slices=8)
+    roi, _ = stamp_calcium_square(loaded, slice_idx=2, hu=300)
+    outside = (roi.center_xyz[0], roi.center_xyz[1], max(loaded.slice_positions) + 50.0)
+    pr = make_parse_result("TEST", image_index=2, roi=replace(roi, center_xyz=outside))
+
+    t = xml_roundtrip_check(pr, _ct_array(loaded), loaded.slice_positions)[0]
+    assert t.passes is False
+    assert t.matched_via == "center_mismatch"
+    assert t.matched_slice_idx is None
+    assert t.reason == "center_outside_scan"
+    assert failed_roi_ids([t]) == {(2, 0)}
 
 
 def test_pass_rate_excludes_dirty():

@@ -163,7 +163,7 @@ def test_simulate_ari_threshold_seed_reproducible(reference_labels):
 
 def test_ari_is_permutation_invariant_regression():
     """D030.5 invariant: if a future contributor maps GMM labels before
-    calling ARI, ARI on identical-mapped-labels stays 1.0 — but if they
+    calling ARI, ARI on identical-mapped-labels stays 1.0: but if they
     apply mapping ONLY to one side, ARI on a perfect inversion would
     drop. Pin the bare ARI property here.
     """
@@ -209,13 +209,37 @@ def test_attach_summary_row_appends_one_row(full_cohort, reference_labels):
 def test_run_leave_k_out_raises_when_reference_does_not_overlap(full_cohort):
     """Empty intersection between cohort pids and reference labels."""
     bogus_ref = pd.Series([0, 1], index=["NOT_A_PID_1", "NOT_A_PID_2"])
-    with pytest.raises(RuntimeError, match="no fold rows"):
+    with pytest.raises(ValueError, match="cover exactly the cohort"):
         run_leave_k_out(
             full_cohort, _feature_cols(full_cohort),
             bogus_ref,
             n_splits=3,
             n_simulations=50,
         )
+
+
+def test_run_leave_k_out_refuses_incomplete_reference_coverage(full_cohort, reference_labels):
+    """With 25% of patients lacking a reference label the
+    old code dropped them silently and still passed."""
+    partial = reference_labels.iloc[: int(0.75 * len(reference_labels))]
+    with pytest.raises(ValueError, match="cover exactly the cohort"):
+        run_leave_k_out(full_cohort, _feature_cols(full_cohort), partial,
+                        n_splits=3, n_simulations=50)
+
+
+def test_reference_class_counts_use_the_published_mapping(full_cohort, reference_labels):
+    """Counts used the fold model's raw label numbers, which
+    can be swapped. With the published mapping, swapping the reference's
+    label numbers leaves the focal count unchanged."""
+    from predict.validate.label_alignment import determine_mapping
+    idx = full_cohort.set_index(full_cohort["pid"].astype(str))
+    for ref in (reference_labels, 1 - reference_labels):
+        mapping = determine_mapping(idx.loc[ref.index], ref, tie_break="raise")
+        expected = int((ref.map(mapping) == "focal").sum())
+        per_fold, _ = run_leave_k_out(full_cohort, _feature_cols(full_cohort), ref,
+                                      n_splits=3, n_simulations=50)
+        assert int(per_fold["n_test_focal_reference"].sum()) == expected
+        assert int(per_fold["n_test_with_reference"].sum()) == len(full_cohort)
 
 
 def test_pass_fold_logic_consistent(full_cohort, reference_labels):

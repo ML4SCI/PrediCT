@@ -1,8 +1,11 @@
-"""F2 — Gap-statistic curves grid (3 algorithms x 3 feature spaces).
+"""F2: Gap-statistic curves grid (3 algorithms x 3 feature spaces).
 
-Visualises the mechanism behind Finding 1: gap statistic rises
-monotonically through k_max across every algorithm and every feature
-space, with no discrete elbow. The signature of a continuum.
+Descriptive only (D021.1): the curves, their bootstrap SE and the selected
+k are shown as outputs of the specified procedure. Selected k, including
+k = 1 or selection near the upper boundary, is not evidence establishing
+or excluding discrete subtypes; the gap arms failed the planted-group
+positive control on this geometry (D036.1). A monotone curve is not read
+as the signature of a continuum either (D044).
 """
 from __future__ import annotations
 
@@ -74,9 +77,10 @@ def build(reduce_dir: Path) -> "plt.Figure":
             ax.set_xticks(k[::2])
 
     fig.suptitle(
-        "Figure 2. Gap statistic rises monotonically through k_max across\n"
-        "all 9 (algorithm x feature space) combinations on the full cohort —\n"
-        "no discrete elbow, the signature of a continuum.",
+        "Figure 2. Gap statistic per algorithm and feature space (full cohort; "
+        "error bars = SE, star = selected k)\n"
+        "Descriptive output of the procedure: the selected k is not evidence "
+        "for or against discrete subtypes (D021.1).",
         y=1.02, fontsize=12, fontweight="bold",
     )
     fig.tight_layout()

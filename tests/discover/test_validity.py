@@ -295,3 +295,58 @@ def test_ari_on_shared_pids_raises_on_length_mismatch():
             ["1", "2"], np.array([0]),
             ["1"], np.array([0]),
         )
+
+
+# ───────────── D021.1: Hennig failures raise; kernel policy ─────────────
+
+
+def test_hennig_failed_refit_raises_instead_of_zero_stability(monkeypatch):
+    import predict.discover.validity as v
+
+    def boom(*_a, **_k):
+        raise RuntimeError("fit failed")
+
+    X = _three_blobs()
+    labels = fit_cluster(X, 3, algorithm="kmeans", random_state=0)
+    monkeypatch.setattr(v, "fit_cluster", boom)
+    with pytest.raises(RuntimeError, match="fit failed"):
+        v.hennig_clusterboot(X, labels, k=3, algorithm="kmeans", n_bootstrap=3, n_jobs=1)
+
+
+def _kernel_cohort():
+    """Two clusters x two kernels, exactly balanced (chi-square 0)."""
+    labels = np.repeat([0, 1], 100)
+    kernel = np.tile(np.repeat(["A", "B"], 50), 2)
+    burden = np.random.default_rng(0).gamma(2.0, 100.0, size=200)
+    return labels, kernel, burden
+
+
+def test_kernel_policy_pass_when_no_association():
+    from predict.discover.validity import assess_kernel_confounding
+    labels, kernel, burden = _kernel_cohort()
+    assert assess_kernel_confounding(labels, kernel, burden)["status"] == "pass"
+
+
+def test_kernel_policy_confounded_when_cluster_predicts_kernel_beyond_burden():
+    from predict.discover.validity import assess_kernel_confounding
+    labels, _, burden = _kernel_cohort()
+    rng = np.random.default_rng(1)
+    kernel = np.where(labels == 0, "A", "B")
+    flip = rng.random(200) < 0.1                      # 90% aligned, burden irrelevant
+    kernel = np.where(flip, np.where(kernel == "A", "B", "A"), kernel)
+    out = assess_kernel_confounding(labels, kernel, burden)
+    assert out["status"] == "confounded"
+    assert out["p_cluster_given_burden"] < 0.05
+
+
+def test_kernel_policy_explained_by_burden_branch(monkeypatch):
+    """The policy branch itself, with the adjusted test's answer fixed."""
+    import predict.discover.validity as v
+    labels, _, burden = _kernel_cohort()
+    kernel = np.where(labels == 0, "A", "B")
+    monkeypatch.setattr(v, "kernel_association_given_burden",
+                        lambda *_a, **_k: {"kernels": ["A", "B"], "p_cluster_given_burden": 0.4,
+                                           "p_cluster_unadjusted": 1e-9})
+    out = v.assess_kernel_confounding(labels, kernel, burden)
+    assert out["passes"] is False
+    assert out["status"] == "explained_by_burden"

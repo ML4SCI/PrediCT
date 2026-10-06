@@ -28,11 +28,15 @@ import pandas as pd
 from predict.analyse.signatures import signature_paragraph_for_paper
 
 
-# Standard Agatston-category breakpoints used in the COCA cohort.
+# Standard Agatston categories (0, 1-99, 100-399, >= 400) as exhaustive,
+# non-overlapping intervals for fractional scores: zero is exactly 0, the
+# others are [lo, hi) with "1-99" covering (0, 100). Integer-style inclusive
+# ranges would drop scores below 1 and between 99 and 100 (8 of 436
+# patients).
 AGATSTON_CATEGORIES: tuple[tuple[str, float, float], ...] = (
     ("zero", 0.0, 0.0),
-    ("cat_1_99", 1.0, 99.0),
-    ("cat_100_399", 100.0, 399.0),
+    ("cat_1_99", 0.0, 100.0),
+    ("cat_100_399", 100.0, 400.0),
     ("cat_ge_400", 400.0, float("inf")),
 )
 
@@ -53,21 +57,29 @@ def _agatston_tertile_labels(agatston: pd.Series) -> pd.Series:
 
 
 def _category_percentages(agatston: pd.Series) -> dict:
-    """Compute the percentage of patients in each Agatston category."""
-    n = int(agatston.dropna().size)
+    """Percentage of patients in each Agatston category. Every non-missing
+    score falls in exactly one category; a negative score raises."""
+    vals = agatston.dropna()
+    n = int(vals.size)
     out: dict = {}
     if n == 0:
         for name, _, _ in AGATSTON_CATEGORIES:
             out[f"pct_{name}"] = float("nan")
         return out
+    if (vals < 0).any():
+        raise ValueError(f"negative Agatston score(s): {vals[vals < 0].tolist()[:5]}")
+    assigned = pd.Series(0, index=vals.index)
     for name, lo, hi in AGATSTON_CATEGORIES:
-        if hi == float("inf"):
-            mask = agatston >= lo
-        elif name == "zero":
-            mask = agatston == 0
+        if name == "zero":
+            mask = vals == 0
+        elif name == "cat_1_99":
+            mask = (vals > lo) & (vals < hi)
         else:
-            mask = (agatston >= lo) & (agatston <= hi)
+            mask = (vals >= lo) & (vals < hi)
+        assigned += mask.astype(int)
         out[f"pct_{name}"] = float(100.0 * mask.sum() / n)
+    if not (assigned == 1).all():
+        raise AssertionError("Agatston categories are not exhaustive and disjoint")
     return out
 
 
@@ -220,6 +232,7 @@ def build_robust_sensitivity_table(
     full_cohort_inputs: dict,
     hennig_lookup: dict | None = None,
     robust_cohort_label: str = "robust",
+    robust_signatures: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Build the 5-row robust-sensitivity table.
 
@@ -236,6 +249,10 @@ def build_robust_sensitivity_table(
         robust cohort are (robust_cohort_label, partition, cluster).
     robust_cohort_label : the label string written into the ``cohort``
         column of the returned DataFrame.
+    robust_signatures : signatures recomputed on the restricted patients,
+        labelled ``robust_cohort_label`` (what stage 7 passes). Without it
+        the full cohort's signatures are used, whose cohort label does not
+        match, so the signature text is empty.
 
     Returns
     -------
@@ -243,7 +260,8 @@ def build_robust_sensitivity_table(
     """
     cohort_meta = full_cohort_inputs["cohort_metadata"].copy()
     spatial_labels = full_cohort_inputs["spatial_labels"].copy()
-    signatures_df = full_cohort_inputs["signatures"].copy()
+    signatures_df = (robust_signatures if robust_signatures is not None
+                     else full_cohort_inputs["signatures"]).copy()
 
     # Patients with low_burden_flag == False
     lb_mask = cohort_meta["low_burden_flag"].astype(str).str.lower().isin(

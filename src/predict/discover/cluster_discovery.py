@@ -59,10 +59,9 @@ NullReference = Literal["pca_uniform"]
 class GapStatisticResult:
     """One run of the gap statistic on a single algorithm.
 
-    The Tibshirani rule selects the smallest k in ``k_range`` (excluding
-    the last) such that ``gap_values[k] >= gap_values[k + 1] - sk_values[k + 1]``.
-    If no such k exists, ``selected_k`` falls back to the k with the maximum
-    gap value.
+    ``selected_k`` follows the 1-SE-from-argmax rule in
+    ``_select_k_tibshirani``: the smallest k whose gap is within one
+    standard error of the maximum gap.
     """
     k_range: tuple[int, ...]
     gap_values: np.ndarray
@@ -103,6 +102,29 @@ class ConsensusResult:
 
 # ─────────────────────────── clustering algorithms ───────────────────────────
 
+# The production GMM (D021). Stage 8 refits the spatial-only GMM with this
+# same function so the "frozen" model is the production procedure, not a
+# re-implementation with other settings.
+GMM_COVARIANCE_TYPE = "full"
+GMM_N_INIT = 5
+GMM_MAX_ITER = 200
+
+
+def fit_gmm(X: np.ndarray, k: int, *, random_state: int) -> GaussianMixture:
+    """Fit the production Gaussian mixture and return the fitted model."""
+    model = GaussianMixture(
+        n_components=k, covariance_type=GMM_COVARIANCE_TYPE,
+        random_state=random_state, n_init=GMM_N_INIT, max_iter=GMM_MAX_ITER,
+    )
+    return model.fit(X)
+
+
+def fit_kmeans(X: np.ndarray, k: int, *, random_state: int, n_init: int = 50) -> KMeans:
+    """Fit the production k-means and return the fitted model (the lesion
+    stability check rebuilds the stored lesion partition with it and assigns
+    perturbed lesions with ``predict``; D043)."""
+    return KMeans(n_clusters=k, n_init=n_init, random_state=random_state).fit(X)
+
 
 def fit_cluster(
     X: np.ndarray,
@@ -128,18 +150,13 @@ def fit_cluster(
         return np.zeros(X.shape[0], dtype=int)
 
     if algorithm == "kmeans":
-        model = KMeans(n_clusters=k, n_init=n_init_kmeans,
-                       random_state=random_state)
-        return np.asarray(model.fit_predict(X), dtype=int)
+        model = fit_kmeans(X, k, random_state=random_state, n_init=n_init_kmeans)
+        return np.asarray(model.labels_, dtype=int)
     if algorithm == "ward":
         model = AgglomerativeClustering(n_clusters=k, linkage="ward")
         return np.asarray(model.fit_predict(X), dtype=int)
     if algorithm == "gmm":
-        model = GaussianMixture(
-            n_components=k, covariance_type="full",
-            random_state=random_state, n_init=5, max_iter=200,
-        )
-        return np.asarray(model.fit(X).predict(X), dtype=int)
+        return np.asarray(fit_gmm(X, k, random_state=random_state).predict(X), dtype=int)
     raise ValueError(f"unknown algorithm {algorithm!r}")
 
 
@@ -173,19 +190,33 @@ def within_cluster_dispersion(X: np.ndarray, labels: np.ndarray) -> float:
     return W
 
 
+def _principal_frame(X: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """The input's own principal axes (Tibshirani's PCA-uniform reference).
+
+    Returns ``(center, Vt, low, high)``: the column means, the right singular
+    vectors of the centred data (all d axes kept; a rotation, not a
+    reduction), and the bounding box of the data in those axes. The input's
+    columns need not be principal axes: burden-residualised PC scores are
+    correlated, and a box on their columns is the wrong null (D021.1).
+    """
+    center = X.mean(axis=0)
+    _, _, Vt = np.linalg.svd(X - center, full_matrices=False)
+    R = (X - center) @ Vt.T
+    return center, Vt, R.min(axis=0), R.max(axis=0)
+
+
 def _sample_pca_uniform_null(
-    bbox_low: np.ndarray,
-    bbox_high: np.ndarray,
+    frame: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
     n: int,
     *,
     random_state: int,
 ) -> np.ndarray:
-    """Tibshirani's PCA-uniform null: sample n points uniformly in the
-    per-feature bounding box. Since stage-5 input is already PC-projected,
-    PC axes ARE the principal axes, so per-feature uniform sampling
-    coincides with Tibshirani's PCA-uniform reference."""
+    """Tibshirani's PCA-uniform null: n points uniform in the box spanned by
+    the data's principal axes, mapped back to the input coordinates."""
+    center, Vt, low, high = frame
     rng = np.random.default_rng(random_state)
-    return rng.uniform(low=bbox_low, high=bbox_high, size=(n, len(bbox_low)))
+    Z = rng.uniform(low=low, high=high, size=(n, len(low)))
+    return Z @ Vt + center
 
 
 def _select_k_tibshirani(
@@ -212,8 +243,11 @@ def _select_k_tibshirani(
     is within one standard error of the maximum gap. This:
       * selects the true k for clustered data (peak gap defines the cluster
         count, and only k near k_true sit within 1 SE of it)
-      * selects k=1 for random data (the entire gap curve is roughly flat
-        with all values within 1 SE of each other; smallest qualifying k=1)
+      * tends to select k=1 for random data (the gap curve is roughly flat),
+        but not reliably when the data match the uniform reference: on 300
+        points uniform along a line it picked k=1 in 8 of 20 datasets
+        (cluster probe, 2026-10-05); sk is the spread of the reference
+        draws and does not include the observed curve's sampling noise
     """
     if len(gap_values) == 0:
         raise ValueError("gap_values must be non-empty")
@@ -228,7 +262,7 @@ def _select_k_tibshirani(
 
 def _gap_bootstrap_iter(
     b: int, k_idx: int, k: int, algorithm: str,
-    bbox_low: np.ndarray, bbox_high: np.ndarray, n: int, random_state: int,
+    frame: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], n: int, random_state: int,
 ) -> float:
     """One bootstrap iteration of the gap statistic. Pure function of its
     arguments so it can be parallelised by joblib without race conditions.
@@ -238,7 +272,7 @@ def _gap_bootstrap_iter(
     to the serial result for any n_jobs.
     """
     seed = random_state * 10_000 + k_idx * 1_000 + b
-    X_ref = _sample_pca_uniform_null(bbox_low, bbox_high, n, random_state=seed)
+    X_ref = _sample_pca_uniform_null(frame, n, random_state=seed)
     labels_ref = fit_cluster(X_ref, k, algorithm=algorithm, random_state=seed)
     W_ref = within_cluster_dispersion(X_ref, labels_ref)
     return float(np.log(W_ref)) if W_ref > 0 else float("-inf")
@@ -257,8 +291,9 @@ def gap_statistic(
     """Compute the Tibshirani gap statistic and return the selected k.
 
     For each k, fits ``algorithm`` on the observed data to get W_k_obs.
-    For each bootstrap b, draws a null sample from the bbox of X and fits
-    the same algorithm to get W_k_ref(b). The gap is
+    For each bootstrap b, draws a null sample uniformly in the box spanned
+    by X's own principal axes (all dimensions kept) and fits the same
+    algorithm to get W_k_ref(b). The gap is
 
         gap(k) = mean_b log(W_k_ref(b)) - log(W_k_obs)
 
@@ -284,8 +319,7 @@ def gap_statistic(
         raise ValueError("k_range must be non-empty")
 
     n, _d = X.shape
-    bbox_low = X.min(axis=0)
-    bbox_high = X.max(axis=0)
+    frame = _principal_frame(X)
 
     log_Wk_observed = np.zeros(len(k_range), dtype=np.float64)
     log_Wk_ref = np.zeros((len(k_range), n_bootstrap), dtype=np.float64)
@@ -299,14 +333,14 @@ def gap_statistic(
         if n_jobs == 1:
             log_Wk_ref[i] = np.array([
                 _gap_bootstrap_iter(b, i, k, algorithm,
-                                     bbox_low, bbox_high, n, random_state)
+                                     frame, n, random_state)
                 for b in range(n_bootstrap)
             ], dtype=np.float64)
         else:
             log_Wk_ref[i] = np.array(Parallel(n_jobs=n_jobs)(
                 delayed(_gap_bootstrap_iter)(
                     b, i, k, algorithm,
-                    bbox_low, bbox_high, n, random_state,
+                    frame, n, random_state,
                 )
                 for b in range(n_bootstrap)
             ), dtype=np.float64)
@@ -515,6 +549,8 @@ __all__ = [
     "NullReference",
     "burden_residualise",
     "fit_cluster",
+    "fit_gmm",
+    "fit_kmeans",
     "gap_statistic",
     "monti_consensus",
     "within_cluster_dispersion",

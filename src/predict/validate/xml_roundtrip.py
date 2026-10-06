@@ -1,4 +1,4 @@
-"""XML stat round-trip — preprocessing correctness gate.
+"""XML stat round-trip: preprocessing correctness gate.
 
 For every non-dirty ROI in a parsed XML, this module:
 
@@ -11,7 +11,7 @@ For every non-dirty ROI in a parsed XML, this module:
 Pass criterion (D002):
 
 - **Hard gate**: ``voxel_max == xml_max`` exactly. This is the slice- and
-  polygon-correctness signal — the brightest pixel inside our polygon on
+  polygon-correctness signal: the brightest pixel inside our polygon on
   the matched slice is the same one OsiriX saw.
 - **Informational**: ``delta_mean`` and ``delta_min`` are reported but do
   not fail the ROI unless ``|delta_mean| > 200 HU`` (gross mismatch). The
@@ -24,8 +24,8 @@ re-derives the per-ROI 2D mask itself so a bug in mask_builder cannot mask
 itself in the round-trip.
 
 Decisions referencing this module:
-    D002 — XML stat round-trip as preprocessing correctness gate
-    D001 — Z-coordinate matching (the thing being verified)
+    D002: XML stat round-trip as preprocessing correctness gate
+    D001: Z-coordinate matching (the thing being verified)
 """
 from __future__ import annotations
 
@@ -36,10 +36,7 @@ import cv2
 import numpy as np
 
 from predict.io.xml_parser import ParseResult, ROI
-from predict.preprocess.slice_matcher import (
-    fallback_image_index_to_slice,
-    match_roi_to_slice,
-)
+from predict.preprocess.slice_matcher import Z_MATCH_TOLERANCE_MM, resolve_roi_slice
 
 
 @dataclass(frozen=True)
@@ -49,7 +46,7 @@ class ROITrip:
     roi_idx_in_slice: int     # 0-based index inside parse_result.slices[k].rois
     vessel: str | None
     matched_slice_idx: int | None
-    matched_via: str  # "center" | "image_index_fallback" | "unmatched" | "dirty" | "skipped"
+    matched_via: str  # "center" | "image_index_fallback" | "center_mismatch" | "unmatched" | "dirty" | "skipped"
     n_xml_points: int
     xml_mean: float
     xml_max: float
@@ -91,7 +88,7 @@ def check_roi(
     slice_positions: Sequence[float],
     *,
     roi_idx_in_slice: int = 0,
-    tolerance_mm: float = 1.5,
+    tolerance_mm: float = Z_MATCH_TOLERANCE_MM,
     max_max_delta: float = 0.0,        # hard gate: voxel_max must match xml_max exactly
     max_mean_delta: float = 200.0,     # informational; only fails on gross mismatch
     include_dirty: bool = False,
@@ -125,13 +122,10 @@ def check_roi(
     if roi.vessel is None and not include_dirty:
         return _empty("dirty_vessel_skipped", "dirty", None)
 
-    idx = match_roi_to_slice(roi, slice_positions, tolerance_mm)
-    matched_via = "center"
+    idx, matched_via = resolve_roi_slice(roi, image_index, slice_positions, tolerance_mm)
     if idx is None:
-        idx = fallback_image_index_to_slice(image_index, n_slices)
-        matched_via = "image_index_fallback" if idx is not None else "unmatched"
-    if idx is None:
-        return _empty("no_slice_match", "unmatched", None)
+        reason = "center_outside_scan" if matched_via == "center_mismatch" else "no_slice_match"
+        return _empty(reason, matched_via, None)
 
     mask2d = _rasterise_roi_2d(roi, (h, w))
     if mask2d is None or mask2d.sum() == 0:
@@ -185,7 +179,7 @@ def xml_roundtrip_check(
     ct_array: np.ndarray,
     slice_positions: Sequence[float],
     *,
-    tolerance_mm: float = 1.5,
+    tolerance_mm: float = Z_MATCH_TOLERANCE_MM,
     max_max_delta: float = 0.0,
     max_mean_delta: float = 200.0,
     include_dirty: bool = False,

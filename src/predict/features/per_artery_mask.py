@@ -3,7 +3,7 @@
 For each vessel in ``LAD``, ``RCA``, ``LCx``, ``LM``, call the same
 ``mask_builder.build_3d_mask`` used for the whole-mask in stage 2, with a
 ``vessel_filter`` that restricts rasterisation to that vessel. The same
-``excluded_roi_ids`` is applied — per-vessel masks are voxel-consistent with
+``excluded_roi_ids`` is applied: per-vessel masks are voxel-consistent with
 the whole-mask: summing the four per-vessel voxel counts equals the whole-
 mask voxel count (modulo zero overlap, which is guaranteed by the disjoint
 vessel labels).
@@ -14,8 +14,8 @@ mean/max HU, Agatston, density tiers) come from the dedicated modules and
 do not need a mask.
 
 Decisions referencing this module:
-    D008 — Per-artery masks via filter-then-rasterise.
-    D012 — excluded_roi_ids consistency with whole-mask.
+    D008: Per-artery masks via filter-then-rasterise.
+    D012: excluded_roi_ids consistency with whole-mask.
 """
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ from predict.config import VESSEL_NAMES
 from predict.io.dicom_loader import LoadedPatient
 from predict.io.xml_parser import ParseResult
 from predict.preprocess.mask_builder import build_3d_mask
+from predict.preprocess.slice_matcher import Z_MATCH_TOLERANCE_MM
 
 
 def build_per_artery_masks(
@@ -32,7 +33,7 @@ def build_per_artery_masks(
     loaded: LoadedPatient,
     *,
     excluded_roi_ids: set | None = None,
-    tolerance_mm: float = 1.5,
+    tolerance_mm: float = Z_MATCH_TOLERANCE_MM,
 ) -> dict[str, np.ndarray]:
     """Return one ``(n_slices, H, W)`` uint8 mask per canonical vessel.
 

@@ -1,4 +1,4 @@
-"""SF3 — Directional hypothesis verdicts.
+"""SF3: Directional hypothesis verdicts.
 
 The 6 pre-registered D025 hypotheses (rows) x 3 cohorts (columns).
 Cell colour indicates confirmed vs refuted vs missing. Cell text shows
@@ -34,7 +34,7 @@ def build(analyse_dir: Path) -> "plt.Figure":
             row = df[(df["cohort"] == coh) & (df["feature"] == feat)]
             if len(row) == 0 or not bool(row.iloc[0]["feature_present"]):
                 cell_colours[i, j] = PALETTE["ns"]
-                cell_text[i, j] = "—"
+                cell_text[i, j] = "n/a"
                 continue
             r = row.iloc[0]
             if coh == "full":
@@ -82,7 +82,7 @@ def build(analyse_dir: Path) -> "plt.Figure":
     ax.grid(False)
     ax.set_title(
         "Supplementary Figure 3. D025 pre-registered directional hypotheses\n"
-        f"Primary verdict: {verdict['overall_verdict'].upper()} — "
+        f"Primary verdict: {verdict['overall_verdict'].upper()}: "
         f"{verdict['primary']['n_confirmed']} of 6 confirmed in the full cohort "
         f"(FDR p < 0.05); secondary {verdict['secondary']['qr36d_2_match_count']} "
         f"and {verdict['secondary']['i30f_3_match_count']} direction-matches "

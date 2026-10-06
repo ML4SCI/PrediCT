@@ -3,7 +3,7 @@
 This module covers the per-vessel volume / mass / HU stats and their patient-
 level totals. It is XML-only (no mask, no CT) and very cheap to run.
 
-Mass formula (D015 — HU-volume product, no calibration):
+Mass formula (D015: HU-volume product, no calibration):
 
     mass_vessel = Σ_ROI (area_mm² × slice_thickness_mm × mean_HU)
 
@@ -25,11 +25,11 @@ Patient-level totals are simple sums over the four vessels. The global
 mean-HU is also area-weighted across all ROIs.
 
 Agatston per vessel comes from :mod:`predict.features.agatston`, not from
-this module — see D011 (one helper, one call site).
+this module: see D011 (one helper, one call site).
 
 Decisions referencing this module:
-    D011 — Agatston helper lives in agatston.py (not duplicated here).
-    D012 — excluded_roi_ids skips round-trip-failed ROIs.
+    D011: Agatston helper lives in agatston.py (not duplicated here).
+    D012: excluded_roi_ids skips round-trip-failed ROIs.
 """
 from __future__ import annotations
 

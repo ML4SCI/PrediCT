@@ -131,25 +131,25 @@ def test_vessel_burden_gini_zero_for_no_burden():
     assert out.iloc[0] == 0.0
 
 
-def test_vessel_burden_gini_zero_for_single_vessel():
-    """KEY CONVENTION: single calcified vessel -> Gini = 0
-    (single-value Gini is undefined; we floor it at 0 to match stage 5)."""
+def test_vessel_burden_gini_single_vessel_is_maximal():
+    """D040: one calcified vessel of four -> Gini 0.75 (most focal)."""
     df = pd.DataFrame({
         "agatston_lad": [500.0], "agatston_rca": [0.0],
         "agatston_lcx": [0.0], "agatston_lm": [0.0],
     })
     out = derive_vessel_burden_gini(df)
-    assert out.iloc[0] == 0.0
+    assert out.iloc[0] == pytest.approx(0.75)
 
 
-def test_vessel_burden_gini_zero_for_two_equal_vessels():
-    """Two equal-burden vessels -> Gini = 0 (perfect equality)."""
+def test_vessel_burden_gini_two_equal_vessels_of_four():
+    """Two equal vessels, two calcium-free: half the vessels carry all the
+    burden -> Gini 0.5 (D040 counts the calcium-free vessels)."""
     df = pd.DataFrame({
         "agatston_lad": [100.0], "agatston_rca": [100.0],
         "agatston_lcx": [0.0], "agatston_lm": [0.0],
     })
     out = derive_vessel_burden_gini(df)
-    assert abs(out.iloc[0]) < 1e-12
+    assert out.iloc[0] == pytest.approx(0.5)
 
 
 def test_vessel_burden_gini_positive_for_two_unequal_vessels():
@@ -171,9 +171,8 @@ def test_vessel_burden_gini_increases_with_concentration():
         "agatston_lm":  [0.0, 0.0, 0.0],
     })
     out = derive_vessel_burden_gini(df)
-    assert out.iloc[0] == 0.0   # equal
-    assert out.iloc[1] > 0.20
-    assert out.iloc[2] > 0.45
+    assert out.iloc[0] == pytest.approx(0.5)   # two equal of four
+    assert out.iloc[0] < out.iloc[1] < out.iloc[2] < 0.75
 
 
 def test_vessel_burden_gini_returns_none_on_missing_columns():

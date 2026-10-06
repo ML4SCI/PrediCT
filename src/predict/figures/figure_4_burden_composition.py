@@ -1,9 +1,12 @@
-"""F4 — Lesion-cluster maturation trajectory across burden tertiles.
+"""F4: Lesion-cluster composition across burden tertiles (cross-sectional).
 
-Visualises the lesion-experiment Finding L4: as Agatston burden
-increases, the per-patient lesion mixture composition shifts from
-soft microspots toward dense plaques (and the RCA-biased C8 cluster
-emerges only in the high-burden tertile).
+Shows the mean per-patient lesion fractions per Agatston tertile. The
+k-means lesion clusters are grouped by the fixed median-threshold rule of
+``predict.figures._lesion_classes`` (dense: max HU >= 500; soft: max HU
+<= 230 and volume <= 15 mm3; moderate: the rest), NOT by the GMM k=3
+partition (ARI 0.21 with these groups). The tertiles are different
+patients, so the figure shows composition across burden levels, not a
+time course (D044).
 """
 from __future__ import annotations
 
@@ -15,6 +18,14 @@ import pandas as pd
 
 from predict.figures._lesion_classes import discover_broad_classes
 from predict.figures.style import PALETTE
+
+
+# Legend labels state the grouping rule itself.
+CLASS_LABELS = {
+    "soft_microspots": "soft (max HU <= 230, vol <= 15 mm$^3$)",
+    "moderate_nodules": "moderate (other)",
+    "dense_plaques": "dense (max HU >= 500)",
+}
 
 
 def build(lesion_morph_dir: Path) -> "plt.Figure":
@@ -61,7 +72,7 @@ def build(lesion_morph_dir: Path) -> "plt.Figure":
         ax_stack.bar(
             tertiles, vals, bottom=bottom,
             color=PALETTE[cls], edgecolor="white", linewidth=1,
-            label=cls.replace("_", " "),
+            label=CLASS_LABELS[cls],
         )
         for i, (t, v, b) in enumerate(zip(tertiles, vals, bottom)):
             if v > 0.05:
@@ -73,12 +84,12 @@ def build(lesion_morph_dir: Path) -> "plt.Figure":
         bottom += vals
     ax_stack.set_xlabel("Burden tertile (Agatston-total qcut)")
     ax_stack.set_ylabel("Mean per-patient lesion fraction")
-    ax_stack.set_title("(a) Mixture composition by burden tertile\n"
-                        "(broad GMM-k=3 classes)")
+    ax_stack.set_title("(a) Lesion composition by burden tertile\n"
+                        "(k-means clusters grouped by median thresholds)")
     ax_stack.legend(loc="upper right")
     ax_stack.set_ylim(0, 1.0)
 
-    # (b) Per-cluster trajectories with JT p-values (highlight monotone)
+    # (b) Per-cluster fraction by tertile with JT trend p-values
     colours_for_class = {
         "soft_microspots": PALETTE["soft_microspots"],
         "moderate_nodules": PALETTE["moderate_nodules"],
@@ -100,14 +111,13 @@ def build(lesion_morph_dir: Path) -> "plt.Figure":
                        label=f"C{cid}{sig}")
     ax_indiv.set_xlabel("Burden tertile")
     ax_indiv.set_ylabel("Mean fraction")
-    ax_indiv.set_title("(b) Per-cluster trajectories\n"
-                        "(*** = Jonckheere-Terpstra p < 0.001)")
+    ax_indiv.set_title("(b) Per-cluster mean fraction by burden tertile\n"
+                        "(*** = Jonckheere-Terpstra trend p < 0.001)")
     ax_indiv.legend(loc="upper right", fontsize=7, ncol=2)
 
     fig.suptitle(
-        "Figure 4. Lesion-cluster maturation trajectory: as burden rises,\n"
-        "patients' lesion composition shifts from soft microspots toward "
-        "dense plaques.",
+        "Figure 4. Lesion composition across Agatston tertiles "
+        "(cross-sectional; different patients per tertile)",
         y=1.04, fontsize=12, fontweight="bold",
     )
     fig.tight_layout()

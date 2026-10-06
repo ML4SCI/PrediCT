@@ -1,4 +1,4 @@
-"""Stage 8 shared helper — focal/diffuse mapping (D023) for raw GMM labels.
+"""Stage 8 shared helper: focal/diffuse mapping (D023) for raw GMM labels.
 
 The spatial-only k=2 GMM produces labels in ``{0, 1}`` whose identity is
 arbitrary (depends on init seed + per-fold refit data). Per D023, the
@@ -12,12 +12,12 @@ This module wraps the stage-7 helper
 convenience functions used by ``predict.validate.{external_holdout,
 leave_k_out}``:
 
-* :func:`canonical_numeric_labels` — relabel raw GMM ``{0, 1}`` so that
+* :func:`canonical_numeric_labels`: relabel raw GMM ``{0, 1}`` so that
   ``0 = focal`` and ``1 = diffuse``. Used for cross-fold comparison
   where a stable numeric encoding is needed.
-* :func:`canonical_string_labels` — same mapping but emits string
+* :func:`canonical_string_labels`: same mapping but emits string
   labels (``"focal" / "diffuse"``) for human-readable / paper outputs.
-* :func:`apply_mapping` — apply an arbitrary ``{old_id: new_label}`` dict
+* :func:`apply_mapping`: apply an arbitrary ``{old_id: new_label}`` dict
   to a label series; idempotent if already in canonical form.
 
 D030.5 explicitly states ARI is computed on RAW GMM labels (permutation

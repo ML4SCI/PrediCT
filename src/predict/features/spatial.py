@@ -26,9 +26,9 @@ Edge cases:
     minus the lesion centroid Z, in mm.
 
 Decisions referencing this module:
-    D007 — Lesion grouping (provides the lesions consumed here).
-    D016 — Diffusivity edge-case table.
-    D017 — Zero sentinel for empty-artery / insufficient-data features.
+    D007: Lesion grouping (provides the lesions consumed here).
+    D016: Diffusivity edge-case table.
+    D017: Zero sentinel for empty-artery / insufficient-data features.
 """
 from __future__ import annotations
 
@@ -155,7 +155,7 @@ def _global_spatial_summaries(
         weighted_mean_z = sum(l.centroid_mm[2] for l in all_lesions) / len(all_lesions)
 
     # Patient-relative: distance from the most-superior slice to the
-    # weighted centre of mass. Same convention as dist_from_top_* — invariant
+    # weighted centre of mass. Same convention as dist_from_top_*: invariant
     # to the scanner's absolute IPP[2] origin. Clamp tiny float-roundoff
     # negatives to 0.
     center_of_mass_z = max(0.0, z_top - weighted_mean_z)

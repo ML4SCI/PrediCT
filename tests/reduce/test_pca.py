@@ -1,8 +1,7 @@
 """Tests for predict.reduce.pca (D020 part 2).
 
-Heavy emphasis on the sign convention (D034 in v1, ``normalise_pc_signs``):
-the user has explicitly warned that a single sign flip on a PC destroys
-downstream interpretation. Multiple tests verify the sign rule under input
+Heavy emphasis on the sign convention (``normalise_pc_signs``): a single
+sign flip on a PC destroys downstream interpretation. Multiple tests verify the sign rule under input
 reordering, varying dominant-feature positions, and determinism across runs.
 """
 from __future__ import annotations

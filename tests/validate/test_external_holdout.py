@@ -9,18 +9,31 @@ from sklearn.preprocessing import PowerTransformer
 from predict.reduce.prepare_matrix import (
     D017_DROPPED_FEATURES,
     D018_BINARISE_SOURCE,
-    PYRADIOMICS_TEXTURE_TO_HARMONISE,
 )
 from predict.validate.external_holdout import (
     HOLDOUT_RAW_CONTEXT_COLS,
     SPATIAL_FEATURES_FOR_PROJECTION,
+    ProductionSettings,
     _yeo_johnson_apply,
     build_holdout_report,
     fit_frozen_pipeline,
     predict_holdout_phenotype,
     project_holdout_to_spatial_pca,
+    require_production_parity,
     run_external_holdout_validation,
     transform_holdout_features,
+)
+
+
+# Example intensity-texture columns for the synthetic fixtures (formerly the
+# hardcoded ComBat list; ComBat now derives its columns, D035).
+TEXTURE_EXAMPLE: tuple[str, ...] = (
+    "original_glrlm_RunLengthNonUniformity",
+    "original_gldm_DependenceEntropy",
+    "original_glszm_ZoneEntropy",
+    "original_glrlm_GrayLevelNonUniformity",
+    "original_gldm_GrayLevelNonUniformity",
+    "original_firstorder_Range",
 )
 
 
@@ -95,7 +108,7 @@ def _toy_full_cohort(n: int = 200, seed: int = 0) -> pd.DataFrame:
     }
     # Texture features (6).
     texture_cols = {
-        c: rng.normal(10.0, 2.0, n) for c in PYRADIOMICS_TEXTURE_TO_HARMONISE
+        c: rng.normal(10.0, 2.0, n) for c in TEXTURE_EXAMPLE
     }
     # Other context columns expected by the holdout report.
     context = {
@@ -291,6 +304,74 @@ def test_run_validation_end_to_end_shape(full_cohort, holdout):
     py_cols = [c for c in report.columns
                if c.startswith("original_") or "_glcm_" in c]
     assert py_cols == []
+
+
+def test_rank_fallback_columns_are_replayed_with_the_training_mapping(full_cohort):
+    """Where the fit falls back to ranks, held-out values must not be
+    left raw and z-scored with rank-scale statistics (658.77 instead of
+    3.28 in a synthetic example). A skew threshold of 0 forces the rank
+    fallback; a held-out copy of a training row must get exactly that row's
+    fitted values, and the fit itself checks the replay of all training rows."""
+    frozen = fit_frozen_pipeline(full_cohort, _feature_cols(full_cohort),
+                                 settings=ProductionSettings(prep_kwargs={"yj_skew_threshold": 0.0}))
+    rank_cols = [c for c in frozen.spatial_feature_cols
+                 if frozen.transforms.get(c, {}).get("kind") == "rank"]
+    assert rank_cols, "the test needs at least one spatial column on the rank fallback"
+    copy = full_cohort.iloc[[5]].assign(pid="H1")
+    out = transform_holdout_features(copy, frozen)
+    row5 = frozen.training_pids.index(str(full_cohort.iloc[5]["pid"]))
+    np.testing.assert_allclose(out[frozen.spatial_feature_cols].to_numpy()[0],
+                               frozen.training_spatial[row5], atol=1e-9)
+    assert np.abs(out[rank_cols].to_numpy()).max() < 10.0
+
+
+def test_replay_check_catches_a_wrong_transform(full_cohort, monkeypatch):
+    """The fit refuses when the held-out transform does not reproduce the
+    fitted training values (here: the rank columns left raw, as before)."""
+    import predict.validate.external_holdout as eh
+    monkeypatch.setattr(eh, "_rank_map", lambda x, ref: x)
+    with pytest.raises(RuntimeError, match="replaying the training rows"):
+        eh.fit_frozen_pipeline(full_cohort, _feature_cols(full_cohort),
+                               settings=ProductionSettings(prep_kwargs={"yj_skew_threshold": 0.0}))
+
+
+def test_production_parity_passes_and_detects_differences(full_cohort, tmp_path):
+    frozen = fit_frozen_pipeline(full_cohort, _feature_cols(full_cohort))
+    prep = pd.DataFrame(frozen.training_spatial, columns=frozen.spatial_feature_cols)
+    prep.insert(0, "pid", frozen.training_pids)
+    labels = pd.DataFrame({"pid": frozen.training_pids,
+                           "spatial_only_gmm_k2": frozen.training_labels_raw})
+    prep.to_csv(tmp_path / "prepared_matrix.csv", index=False, float_format="%.17g")
+    labels.to_csv(tmp_path / "cluster_labels_spatial_k2.csv", index=False)
+    assert require_production_parity(frozen, tmp_path)["label_mismatches"] == 0
+
+    bad = labels.copy()
+    bad.loc[0, "spatial_only_gmm_k2"] = 1 - bad.loc[0, "spatial_only_gmm_k2"]
+    bad.to_csv(tmp_path / "cluster_labels_spatial_k2.csv", index=False)
+    with pytest.raises(SystemExit, match="labels differ"):
+        require_production_parity(frozen, tmp_path)
+    labels.to_csv(tmp_path / "cluster_labels_spatial_k2.csv", index=False)
+
+    shifted = prep.copy()
+    shifted[frozen.spatial_feature_cols[0]] += 1e-6
+    shifted.to_csv(tmp_path / "prepared_matrix.csv", index=False, float_format="%.17g")
+    with pytest.raises(SystemExit, match="transforms differ"):
+        require_production_parity(frozen, tmp_path)
+
+    prep.iloc[::-1].to_csv(tmp_path / "prepared_matrix.csv", index=False, float_format="%.17g")
+    with pytest.raises(SystemExit, match="cohort differs"):
+        require_production_parity(frozen, tmp_path)
+
+
+def test_frozen_gmm_is_the_production_gmm(full_cohort):
+    """The refit used seed 0, 10 inits, 100 iterations while
+    stage 6 uses 42, 5, 200. It now uses stage 6's own function and seed."""
+    from predict.discover.cluster_discovery import GMM_MAX_ITER, GMM_N_INIT
+    from predict.discover.stage6 import PRODUCTION
+    frozen = fit_frozen_pipeline(full_cohort, _feature_cols(full_cohort))
+    assert frozen.gmm.n_init == GMM_N_INIT
+    assert frozen.gmm.max_iter == GMM_MAX_ITER
+    assert frozen.gmm.random_state == PRODUCTION["random_state"]
 
 
 def test_predicted_phenotype_raw_column_preserved(full_cohort, holdout):

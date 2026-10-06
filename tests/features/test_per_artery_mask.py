@@ -58,7 +58,7 @@ def test_vessel_filter_isolates_one_vessel():
 
 
 def test_vessel_filter_does_not_affect_default_call():
-    """The new vessel_filter kwarg defaults to None — whole-mask unchanged."""
+    """The new vessel_filter kwarg defaults to None: whole-mask unchanged."""
     loaded = make_loaded_patient(n_slices=10)
     roi, _ = stamp_calcium_square(loaded, slice_idx=4)
     parse = make_parse_result("TEST", image_index=4, roi=roi)

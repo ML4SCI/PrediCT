@@ -15,7 +15,7 @@ Input contract:
                        ``outputs/02_preprocessed/spacing.json``.
 
 We wrap both arrays as ``SimpleITK.Image`` with matching spacing/origin/
-direction (origin (0,0,0), identity direction — radiomics features are
+direction (origin (0,0,0), identity direction: radiomics features are
 translation- and rotation-invariant) and run the extractor.
 
 Output:
@@ -25,7 +25,7 @@ Output:
     record zeros or skip the patient).
 
 Decisions referencing this module:
-    D009 — PyRadiomics extractor configuration (locked params.yaml).
+    D009: PyRadiomics extractor configuration (locked params.yaml).
 """
 from __future__ import annotations
 
@@ -70,11 +70,11 @@ def validate_ct_for_radiomics(ct_array: np.ndarray, pid: str = "") -> None:
     """Fail fast if ``ct_array`` is not raw HU suitable for PyRadiomics.
 
     Catches:
-      * normalised inputs (max ≤ 1.5) — common bug if the windowed display
+      * normalised inputs (max ≤ 1.5): common bug if the windowed display
         volume is fed in by accident.
-      * min HU well above air (≥ −100) — implies clipping that has hidden
+      * min HU well above air (≥ −100): implies clipping that has hidden
         the air baseline; not strictly fatal but a strong smell.
-      * max HU below 130 — no calcium possible, downstream texture is
+      * max HU below 130: no calcium possible, downstream texture is
         guaranteed to be meaningless.
       * unexpected dtype.
     """
@@ -102,6 +102,46 @@ def validate_ct_for_radiomics(ct_array: np.ndarray, pid: str = "") -> None:
             f"[GUARDRAIL] {pid}: CT max={cmax:.1f} below CAC threshold (130 HU); "
             "calcium would be invisible."
         )
+
+
+# ───────────────────── ROI size pre-check (D010) ─────────────────────
+
+
+def roi_too_small(mask_array: np.ndarray, extractor: "RadiomicsFeatureExtractor") -> str | None:
+    """Return why PyRadiomics' own ROI checks would reject ``mask_array``,
+    or ``None`` if it is large enough.
+
+    Mirrors PyRadiomics' ``imageoperations.checkMask`` boundaries exactly,
+    with the extractor's locked settings:
+
+    * size: rejected when the voxel count is **at or below**
+      ``minimumROISize`` (PyRadiomics tests ``roiSize <= minimumROISize``,
+      so with 14 a 14-voxel mask is rejected and 15 is accepted);
+    * dimensions: rejected for a single voxel (0 axes with extent > 1,
+      always), or when fewer axes than ``minimumROIDimensions`` (default 2)
+      have extent > 1.
+
+    Deciding this before extraction means the caller never has to guess
+    from an exception message: a legitimate small-ROI skip is this
+    function's answer, and anything the extractor raises is a real failure.
+    PyRadiomics rejects a mask at or below the minimum size (``<=``, not
+    ``<``: a 14-voxel mask raises inside PyRadiomics);
+    ``tests/features/test_radiomics.py`` pins both sides of the boundary
+    against PyRadiomics itself.
+    """
+    settings = getattr(extractor, "settings", {}) or {}
+    n = int(np.count_nonzero(mask_array))
+    min_size = settings.get("minimumROISize")
+    if min_size is not None and n <= min_size:
+        return f"roi_too_small: {n} voxels <= minimumROISize {min_size}"
+    min_dims = settings.get("minimumROIDimensions", 2)
+    nz = np.nonzero(mask_array)
+    dims = sum(1 for axis in nz if axis.size and axis.max() > axis.min())
+    if dims == 0:
+        return "roi_too_small: single voxel (0 dimensions)"
+    if dims < min_dims:
+        return f"roi_too_small: {dims} dimension(s) < minimumROIDimensions {min_dims}"
+    return None
 
 
 # ───────────────────── core extraction ─────────────────────
@@ -142,7 +182,7 @@ def extract_pyradiomics(
     """Run PyRadiomics on (ct, mask) and return a flat ``{name: value}`` dict.
 
     Returns an empty dict if the mask is empty. Raises any PyRadiomics
-    exception to the caller — the orchestration script catches and logs.
+    exception to the caller: the orchestration script catches and logs.
 
     The ``diagnostics_*`` keys produced by PyRadiomics are stripped.
     """

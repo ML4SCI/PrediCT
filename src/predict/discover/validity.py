@@ -133,6 +133,72 @@ def kernel_chi_square(
     )
 
 
+def _loglik_logit(X: np.ndarray, y: np.ndarray) -> float:
+    from sklearn.linear_model import LogisticRegression
+    m = LogisticRegression(C=1e10, max_iter=10000).fit(X, y)
+    p = np.clip(m.predict_proba(X)[:, 1], 1e-12, 1 - 1e-12)
+    return float((y * np.log(p) + (1 - y) * np.log(1 - p)).sum())
+
+
+def kernel_association_given_burden(
+    labels: np.ndarray, kernel: np.ndarray, agatston: np.ndarray,
+) -> dict:
+    """Likelihood-ratio tests on the two most frequent kernels: does the
+    cluster label predict the kernel, unadjusted and given log1p(Agatston)?
+
+    kernel ~ cluster vs kernel ~ 1 (unadjusted) and kernel ~ cluster +
+    log1p(agatston) vs kernel ~ log1p(agatston) (burden-adjusted). The one
+    implementation behind D021.1's scanner-bias assessment and
+    scripts/diagnose_kernel_chi2.py.
+    """
+    from scipy.stats import chi2 as chi2_dist
+    kernel = np.asarray(kernel).astype(str)
+    labels = np.asarray(labels)
+    main2 = pd.Series(kernel).value_counts().index[:2].tolist()
+    if len(main2) < 2:
+        raise ValueError("kernel_association_given_burden needs two kernels")
+    keep = np.isin(kernel, main2)
+    y = (kernel[keep] == main2[0]).astype(int)
+    lb = np.log1p(np.asarray(agatston, dtype=float)[keep])[:, None]
+    cl = pd.get_dummies(labels[keep], drop_first=True).to_numpy(float)
+    ll0 = _loglik_logit(lb, y)
+    ll1 = _loglik_logit(np.column_stack([lb, cl]), y)
+    ll_nb = _loglik_logit(cl, y)
+    ybar = y.mean()
+    ll_null = float(len(y) * (ybar * np.log(ybar) + (1 - ybar) * np.log(1 - ybar)))
+    df = cl.shape[1]
+    return {
+        "kernels": main2,
+        "lr_cluster_unadjusted": 2 * (ll_nb - ll_null),
+        "p_cluster_unadjusted": float(chi2_dist.sf(2 * (ll_nb - ll_null), df)),
+        "lr_cluster_given_burden": 2 * (ll1 - ll0),
+        "p_cluster_given_burden": float(chi2_dist.sf(2 * (ll1 - ll0), df)),
+        "p_burden_alone": float(chi2_dist.sf(2 * (ll0 - ll_null), 1)),
+    }
+
+
+def assess_kernel_confounding(
+    labels: np.ndarray, kernel: np.ndarray, agatston: np.ndarray, *, alpha: float = 0.05,
+) -> dict:
+    """D021.1 kernel policy for one clustering.
+
+    ``status`` is "pass" (chi-square p >= alpha), "explained_by_burden"
+    (chi-square fails but the cluster no longer predicts the kernel once
+    log1p(Agatston) is in the model, p_cluster_given_burden >= alpha), or
+    "confounded" (it still does). "confounded" stops stage 6.
+    """
+    chi = kernel_chi_square(labels, kernel, alpha=alpha)
+    out = {"chi2": chi.chi2, "pval": chi.pval, "dof": chi.dof, "passes": chi.passes}
+    if chi.passes:
+        out["status"] = "pass"
+        return out
+    adj = kernel_association_given_burden(labels, kernel, agatston)
+    out.update(adj)
+    out["status"] = ("explained_by_burden" if adj["p_cluster_given_burden"] >= alpha
+                     else "confounded")
+    return out
+
+
 # ─────────────────────────── Hennig bootstrap stability ───────────────────────────
 
 
@@ -162,12 +228,12 @@ def _hennig_bootstrap_iter(
     sub_rng = np.random.default_rng(seed)
     boot_idx = sub_rng.integers(low=0, high=n, size=n)
     boot_X = X[boot_idx]
-    try:
-        boot_labels = fit_cluster(
-            boot_X, k, algorithm=algorithm, random_state=seed,
-        )
-    except Exception:
-        return np.zeros(n_clusters, dtype=np.float64)
+    # No catch: a failed refit is a software or numerical error, not
+    # cluster instability. Scoring it as Jaccard 0 would hide every such
+    # failure (D021.1).
+    boot_labels = fit_cluster(
+        boot_X, k, algorithm=algorithm, random_state=seed,
+    )
 
     unique_in_boot = set(int(i) for i in np.unique(boot_idx))
     out = np.zeros(n_clusters, dtype=np.float64)

@@ -21,6 +21,8 @@ import pytest
 from predict.discover.cluster_discovery import (
     ConsensusResult,
     GapStatisticResult,
+    _principal_frame,
+    _sample_pca_uniform_null,
     burden_residualise,
     fit_cluster,
     gap_statistic,
@@ -377,3 +379,41 @@ def test_burden_residualise_linear_vs_log_changes_behaviour():
     # Linear should zero column 0; log should leave residual.
     assert np.max(np.abs(R_lin[:, 0])) < 1e-9
     assert np.max(np.abs(R_log[:, 0])) > 1.0
+
+
+# ───────────── D021.1: reference box in the input's own principal axes ─────────────
+
+
+def test_gap_reference_follows_the_inputs_principal_axes():
+    """Points along a diagonal line (thin band). The PCA-uniform reference
+    must fill the band's own principal-axes box, not the square spanned by
+    the raw columns (the wrong null; D021.1). This checks the reference itself:
+    the selected k on one null realisation is noisy (a 20-seed probe on this
+    band picked k = 1 in 8/20 with this box, k = 5 in 20/20 with the
+    raw-column box)."""
+    rng = np.random.default_rng(0)
+    t = rng.uniform(-5.0, 5.0, size=300)
+    X = np.column_stack([t, t + rng.normal(0.0, 0.05, size=300)])
+    frame = _principal_frame(X)
+    center, Vt, low, high = frame
+    ref = _sample_pca_uniform_null(frame, 2000, random_state=1)
+    R = (ref - center) @ Vt.T
+    assert np.all(R >= low - 1e-9) and np.all(R <= high + 1e-9)
+    # Along the band the reference spans the data's extent ...
+    assert np.ptp(R[:, 0]) > 0.95 * (high[0] - low[0])
+    # ... and across it only the band's thickness (about 0.1), whereas the
+    # raw-column box reaches the square's corners, about 7 away.
+    perp_ref = np.abs((ref - center) @ Vt[1]).max()
+    assert perp_ref <= max(abs(low[1]), abs(high[1])) + 1e-9 < 0.5
+    corner = np.array([X[:, 0].min(), X[:, 1].max()])
+    assert abs((corner - center) @ Vt[1]) > 5.0
+
+
+def test_gap_selection_is_rotation_invariant():
+    """Rotating the data (pairwise distances unchanged) must not change the
+    selected k, now that the reference lives in the data's principal axes."""
+    X = _three_blobs(n_per=30, separation=10.0, noise_sd=0.3)
+    Q, _ = np.linalg.qr(np.random.default_rng(1).normal(size=(X.shape[1], X.shape[1])))
+    a = gap_statistic(X, algorithm="kmeans", k_range=(1, 2, 3, 4, 5), n_bootstrap=20, random_state=0)
+    b = gap_statistic(X @ Q, algorithm="kmeans", k_range=(1, 2, 3, 4, 5), n_bootstrap=20, random_state=0)
+    assert a.selected_k == b.selected_k == 3

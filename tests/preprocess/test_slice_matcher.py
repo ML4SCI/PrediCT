@@ -7,6 +7,7 @@ from predict.io.xml_parser import ROI
 from predict.preprocess.slice_matcher import (
     fallback_image_index_to_slice,
     match_roi_to_slice,
+    resolve_roi_slice,
 )
 
 
@@ -64,3 +65,25 @@ def test_fallback_rejects_out_of_bounds():
     assert fallback_image_index_to_slice(-1, 10) is None
     assert fallback_image_index_to_slice(10, 10) is None
     assert fallback_image_index_to_slice(99, 10) is None
+
+
+# -- resolve_roi_slice: the one rule all callers use --
+
+
+def test_resolve_uses_center_when_it_matches():
+    positions = (0.0, 3.0, 6.0, 9.0)
+    assert resolve_roi_slice(_roi_with_center(6.1), 0, positions) == (2, "center")
+
+
+def test_resolve_never_falls_back_when_center_contradicts_scan():
+    """A Center outside the scan is a contradiction, not a missing value:
+    ImageIndex 1 is valid but must not be used."""
+    positions = (0.0, 3.0, 6.0, 9.0)
+    assert resolve_roi_slice(_roi_with_center(40.0), 1, positions) == (None, "center_mismatch")
+
+
+def test_resolve_falls_back_only_when_center_absent():
+    positions = (0.0, 3.0, 6.0)
+    roi = replace(_roi_with_center(0.0), center_xyz=None)
+    assert resolve_roi_slice(roi, 2, positions) == (2, "image_index_fallback")
+    assert resolve_roi_slice(roi, 7, positions) == (None, "unmatched")

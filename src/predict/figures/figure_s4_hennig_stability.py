@@ -1,4 +1,4 @@
-"""SF4 — Hennig clusterboot stability across cohorts.
+"""SF4: Hennig clusterboot stability across cohorts.
 
 Median + mean bootstrap Jaccard per cluster for the spatial-only k=2
 partition, shown across all three cohorts. The 0.75 stable threshold

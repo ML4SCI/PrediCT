@@ -18,7 +18,7 @@ is 1.0; on a 2.5 mm cohort it would be 0.833; on 1.5 mm it would be 0.5.
 
 This module exposes a single helper :func:`agatston_roi_score` used by both
 :func:`compute_agatston` here and :func:`compute_per_vessel_aggregates`
-in ``per_vessel_aggregates.py`` (D011 — no duplicated formula).
+in ``per_vessel_aggregates.py`` (D011: no duplicated formula).
 
 Inputs / outputs and exclusions follow D012: the caller passes an
 ``excluded_roi_ids`` set of ``(image_index, roi_idx_in_slice)`` tuples that
@@ -28,8 +28,8 @@ Dirty-vessel ROIs (``roi.vessel is None``) are silently skipped regardless of
 the exclusion set.
 
 Decisions referencing this module:
-    D011 — Single Agatston thickness-correction helper.
-    D012 — excluded_roi_ids as explicit input.
+    D011: Single Agatston thickness-correction helper.
+    D012: excluded_roi_ids as explicit input.
 """
 from __future__ import annotations
 

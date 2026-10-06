@@ -7,7 +7,7 @@ downstream review (some texture features become unreliable in the presence
 of pacemaker/stent leads).
 
 Decisions referencing this module:
-    D003 — No display HU window in pipeline outputs
+    D003: No display HU window in pipeline outputs
 """
 from __future__ import annotations
 

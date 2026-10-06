@@ -7,7 +7,7 @@ transformed). Output is a ``PcaResult`` dataclass exposing components,
 explained variance, cumulative variance, retained-component count, and the
 projected scores.
 
-CRITICAL SIGN CONVENTION (D034 in v1):
+CRITICAL SIGN CONVENTION (D020):
 
 PCA eigenvectors are sign-arbitrary: multiplying any eigenvector by -1
 produces an equally valid solution, but downstream interpretation ("high PC1
@@ -52,7 +52,7 @@ from sklearn.decomposition import PCA
 # Feature family map for the loadings audit table.
 # Evaluated left-to-right; first matching prefix wins. The "==" entries are
 # exact-match families that have no prefix structure. Keep in lockstep with
-# the v2 feature_schema.feature_names() output.
+# the feature_schema.feature_names() output.
 FAMILY_MAP: tuple[tuple[str, str], ...] = (
     ("original_shape_",       "PyRad-shape"),
     ("original_firstorder_",  "PyRad-firstorder"),

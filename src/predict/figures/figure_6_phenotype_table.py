@@ -1,4 +1,4 @@
-"""F6 — Phenotype paper table as a publication-grade table figure.
+"""F6: Phenotype paper table as a publication-grade table figure.
 
 Renders the 15-row phenotype_paper_table.csv as a typeset matplotlib
 table, with column-aware formatting (large numbers rounded, percentages
@@ -44,12 +44,12 @@ def _fmt(row, col):
         return f"{float(v):.0f}%"
     if col == "hennig_jaccard_median":
         if v is None or pd.isna(v):
-            return "—"
+            return "n/a"
         return f"{float(v):.2f}"
     if col == "top_signature_features":
         s = str(v)
         if not s:
-            return "—"
+            return "n/a"
         # Truncate at ~60 chars
         return s[:60] + ("..." if len(s) > 60 else "")
     return str(v)

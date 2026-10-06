@@ -1,11 +1,18 @@
-"""Stage 8 D030 — leave-k-out CV for spatial-only k=2 phenotype robustness.
+"""Stage 8 D030: leave-k-out CV for spatial-only k=2 phenotype robustness.
 
 10-fold kernel-stratified CV with full per-fold refit of the production
 pipeline:
 
   D019 prepare_matrix
     -> spatial-only PCA on the 13 SPATIAL_FEATURES_FOR_PROJECTION
-    -> GMM(k=2, random_state=0, n_init=10) on the spatial PC scores
+    -> GMM(k=2) on the spatial PC scores
+  with the production settings (``ProductionSettings``; D041: stage 6's
+  random_state and GMM function, stage 5's prep settings).
+
+Integrity (D041): the cohort must be exactly
+the published cohort, every cohort patient must have a reference label,
+and every planned fold must produce a row; reference class counts use the
+published (full-cohort D023) focal/diffuse mapping, not the fold model's.
 
 Each fold:
 
@@ -16,7 +23,7 @@ Each fold:
   5. Compute ARI between predicted held-out labels and the FULL-COHORT
      reference labels (from outputs/06_reduce/cluster_labels_spatial_k2.csv)
      restricted to that fold's held-out pids. RAW LABELS, no focal/diffuse
-     mapping — ARI is permutation invariant.
+     mapping: ARI is permutation invariant.
   6. Compute a fold-specific PASS threshold T_fold = 5th-percentile of a
      null simulation at K=10% per-patient disagreement, with class
      proportions matching the fold.
@@ -38,13 +45,14 @@ from sklearn.model_selection import StratifiedKFold
 
 from predict.validate.external_holdout import (
     FrozenPipeline,
+    ProductionSettings,
     SPATIAL_FEATURES_FOR_PROJECTION,
     fit_frozen_pipeline,
     predict_holdout_phenotype,
     project_holdout_to_spatial_pca,
     transform_holdout_features,
 )
-from predict.validate.label_alignment import apply_mapping
+from predict.validate.label_alignment import apply_mapping, determine_mapping
 
 _log = logging.getLogger(__name__)
 
@@ -120,17 +128,14 @@ def predict_fold(
     test_features: pd.DataFrame,
     gated_feature_cols: Iterable[str],
     *,
-    pca_cumvar: float = 0.85,
-    random_state: int = 0,
+    settings: ProductionSettings | None = None,
 ) -> tuple[np.ndarray, FrozenPipeline]:
-    """Refit the full pipeline on ``train_features`` and predict ``test_features``.
+    """Refit the full pipeline on ``train_features`` (production settings)
+    and predict ``test_features``.
 
     Returns ``(raw_test_labels, frozen)``. Raw labels are in ``{0, 1}``.
     """
-    frozen = fit_frozen_pipeline(
-        train_features, gated_feature_cols,
-        pca_cumvar=pca_cumvar, random_state=random_state,
-    )
+    frozen = fit_frozen_pipeline(train_features, gated_feature_cols, settings=settings)
     transformed = transform_holdout_features(test_features, frozen)
     scores = project_holdout_to_spatial_pca(transformed, frozen)
     raw_labels, _ = predict_holdout_phenotype(scores, frozen)
@@ -185,19 +190,19 @@ def run_leave_k_out(
     seed: int = SEED_DEFAULT,
     disagreement_rate: float = DISAGREEMENT_RATE_DEFAULT,
     n_simulations: int = N_SIM_DEFAULT,
-    pca_cumvar: float = 0.85,
-    random_state: int = 0,
+    settings: ProductionSettings | None = None,
 ) -> tuple[pd.DataFrame, dict]:
     """Run the D030 leave-k-out cross-validation. Returns ``(per_fold_df,
     summary)``.
 
     Parameters
     ----------
-    full_cohort_features  : raw features for the production cohort (N=420)
+    full_cohort_features  : raw features for exactly the published cohort
     gated_feature_cols    : features that passed the stage-4 ICC gate
     reference_labels      : Series indexed by pid; the full-cohort GMM
                             spatial-k=2 labels written by stage 6
-                            (raw {0,1}, NO focal/diffuse mapping)
+                            (raw {0,1}, NO focal/diffuse mapping); must
+                            cover exactly the cohort's pids
 
     Returns
     -------
@@ -207,6 +212,20 @@ def run_leave_k_out(
     pid_col = "pid"
     reference_labels = reference_labels.copy()
     reference_labels.index = reference_labels.index.astype(str)
+    cohort_pids = full_cohort_features[pid_col].astype(str)
+    if cohort_pids.duplicated().any() or reference_labels.index.duplicated().any():
+        raise ValueError("duplicate pids in the cohort or the reference labels")
+    if set(cohort_pids) != set(reference_labels.index):
+        raise ValueError(
+            "reference labels must cover exactly the cohort: "
+            f"{len(set(cohort_pids) - set(reference_labels.index))} cohort pids without a label, "
+            f"{len(set(reference_labels.index) - set(cohort_pids))} labels outside the cohort")
+    # Published focal/diffuse mapping of the reference labels (D023 on the
+    # full cohort, strict), for the reference class counts.
+    ref_mapping = determine_mapping(
+        full_cohort_features.set_index(cohort_pids).loc[reference_labels.index],
+        reference_labels, tie_break="raise")
+    focal_ids = {k for k, v in ref_mapping.items() if v == "focal"}
 
     splits = kernel_stratified_kfold_split(
         full_cohort_features, n_splits=n_splits, seed=seed,
@@ -221,21 +240,15 @@ def run_leave_k_out(
         ].reset_index(drop=True)
         test_pids = test_df[pid_col].astype(str).tolist()
 
-        # Reference labels restricted to this fold's held-out pids.
-        ref = reference_labels.reindex(test_pids).dropna().astype(int)
-        if len(ref) == 0:
-            _log.warning("fold %d: no reference labels for held-out pids",
-                         split.fold)
-            continue
+        # Reference labels of this fold's held-out pids (all present: the
+        # coverage check above).
+        ref = reference_labels.loc[test_pids].astype(int)
 
         # Predict.
         raw_test_labels, frozen = predict_fold(
-            train_df, test_df, gated_feature_cols,
-            pca_cumvar=pca_cumvar, random_state=random_state,
+            train_df, test_df, gated_feature_cols, settings=settings,
         )
-        pred_series = pd.Series(
-            raw_test_labels, index=test_pids,
-        ).reindex(ref.index).astype(int)
+        pred_series = pd.Series(raw_test_labels, index=test_pids).astype(int)
 
         # ARI on RAW labels (D030.5).
         ari = float(adjusted_rand_score(ref.to_numpy(), pred_series.to_numpy()))
@@ -248,10 +261,9 @@ def run_leave_k_out(
             rng_seed=split.fold + 1,
         )
 
-        # Class balance + interpretive bookkeeping.
-        focal_raw_in_train = frozen.gmm_focal_label_raw
-        diffuse_raw_in_train = 1 - focal_raw_in_train
-        ref_counts = ref.value_counts().to_dict()
+        # Reference class balance under the published mapping (the fold
+        # model's label numbers can be swapped relative to the reference).
+        n_focal_ref = int(ref.isin(focal_ids).sum())
 
         rows.append({
             "fold": split.fold,
@@ -260,19 +272,16 @@ def run_leave_k_out(
             "n_test_with_reference": len(ref),
             **{f"n_test_kernel_{k}": v
                for k, v in split.test_kernel_counts.items()},
-            "n_test_focal_reference": int(ref_counts.get(focal_raw_in_train, 0)),
-            "n_test_diffuse_reference": int(ref_counts.get(diffuse_raw_in_train, 0)),
+            "n_test_focal_reference": n_focal_ref,
+            "n_test_diffuse_reference": int(len(ref) - n_focal_ref),
             "ari": ari,
             "T_fold": T_fold,
             "pass_fold": bool(ari >= T_fold) if not np.isnan(T_fold) else False,
         })
 
     per_fold_df = pd.DataFrame(rows)
-    if per_fold_df.empty:
-        raise RuntimeError(
-            "run_leave_k_out produced no fold rows; check that the "
-            "reference_labels Series overlaps with cohort pids."
-        )
+    if len(per_fold_df) != n_splits:
+        raise RuntimeError(f"run_leave_k_out produced {len(per_fold_df)} of {n_splits} planned folds")
 
     median_ari = float(np.median(per_fold_df["ari"]))
     median_T = float(np.median(per_fold_df["T_fold"]))

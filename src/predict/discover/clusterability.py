@@ -5,19 +5,18 @@ nearest-neighbour distance distribution of:
   * real data points (sampled at random from the data, distance to their
     2nd-nearest neighbour, which skips self), denoted ``u_i``
   * synthetic points sampled uniformly inside the data's bounding box,
-    distance to their 2nd-nearest neighbour in the data, denoted ``w_i``
+    distance to their nearest neighbour in the data, denoted ``w_i``
 
 Hopkins H = sum(w_i) / (sum(w_i) + sum(u_i))
 
-Both queries use the 2nd-nearest neighbour, matching the pyclustertend
-canonical Python convention. This symmetric choice is what makes H ~ 0.5
-on uniform random data:
-  - real query's 2nd-NN skips self (the 1st-NN at distance 0)
-  - uniform query's 2nd-NN skips the "accidentally too close" 1st-NN
-The plain-distance formula with this symmetric skip is finite-sample-
-stable; the alternative "d-th power" convention from the original Hopkins
-paper amplifies finite-sample noise catastrophically in higher dimensions
-and is not used in modern implementations.
+A real query is a row of X, so its 2nd neighbour skips itself; a uniform
+query is not in X and uses its 1st neighbour (as pyclustertend does). This
+gives H ~ 0.5 on uniform random data (D021.1; using the 2nd neighbour for
+uniform queries too would bias H upward). Tests must seed the
+data and this function independently: with equal seeds the uniform queries
+replay the data's own random stream and land on data points. Plain
+distances are used; the "d-th power" convention of the original Hopkins
+paper is unstable at d >= 5.
 
 Interpretation (Banerjee 2004 ranges):
   H near 1.0  -> strong clustering (real points are tightly grouped relative
@@ -103,10 +102,12 @@ def hopkins_statistic(
 
     Numerical notes:
       * Distances are Euclidean.
-      * Both real and uniform queries use the 2nd-nearest-neighbour in X.
-        Real queries skip self at distance 0; uniform queries skip the
-        accidentally-too-close 1st-NN. This symmetric choice (matching
-        pyclustertend) makes H ~ 0.5 on uniform random data.
+      * Real queries (sampled from X) use the 2nd-nearest neighbour in X,
+        skipping themselves at distance 0. Uniform queries are not in X, so
+        they use the 1st-nearest neighbour (as pyclustertend does). This
+        makes H ~ 0.5 on uniform random data. Letting uniform queries skip
+        their nearest neighbour too would inflate H on random data (mean
+        0.667 on 1-D uniform; D021.1).
       * Uniform samples are drawn in the per-feature bounding box of X.
       * The function is fully deterministic for fixed ``random_state``.
     """
@@ -148,10 +149,9 @@ def hopkins_statistic(
     u_dist, _ = tree.query(real_sample, k=2)
     u_distances = u_dist[:, 1]
 
-    # For each uniform sample: 2nd-NN (skip accidentally-close 1st-NN
-    # to symmetrise the formula with the real-sample case).
-    w_dist, _ = tree.query(uniform_sample, k=2)
-    w_distances = w_dist[:, 1]
+    # For each uniform sample: 1st-NN (a generated point has no self-match).
+    w_dist, _ = tree.query(uniform_sample, k=1)
+    w_distances = np.asarray(w_dist, dtype=np.float64).reshape(-1)
 
     u_sum = float(u_distances.sum())
     w_sum = float(w_distances.sum())

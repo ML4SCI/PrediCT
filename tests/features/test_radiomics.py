@@ -14,6 +14,7 @@ from predict.features.radiomics import (
     _arrays_to_sitk,
     create_extractor,
     extract_pyradiomics,
+    roi_too_small,
     validate_ct_for_radiomics,
 )
 
@@ -137,3 +138,68 @@ def test_extract_pyradiomics_feature_count_in_expected_range():
     assert 90 <= len(features) <= 130, (
         f"Unexpected feature count: {len(features)} (expected ~107)"
     )
+
+
+# ───────────────────── ROI size pre-check ─────────────────────
+
+
+class _Settings:
+    def __init__(self, **settings):
+        self.settings = settings
+
+
+def _n_voxel_mask(n: int) -> np.ndarray:
+    """n voxels on one slice, filled row by row (2 dimensions for n > 8)."""
+    mask = np.zeros((3, 8, 8), dtype=np.uint8)
+    mask[1].reshape(-1)[:n] = 1
+    return mask
+
+
+def test_roi_too_small_by_voxel_count_matches_pyradiomics_boundary():
+    """PyRadiomics rejects roiSize <= minimumROISize: with 14, a 14-voxel
+    mask is too small and 15 is not (seen on real perturbed masks)."""
+    s = _Settings(minimumROISize=14, minimumROIDimensions=1)
+    assert "minimumROISize" in roi_too_small(_n_voxel_mask(12), s)
+    assert "minimumROISize" in roi_too_small(_n_voxel_mask(14), s)
+    assert roi_too_small(_n_voxel_mask(15), s) is None
+
+
+def test_single_voxel_is_always_too_small():
+    assert "single voxel" in roi_too_small(_n_voxel_mask(1), _Settings(minimumROIDimensions=0))
+
+
+def test_roi_too_small_by_dimensions_uses_pyradiomics_default_of_two():
+    mask = np.zeros((3, 8, 8), dtype=np.uint8)
+    mask[1, 3, 0:8] = 1                          # a line: 1 dimension with extent > 1
+    assert "minimumROIDimensions" in roi_too_small(mask, _Settings())
+    assert roi_too_small(mask, _Settings(minimumROIDimensions=1)) is None
+
+
+@pytest.mark.slow
+def test_roi_too_small_reads_the_locked_params():
+    """The skip threshold must come from params.yaml (minimumROISize 14),
+    not from a copy in the code."""
+    extractor = create_extractor()
+    mask = np.zeros((3, 8, 8), dtype=np.uint8)
+    mask[1, 0:2, 0:6] = 1                        # 12 voxels, 2 dimensions
+    assert "minimumROISize 14" in roi_too_small(mask, extractor)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("n", [14, 15])
+def test_precheck_agrees_with_pyradiomics_at_the_boundary(n):
+    """The contract itself: wherever roi_too_small says "too small",
+    PyRadiomics must raise, and wherever it says None, extraction must
+    succeed. Checked on both sides of minimumROISize (14 and 15 voxels)
+    with the production extractor and params.yaml."""
+    extractor = create_extractor()
+    mask = _n_voxel_mask(n)
+    ct = np.full(mask.shape, -1000, dtype=np.int16)
+    ct[mask == 1] = 400 + np.arange(n, dtype=np.int16) * 10   # some texture
+    reason = roi_too_small(mask, extractor)
+    if reason is None:
+        assert extract_pyradiomics(ct, mask, (0.375, 0.375, 3.0), extractor)
+    else:
+        with pytest.raises(ValueError):
+            extract_pyradiomics(ct, mask, (0.375, 0.375, 3.0), extractor)
+    assert (reason is None) == (n == 15)

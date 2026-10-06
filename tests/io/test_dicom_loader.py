@@ -11,7 +11,13 @@ from pathlib import Path
 
 import pytest
 
-from predict.io.dicom_loader import _normalise_kernel, _select_single_series, load_patient_dicom
+from predict.io.dicom_loader import (
+    IrregularGeometryError,
+    _normalise_kernel,
+    _select_single_series,
+    check_geometry,
+    load_patient_dicom,
+)
 
 
 def _meta(path: str, inst: int, uid: str, snum: int, modality: str = "CT") -> dict:
@@ -122,6 +128,109 @@ def test_deterministic_across_input_order():
     out1 = _select_single_series(a + b, "TEST")
     out2 = _select_single_series(b + a, "TEST")
     assert sorted(m["path"] for m in out1) == sorted(m["path"] for m in out2)
+
+
+# -- check_geometry (D039) -------------------------------------------------
+
+
+def _geo(zs, thickness=3.0, iop=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0)) -> list[dict]:
+    return [
+        {"path": f"f{i}.dcm", "z_position": float(z), "iop": iop,
+         "slice_thickness": thickness, "ipp_xy": (-60.0, -250.0),
+         "pixel_spacing": (0.38086, 0.38086), "matrix": (512, 512)}
+        for i, z in enumerate(zs)
+    ]
+
+
+def test_geometry_regular_series_returns_step():
+    assert check_geometry(_geo([0.0, 3.0, 6.0, 9.0]), "T") == pytest.approx(3.0)
+
+
+def test_geometry_accepts_unsorted_input():
+    assert check_geometry(_geo([6.0, 0.0, 9.0, 3.0]), "T") == pytest.approx(3.0)
+
+
+def test_geometry_rejects_missing_slice():
+    """pid 135 shape: one slice missing gives a 6 mm step; SimpleITK would
+    silently assign (z_last - z_first) / (n - 1) to every slice."""
+    with pytest.raises(IrregularGeometryError, match="irregular z steps"):
+        check_geometry(_geo([0.0, 3.0, 9.0, 12.0, 15.0]), "135")
+
+
+def test_geometry_rejects_duplicate_z():
+    with pytest.raises(IrregularGeometryError, match="irregular z steps"):
+        check_geometry(_geo([0.0, 3.0, 3.0, 6.0, 9.0]), "T")
+
+
+def test_geometry_rejects_overlapping_reconstruction():
+    """pid 33 shape: 3 mm slices every 1.5 mm double-count calcium."""
+    with pytest.raises(IrregularGeometryError, match="overlapping or gapped"):
+        check_geometry(_geo([0.0, 1.5, 3.0, 4.5, 6.0], thickness=3.0), "33")
+
+
+def test_geometry_accepts_small_step_thickness_difference():
+    """pid 38 shape: 2.95 mm steps with 3.0 mm slices (1.7%) stay in."""
+    zs = [i * 2.95 for i in range(6)]
+    assert check_geometry(_geo(zs, thickness=3.0), "38") == pytest.approx(2.95)
+
+
+def test_geometry_rejects_missing_position():
+    """No InstanceNumber stand-in: a file without a position is an error."""
+    hs = _geo([0.0, 3.0, 6.0])
+    hs[1]["z_position"] = float("nan")
+    with pytest.raises(IrregularGeometryError, match="without ImagePositionPatient"):
+        check_geometry(hs, "159")
+
+
+def test_geometry_rejects_tilted_series():
+    tilted = (1.0, 0.0, 0.0, 0.0, 0.996, -0.087)
+    with pytest.raises(IrregularGeometryError, match="non-axial"):
+        check_geometry(_geo([0.0, 3.0, 6.0], iop=tilted), "T")
+
+
+def test_geometry_rejects_single_slice():
+    with pytest.raises(IrregularGeometryError, match="1 slice"):
+        check_geometry(_geo([0.0]), "T")
+
+
+def test_geometry_rejects_mixed_pixel_spacing():
+    """pid 156 shape (D039.1): regular 3 mm z steps, but some slices are on a
+    0.5957 mm grid and the rest on 0.38086 mm."""
+    hs = _geo([0.0, 3.0, 6.0, 9.0])
+    for h in hs[2:]:
+        h["pixel_spacing"] = (0.5957, 0.5957)
+    with pytest.raises(IrregularGeometryError, match="mixed in-plane grid, PixelSpacing"):
+        check_geometry(hs, "156")
+
+
+def test_geometry_rejects_in_plane_origin_shift():
+    """SimpleITK measures slice spacing in 3D, so an (x, y) origin jump
+    inflates the z spacing even when the z steps are regular."""
+    hs = _geo([0.0, 3.0, 6.0, 9.0])
+    hs[3]["ipp_xy"] = (-60.0, -230.0)
+    with pytest.raises(IrregularGeometryError, match="origin"):
+        check_geometry(hs, "T")
+
+
+def test_geometry_rejects_mixed_matrix():
+    hs = _geo([0.0, 3.0, 6.0])
+    hs[1]["matrix"] = (256, 256)
+    with pytest.raises(IrregularGeometryError, match="matrix"):
+        check_geometry(hs, "T")
+
+
+def test_geometry_rejects_missing_pixel_spacing():
+    hs = _geo([0.0, 3.0, 6.0])
+    hs[0]["pixel_spacing"] = None
+    with pytest.raises(IrregularGeometryError, match="PixelSpacing"):
+        check_geometry(hs, "T")
+
+
+def test_geometry_rejects_mixed_thickness():
+    hs = _geo([0.0, 3.0, 6.0])
+    hs[2]["slice_thickness"] = 1.5
+    with pytest.raises(IrregularGeometryError, match="thickness not unique"):
+        check_geometry(hs, "T")
 
 
 # -- integration tests (require real data) ---------------------------------

@@ -19,7 +19,7 @@ Outputs (17 keys):
     dense_calcium_count                            1
 
 Decisions referencing this module:
-    D012 — excluded_roi_ids as explicit input.
+    D012: excluded_roi_ids as explicit input.
 """
 from __future__ import annotations
 

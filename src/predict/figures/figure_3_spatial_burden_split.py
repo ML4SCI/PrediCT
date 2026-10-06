@@ -1,7 +1,8 @@
-"""F3 — Spatial-only k=2 partition + burden orthogonality split.
+"""F3: Spatial-only k=2 partition against patient burden (Finding 3).
 
-Visualises the REVISED Finding 3 (the spatial-only k=2 partition is a
-low-vs-high burden dichotomy, not a topology phenotype).
+Every number and verdict on the figure is read from the stage 6 and 7
+files (Hennig stability, D024 interpretation); nothing is fixed text
+(D044).
 
 Three panels:
   (a) PCA on spatial-only feature subspace, points coloured by GMM-k=2
@@ -19,6 +20,7 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 
+from predict.analyse.profiles import determine_focal_diffuse_mapping
 from predict.figures.style import PALETTE
 
 
@@ -31,16 +33,11 @@ SPATIAL_FEATURES = (
 )
 
 
-def _focal_diffuse_mapping(
-    n_calc: pd.Series, labels: pd.Series,
-) -> dict[int, str]:
-    medians = {}
-    for cid in sorted(labels.unique()):
-        m = labels == cid
-        medians[cid] = float(np.median(n_calc.loc[m.index[m]].dropna()))
-    focal_id = min(medians, key=medians.get)
-    return {cid: ("focal" if cid == focal_id else "diffuse")
-            for cid in medians}
+# NOTE: the D023 focal/diffuse rule is NOT reimplemented here. A local copy
+# can get the tie case wrong: on equal medians it would label whichever
+# cluster iterated first as focal and the rest diffuse, silently and
+# arbitrarily, producing a mislabelled figure with no error. `n_calcified_arteries` is an integer in {1,2,3,4}, so ties
+# are ordinary. Use the canonical helper, which raises instead.
 
 
 def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figure":
@@ -57,8 +54,10 @@ def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figur
     raw_labels = labels_df["spatial_only_gmm_k2"].astype(int).loc[pid_order]
 
     features = pd.read_csv(features_csv, dtype={"pid": str}).set_index("pid")
-    n_calc = features.loc[pid_order, "n_calcified_arteries"]
-    focal_map = _focal_diffuse_mapping(n_calc, raw_labels)
+    n_calc = features.loc[pid_order, "n_calcified_arteries"]   # panel (c)
+    focal_map = determine_focal_diffuse_mapping(
+        features.loc[pid_order], raw_labels,
+    )
     cluster_name = raw_labels.map(focal_map)
 
     meta = pd.read_csv(
@@ -71,6 +70,14 @@ def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figur
     full_row = bo[bo["cohort"] == "full"].iloc[0]
     delta = float(full_row["cliffs_delta_agatston"])
     mw_p = float(full_row["mannwhitney_pval"])
+    interp = str(full_row["interpretation"])
+
+    # Stage 6 Hennig median Jaccard of the spatial k=2 clusters, by name.
+    val = pd.read_csv(reduce_dir / "validity_checks.csv")
+    hen = val[(val["test"] == "hennig_clusterboot") & (val["feature_space"] == "spatial_only")]
+    jac = {focal_map[int(r.cluster_id)]: float(r.jaccard_median) for r in hen.itertuples()}
+    if set(jac) != {"focal", "diffuse"}:
+        raise ValueError(f"spatial-only Hennig rows do not cover both clusters: {jac}")
 
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
     ax_pca, ax_box, ax_struct = axes
@@ -85,7 +92,8 @@ def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figur
     ax_pca.set_xlabel(f"Spatial PC1 ({pca.explained_variance_ratio_[0]:.0%})")
     ax_pca.set_ylabel(f"Spatial PC2 ({pca.explained_variance_ratio_[1]:.0%})")
     ax_pca.set_title("(a) Spatial-only PCA + GMM k=2\n"
-                      "(Hennig median Jaccard 0.88 / 0.86, stable)")
+                      f"(Hennig median Jaccard focal {jac['focal']:.2f} / "
+                      f"diffuse {jac['diffuse']:.2f})")
     ax_pca.legend(loc="best")
 
     # (b) Box of agatston by cluster
@@ -104,7 +112,7 @@ def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figur
     ax_box.text(
         0.05, 0.95,
         f"Cliff's $\\delta$ = {delta:.3f}\nMann-Whitney p = {mw_p:.1e}\n"
-        f"interpretation: confounded",
+        f"D024 interpretation: {interp}",
         transform=ax_box.transAxes, va="top", ha="left",
         fontsize=9,
         bbox=dict(facecolor="white", alpha=0.85, edgecolor="lightgrey",
@@ -129,8 +137,8 @@ def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figur
         p.set_facecolor(c); p.set_alpha(0.7)
     ax_struct.set_xticks([1.5, 4.5])
     ax_struct.set_xticklabels(["lesion count\n(total)", "vessels\ncalcified"])
-    ax_struct.set_title("(c) Structural biology: fewer lesions in fewer\n"
-                         "vessels in the 'focal' cluster")
+    ax_struct.set_title("(c) Lesion count and calcified vessels\n"
+                         "per cluster")
     # Custom legend
     handles = [
         plt.Rectangle((0, 0), 1, 1, fc=PALETTE["focal"], alpha=0.7),
@@ -139,9 +147,8 @@ def build(reduce_dir: Path, analyse_dir: Path, features_csv: Path) -> "plt.Figur
     ax_struct.legend(handles, ["focal", "diffuse"], loc="upper right")
 
     fig.suptitle(
-        "Figure 3. The spatial-only k=2 partition is a low-vs-high burden\n"
-        "dichotomy (D024 confounded), NOT a focal-vs-distributed topology "
-        "phenotype.",
+        "Figure 3. Spatial-only k=2 partition and patient burden (full cohort)\n"
+        f"D024 burden orthogonality: {interp} (Cliff's $\\delta$ = {delta:+.2f})",
         y=1.05, fontsize=12, fontweight="bold",
     )
     fig.tight_layout()

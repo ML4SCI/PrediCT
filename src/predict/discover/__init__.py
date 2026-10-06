@@ -10,8 +10,8 @@ Three modules:
     clusterboot stability (median Jaccard), ARI on shared pids for
     cross-cohort agreement.
 
-Split out from ``predict.reduce`` on 2026-06-05 (Phase B) to keep stage 5
-focused on dimensionality reduction. The script seam is
+Kept separate from ``predict.reduce`` so stage 5 stays focused on
+dimensionality reduction. The script seam is
 ``outputs/06_reduce/{prepared_matrix,pca_scores}.csv`` -> 07_discover.py.
 
 See ``docs/modules/discover.md`` and decision D021.

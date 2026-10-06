@@ -1,12 +1,12 @@
-"""F1 — Patient PCA scatter, coloured by Agatston tertile.
+"""F1: Patient PCA scatter, coloured by Agatston tertile.
 
-Visualises Finding 1: the COCA cohort forms a continuum along the
-burden axis with no discrete cluster boundaries.
+Descriptive: shows where the burden tertiles lie on the first two
+principal components. It does not establish a continuum or discrete
+groups (D021.1, D036.1, D038; D044).
 
 Two panels:
   (a) PC1 vs PC2 scatter, coloured by qcut burden tertile
-  (b) Marginal histogram of PC1 stacked by tertile, showing the
-      continuous-burden-axis structure
+  (b) Histogram of PC1 stacked by tertile
 """
 from __future__ import annotations
 
@@ -65,12 +65,13 @@ def build(reduce_dir: Path) -> "plt.Figure":
     )
     ax_hist.set_xlabel("PC1 score")
     ax_hist.set_ylabel("patients")
-    ax_hist.set_title("(b) Marginal of PC1\n"
-                       "burden axis is continuous, not bimodal")
+    ax_hist.set_title("(b) PC1 distribution\n"
+                       "stacked by burden tertile")
     ax_hist.legend(loc="upper right", title="Burden")
 
     fig.suptitle(
-        "Figure 1. Burden continuum on the principal-component manifold",
+        f"Figure 1. Patient principal components (N = {len(pid_order)}) "
+        "coloured by Agatston tertile",
         y=1.03, fontsize=13, fontweight="bold",
     )
     fig.tight_layout()

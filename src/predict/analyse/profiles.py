@@ -294,11 +294,10 @@ def assert_biological_sanity(
     Returns a dict {focal_median, diffuse_median, ratio, passes,
     warning_low_ratio} for audit; only raises on the absolute floor.
 
-    Earlier (now-superseded) versions of this gate used a relative ratio
-    threshold (focal >= 0.9 * diffuse) which fired false-positively on
-    the production COCA cohort where the biological pattern is
-    focal ~ 387 HU vs diffuse ~ 744 HU (ratio 0.52). The IBSI absolute
-    floor is the objective, non-arbitrary alternative.
+    A relative ratio threshold (focal >= 0.9 * diffuse) would fire
+    false-positively on COCA, where focal calcium has legitimately lower
+    peak HU than diffuse (ratio about 0.5). The IBSI absolute floor is the
+    objective, non-arbitrary alternative.
     """
     focal_mask = labels == focal_label
     diffuse_mask = labels == diffuse_label

@@ -1,4 +1,4 @@
-"""SF5 — Lesion-cluster radar (spider) chart.
+"""SF5: Lesion-cluster radar (spider) chart.
 
 Each of the 12 lesion morphology clusters as a radar over 6 normalised
 morphology axes (volume, area, mean_hu, max_hu, n_rois, log10

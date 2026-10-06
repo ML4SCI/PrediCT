@@ -16,7 +16,6 @@ from predict.reduce.prepare_matrix import (
     D017_DROPPED_FEATURES,
     D018_BINARISE_SOURCE,
     D018_BINARISE_TARGET,
-    PYRADIOMICS_TEXTURE_TO_HARMONISE,
     SPARSE_COLUMNS,
     MatrixPrepLog,
     _explained_variance_by_kernel,
@@ -28,10 +27,23 @@ from predict.reduce.prepare_matrix import (
     compute_high_density_fraction,
     compute_vessel_burden_gini,
     global_zscore,
+    harmonisable_columns,
     maybe_add_derived_features,
     run_matrix_prep,
     variance_filter,
     yeo_johnson_with_fallback,
+)
+
+
+# Example intensity-texture columns for the synthetic fixtures (formerly the
+# hardcoded ComBat list; ComBat now derives its columns, D035).
+TEXTURE_EXAMPLE: tuple[str, ...] = (
+    "original_glrlm_RunLengthNonUniformity",
+    "original_gldm_DependenceEntropy",
+    "original_glszm_ZoneEntropy",
+    "original_glrlm_GrayLevelNonUniformity",
+    "original_gldm_GrayLevelNonUniformity",
+    "original_firstorder_Range",
 )
 
 
@@ -77,7 +89,7 @@ def _toy_df(n: int = 30, seed: int = 0) -> pd.DataFrame:
     # 6 texture surviving features.
     texture_cols = {
         c: rng.normal(loc=10.0, scale=2.0, size=n)
-        for c in PYRADIOMICS_TEXTURE_TO_HARMONISE
+        for c in TEXTURE_EXAMPLE
     }
     # 14 shape features (passthrough, kernel-invariant).
     shape_cols = {
@@ -222,7 +234,9 @@ def test_high_density_fraction_range_in_unit_interval():
     assert series.max() <= 1.0
 
 
-def test_vessel_burden_gini_zero_for_single_vessel():
+def test_vessel_burden_gini_single_vessel_is_maximal():
+    """D040: all burden in one of four vessels is the most focal case,
+    Gini = (n - 1) / n = 0.75 (it was 0 under the dropped-zero convention)."""
     df = pd.DataFrame({
         "pid": ["a"],
         "agatston_lad": [100.0],
@@ -231,7 +245,20 @@ def test_vessel_burden_gini_zero_for_single_vessel():
         "agatston_lm": [0.0],
     })
     series = compute_vessel_burden_gini(df)
-    assert series.iloc[0] == 0.0
+    assert series.iloc[0] == pytest.approx(0.75)
+
+
+def test_vessel_burden_gini_separates_focal_from_even():
+    """D040 counterexample: [100,0,0,0] and [25,25,25,25]
+    must not share a value."""
+    df = pd.DataFrame({
+        "pid": ["focal", "even"],
+        "agatston_lad": [100.0, 25.0], "agatston_rca": [0.0, 25.0],
+        "agatston_lcx": [0.0, 25.0], "agatston_lm": [0.0, 25.0],
+    })
+    g = compute_vessel_burden_gini(df)
+    assert g.iloc[0] == pytest.approx(0.75)
+    assert g.iloc[1] == pytest.approx(0.0, abs=1e-12)
 
 
 def test_vessel_burden_gini_zero_when_all_equal():
@@ -424,12 +451,12 @@ def test_combat_reduces_kernel_variance_on_simulated_batch_effect():
     pid = [str(i) for i in range(n)]
     kernel = ["Qr36d/2"] * (n // 2) + ["I30f/3"] * (n // 2)
     # Inject a clear additive batch effect on a texture column.
-    col_name = PYRADIOMICS_TEXTURE_TO_HARMONISE[0]
+    col_name = TEXTURE_EXAMPLE[0]
     base = rng.normal(loc=10.0, scale=1.5, size=n)
     confounded = base + np.where(np.array(kernel) == "Qr36d/2", -2.0, 2.0)
     df = pd.DataFrame({"pid": pid, "kernel": kernel, col_name: confounded})
     # Also include the other 5 texture columns trivially (uncorrelated noise).
-    for c in PYRADIOMICS_TEXTURE_TO_HARMONISE[1:]:
+    for c in TEXTURE_EXAMPLE[1:]:
         df[c] = rng.normal(loc=5.0, scale=1.0, size=n)
 
     feat = [c for c in df.columns if c not in ("pid", "kernel")]
@@ -442,13 +469,41 @@ def test_combat_reduces_kernel_variance_on_simulated_batch_effect():
     assert rec["passes_threshold"] is True
 
 
+def test_harmonisable_columns_is_every_non_shape_radiomics_feature():
+    """D035: ComBat targets every PyRadiomics feature except shape, in order;
+    canonical XML features and derived features are never harmonised."""
+    cols = ["agatston_total", "original_shape_Volume", "original_glcm_Imc2",
+            "original_firstorder_Mean", "lesion_count_lad",
+            "original_ngtdm_Busyness", "high_density_fraction"]
+    assert harmonisable_columns(cols) == [
+        "original_glcm_Imc2", "original_firstorder_Mean", "original_ngtdm_Busyness",
+    ]
+
+
+def test_run_matrix_prep_harmonises_texture_outside_old_list():
+    """D035: a gated texture feature outside any fixed name list must be
+    ComBat-harmonised (the list is derived from the gate)."""
+    df = _toy_df(n=200, seed=3)
+    kern = df["kernel"].to_numpy()
+    rng = np.random.default_rng(5)
+    df["original_glcm_Imc2"] = rng.normal(0.3, 0.05, len(df)) + np.where(kern == "Qr36d/2", -0.08, 0.08)
+    feat = _feature_cols_from(df)
+    _, _, log = run_matrix_prep(df, feat)
+    audit = {r["feature"]: r for r in log.combat_audit}
+    assert "original_glcm_Imc2" in audit
+    assert audit["original_glcm_Imc2"]["kernel_r2_pre"] > 0.3
+    assert audit["original_glcm_Imc2"]["kernel_r2_post"] <= 0.02
+    assert not any(f.startswith("original_shape_") for f in audit)
+    assert all(f.startswith("original_") for f in audit)
+
+
 def test_combat_skips_on_single_kernel_cohort():
     """Kernel-stratified sensitivity reruns (D021) restrict to one kernel at
     a time. ComBat is a no-op in that case and must return cleanly with an
     audit row marked skipped=True per column."""
     rng = np.random.default_rng(0)
     n = 30
-    col = PYRADIOMICS_TEXTURE_TO_HARMONISE[0]
+    col = TEXTURE_EXAMPLE[0]
     df = pd.DataFrame({
         "pid": [str(i) for i in range(n)],
         "kernel": ["Qr36d/2"] * n,
@@ -471,7 +526,7 @@ def test_combat_raises_on_singleton_kernel_group():
     pids = [str(i) for i in range(n)]
     # 49 patients on kernel A, 1 patient on kernel B (singleton).
     kernel = ["A"] * 49 + ["B"]
-    col = PYRADIOMICS_TEXTURE_TO_HARMONISE[0]
+    col = TEXTURE_EXAMPLE[0]
     df = pd.DataFrame({"pid": pids, "kernel": kernel,
                         col: rng.normal(size=n)})
     feat = [col]
@@ -733,3 +788,25 @@ def test_preprocessing_log_to_dict_keys():
     # New fields default to empty dicts (additive backwards-compat).
     assert d["zscore_means"] == {}
     assert d["zscore_stds"] == {}
+
+
+# ───────────────────── D040 transformed-feature reliability ─────────────────────
+
+
+def test_stage5_transformed_columns_cover_the_registry():
+    from predict.reduce.prepare_matrix import STAGE5_TRANSFORMED, stage5_transformed_columns
+    df = _toy_df(n=20)
+    df["dense_calcium_count"] = range(20)
+    cols = stage5_transformed_columns(df)
+    assert set(cols) == set(STAGE5_TRANSFORMED)
+    assert cols["has_dense_calcium"].tolist() == [0] + [1] * 19
+
+
+def test_unreliable_derived_feature_is_rejected_before_r2():
+    df = _toy_df(n=50)
+    feat = [c for c in df.columns if c not in ("pid", "kernel")]
+    _, cols, accepted, rejected = maybe_add_derived_features(
+        df, feat, reliable={"high_density_fraction"})
+    assert "vessel_burden_gini" not in cols
+    reasons = {r["name"]: r.get("reason", "") for r in rejected}
+    assert "reliability" in reasons["vessel_burden_gini"]

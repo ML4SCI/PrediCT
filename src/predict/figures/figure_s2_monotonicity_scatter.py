@@ -1,4 +1,4 @@
-"""SF2 — Monotonicity classification scatter.
+"""SF2: Monotonicity classification scatter.
 
 Each of the 28 robust cross-cohort features positioned by its Spearman
 rho against agatston_total, coloured by D026 classification

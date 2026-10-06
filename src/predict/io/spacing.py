@@ -5,7 +5,7 @@ target voxel grid so that downstream radiomics extraction reads it instead
 of guessing from disk.
 
 Decisions referencing this module:
-    D005 — Target voxel grid
+    D005: Target voxel grid
 """
 from __future__ import annotations
 

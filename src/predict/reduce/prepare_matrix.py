@@ -12,8 +12,9 @@ Seven composable transforms applied in order:
   3. ``maybe_add_derived_features`` - high_density_fraction, vessel_burden_gini
                                       (conditional on R^2 < 0.95 non-redundancy gate)
   4. ``variance_filter``            - drop columns with sd < threshold
-  5. ``combat_harmonise``           - ComBat on 6 PyRadiomics texture columns,
-                                      kernel as covariate; the rest pass through
+  5. ``combat_harmonise``           - ComBat on every gated non-shape PyRadiomics
+                                      column (D035), kernel as covariate; the
+                                      rest pass through
   6. ``yeo_johnson_with_fallback``  - Yeo-Johnson on 19 sparse columns; if
                                       |post-YJ skewness| > 1.0 falls back to
                                       rank transform on that column
@@ -42,6 +43,8 @@ Decisions referencing this module:
     D017 - sentinel-prone feature drops
     D018 - density tier + dense_calcium handling
     D019 - this preparation pipeline
+    D040 - vessel_burden_gini over all four vessels; stage-5 transformed
+           features carry measured D033 reliability
 """
 from __future__ import annotations
 
@@ -73,6 +76,15 @@ D017_DROPPED_FEATURES: tuple[str, ...] = (
 D018_BINARISE_SOURCE: str = "dense_calcium_count"
 D018_BINARISE_TARGET: str = "has_dense_calcium"
 
+# Features stage 5 creates from canonical inputs (D018 binarisation, D019
+# derived features). Stage 5b computes each one per perturbation draw with
+# ``stage5_transformed_columns`` and gates it with the D033 rule (D040), so
+# their reliability is measured, never assumed. All are canonical-lineage
+# (XML-derived) features.
+STAGE5_TRANSFORMED: tuple[str, ...] = (
+    D018_BINARISE_TARGET, "high_density_fraction", "vessel_burden_gini",
+)
+
 
 # Columns that need the Yeo-Johnson treatment with rank fallback.
 # 16 density-tier counts + 3 LAD distance features.
@@ -87,17 +99,20 @@ SPARSE_COLUMNS: tuple[str, ...] = tuple(
 )
 
 
-# The 6 PyRadiomics texture features that survived the stage-4 gate and need
-# kernel harmonisation. Shape features (14) pass through; they are
-# kernel-invariant by construction (depend only on the binary mask).
-PYRADIOMICS_TEXTURE_TO_HARMONISE: tuple[str, ...] = (
-    "original_glrlm_RunLengthNonUniformity",
-    "original_gldm_DependenceEntropy",
-    "original_glszm_ZoneEntropy",
-    "original_glrlm_GrayLevelNonUniformity",
-    "original_gldm_GrayLevelNonUniformity",
-    "original_firstorder_Range",
-)
+def harmonisable_columns(feature_cols: Iterable[str]) -> list[str]:
+    """Columns ComBat harmonises (D035): every PyRadiomics feature in the
+    active set except shape, in input order.
+
+    Intensity-derived PyRadiomics features (firstorder and texture) carry
+    reconstruction-kernel effects; shape features read only the binary mask
+    and pass through. Canonical XML-derived features are never harmonised
+    (D019). Derived from the gated set at run time, so the list cannot go
+    stale when the gate changes (D035).
+    """
+    return [
+        c for c in feature_cols
+        if c.startswith("original_") and not c.startswith("original_shape_")
+    ]
 
 
 # ───────────────────────── diagnostics container ─────────────────────────
@@ -112,6 +127,7 @@ class MatrixPrepLog:
     d018_target_present: bool = False
     derived_accepted: list[dict] = field(default_factory=list)
     derived_rejected: list[dict] = field(default_factory=list)
+    d018_dropped_unreliable: bool = False
     variance_dropped: list[dict] = field(default_factory=list)
     combat_audit: list[dict] = field(default_factory=list)
     yj_per_column: list[dict] = field(default_factory=list)
@@ -121,6 +137,10 @@ class MatrixPrepLog:
     # IDENTICAL fits without leakage. Each is {col -> float}.
     zscore_means: dict = field(default_factory=dict)
     zscore_stds: dict = field(default_factory=dict)
+    # Full precision (the rounded pair above is for reading); stage 8
+    # replays the fit with these.
+    zscore_means_exact: dict = field(default_factory=dict)
+    zscore_stds_exact: dict = field(default_factory=dict)
     n_patients_out: int = 0
     n_features_out: int = 0
 
@@ -138,6 +158,8 @@ class MatrixPrepLog:
             "zscore_columns": list(self.zscore_columns),
             "zscore_means": dict(self.zscore_means),
             "zscore_stds": dict(self.zscore_stds),
+            "zscore_means_exact": dict(self.zscore_means_exact),
+            "zscore_stds_exact": dict(self.zscore_stds_exact),
             "n_patients_out": self.n_patients_out,
             "n_features_out": self.n_features_out,
         }
@@ -235,33 +257,45 @@ def compute_high_density_fraction(df: pd.DataFrame) -> pd.Series | None:
 
 
 def compute_vessel_burden_gini(df: pd.DataFrame) -> pd.Series | None:
-    """Gini coefficient across the 4 per-vessel Agatston values.
+    """Gini coefficient across the 4 per-vessel Agatston values (D019),
+    calcium-free vessels included (D040).
 
-    Convention:
-    - Patient with 0 vessels with calcium > 0: returns 0.0 (no burden, no inequality).
-    - Patient with 1 vessel: returns 0.0 (single value, no inequality).
-    - Patient with 2+ vessels: standard Gini on the non-zero values.
-
-    This matches the standard Gini interpretation 'high gini = focal disease,
-    low gini = distributed disease' for patients with multi-vessel calcium.
+    Range 0 (burden spread evenly over LAD, RCA, LCx, LM) to 0.75 (all
+    burden in one vessel). A patient with no calcium returns 0.0 (does not
+    occur in COCA). Until D040 the calcium-free vessels were dropped first,
+    which gave a single-vessel patient 0, the value of perfectly even
+    disease: the opposite of D019's "across four vessels" and of D025's
+    focal-concentration hypothesis.
     """
     cols = [f"agatston_{v.lower()}" for v in VESSEL_NAMES]
     if not all(c in df.columns for c in cols):
         return None
     out = pd.Series(0.0, index=df.index)
     arr = df[cols].to_numpy(dtype=float)
+    n = arr.shape[1]
+    ranks = np.arange(1, n + 1)
     for i in range(arr.shape[0]):
-        vals = arr[i]
-        vals = vals[vals > 0]
-        n = len(vals)
-        if n < 2:
-            out.iloc[i] = 0.0
-            continue
-        sorted_v = np.sort(vals)
+        sorted_v = np.sort(arr[i])
         total = sorted_v.sum()
-        cum = np.sum((np.arange(1, n + 1)) * sorted_v)
-        gini = (2.0 * cum) / (n * total) - (n + 1) / n
-        out.iloc[i] = float(gini)
+        if total <= 0:
+            continue
+        cum = np.sum(ranks * sorted_v)
+        out.iloc[i] = float((2.0 * cum) / (n * total) - (n + 1) / n)
+    return out
+
+
+def stage5_transformed_columns(df: pd.DataFrame) -> dict[str, pd.Series]:
+    """Every STAGE5_TRANSFORMED feature computable from ``df``'s canonical
+    columns, with the same functions the matrix preparation uses. Stage 5b
+    applies this to each perturbation draw to measure their reliability."""
+    out: dict[str, pd.Series] = {}
+    if D018_BINARISE_SOURCE in df.columns:
+        out[D018_BINARISE_TARGET] = (df[D018_BINARISE_SOURCE] > 0).astype(int)
+    for name, fn in (("high_density_fraction", compute_high_density_fraction),
+                     ("vessel_burden_gini", compute_vessel_burden_gini)):
+        s = fn(df)
+        if s is not None:
+            out[name] = s
     return out
 
 
@@ -295,12 +329,17 @@ def maybe_add_derived_features(
     feature_cols: list[str],
     *,
     r2_redundancy_threshold: float = 0.95,
+    reliable: set[str] | None = None,
 ) -> tuple[pd.DataFrame, list[str], list[dict], list[dict]]:
     """Conditionally append ``high_density_fraction`` and ``vessel_burden_gini``.
 
     Each candidate is added only if its R^2 against linear combinations of the
     existing feature columns is below ``r2_redundancy_threshold`` (default 0.95).
     ``count_volume_ratio`` is intentionally not offered (D019 alternatives).
+
+    ``reliable`` (D040): when given, a candidate not in it is rejected
+    before the R^2 check because it failed the D033 reliability gate on the
+    perturbation draws (stage 5b ``derived_icc.csv``).
 
     Returns (new_df, new_feature_cols, accepted_records, rejected_records).
     Each record is {name, r2, threshold, accepted}.
@@ -335,6 +374,15 @@ def maybe_add_derived_features(
                 "threshold": r2_redundancy_threshold,
                 "accepted": False,
                 "reason": "NaN in computed values",
+            })
+            continue
+        if reliable is not None and name not in reliable:
+            rejected.append({
+                "name": name,
+                "r2": None,
+                "threshold": r2_redundancy_threshold,
+                "accepted": False,
+                "reason": "fails the D033 reliability gate (stage 5b derived_icc.csv)",
             })
             continue
         # Compute R^2 against the CURRENT state of the matrix (new_df), not
@@ -425,12 +473,14 @@ def combat_harmonise(
     df: pd.DataFrame,
     feature_cols: list[str],
     *,
-    columns_to_harmonise: Iterable[str] = PYRADIOMICS_TEXTURE_TO_HARMONISE,
+    columns_to_harmonise: Iterable[str] | None = None,
     kernel_col: str = "kernel",
     acceptance_max_post_r2: float = 0.02,
 ) -> tuple[pd.DataFrame, list[str], list[dict]]:
     """Apply ComBat (Johnson 2007) to the listed columns with kernel as the
     batch covariate. Columns not in ``columns_to_harmonise`` pass through.
+    ``columns_to_harmonise=None`` (the default) means
+    :func:`harmonisable_columns` of ``feature_cols`` (D035).
 
     Uses neuroCombat under the hood. Wrapper handles patient-ID alignment and
     produces the pre/post scanner R^2 audit.
@@ -446,6 +496,8 @@ def combat_harmonise(
     if kernel_col not in df.columns:
         raise KeyError(f"kernel column {kernel_col!r} required for ComBat")
 
+    if columns_to_harmonise is None:
+        columns_to_harmonise = harmonisable_columns(feature_cols)
     cols = [c for c in columns_to_harmonise if c in df.columns]
     if not cols:
         return df.copy(), list(feature_cols), []
@@ -617,6 +669,8 @@ def yeo_johnson_with_fallback(
             "feature": col,
             "pre_skew": round(pre_skew, 4),
             "lambda": round(lam, 4) if lam is not None else None,
+            # Full precision, for replaying the fit on new rows (stage 8).
+            "lambda_exact": lam,
             "post_yj_skew": round(post_yj_skew, 4),
             "transform_used": transform_used,
             "post_final_skew": round(post_final_skew, 4),
@@ -648,18 +702,23 @@ def global_zscore(
     new_df = df.copy()
     means: dict[str, float] = {}
     stds: dict[str, float] = {}
+    means_exact: dict[str, float] = {}
+    stds_exact: dict[str, float] = {}
     for col in feature_cols:
         v = new_df[col].to_numpy(dtype=float)
         mean = float(v.mean())
         std = float(v.std(ddof=1)) if len(v) > 1 else 0.0
         means[col] = round(mean, 6)
         stds[col] = round(std, 6)
+        means_exact[col] = mean
+        stds_exact[col] = std
         centred = v - mean
         if std == 0.0:
             new_df[col] = centred
         else:
             new_df[col] = centred / std
-    return new_df, list(feature_cols), {"means": means, "stds": stds}
+    return new_df, list(feature_cols), {"means": means, "stds": stds,
+                                        "means_exact": means_exact, "stds_exact": stds_exact}
 
 
 # ───────────────────────── orchestrator ─────────────────────────
@@ -674,6 +733,7 @@ def run_matrix_prep(
     yj_skew_threshold: float = 1.0,
     combat_max_post_r2: float = 0.02,
     add_derived: bool = True,
+    reliable_transformed: set[str] | None = None,
 ) -> tuple[pd.DataFrame, list[str], MatrixPrepLog]:
     """Run the full D019 matrix-preparation pipeline.
 
@@ -683,6 +743,12 @@ def run_matrix_prep(
 
     Output is the transformed dataframe, the final feature column list, and
     a ``MatrixPrepLog`` describing every step.
+
+    ``reliable_transformed`` (D040): the STAGE5_TRANSFORMED features that
+    passed the D033 gate on the perturbation draws. When given, an
+    unreliable binarised or derived feature is left out (and logged). None
+    keeps every transformed feature (D014 semantics, where canonical inputs
+    are invariant by construction).
     """
     _assert_pid_column(df, "run_matrix_prep")
     log = MatrixPrepLog(
@@ -697,11 +763,17 @@ def run_matrix_prep(
     # Step 2: D018 binarise.
     df, feature_cols, binarised = apply_d018_binarisation(df, feature_cols)
     log.d018_target_present = bool(binarised)
+    if (binarised and reliable_transformed is not None
+            and D018_BINARISE_TARGET not in reliable_transformed):
+        df = df.drop(columns=[D018_BINARISE_TARGET])
+        feature_cols = [c for c in feature_cols if c != D018_BINARISE_TARGET]
+        log.d018_dropped_unreliable = True
 
     # Step 3: derived features.
     if add_derived:
         df, feature_cols, accepted, rejected = maybe_add_derived_features(
             df, feature_cols, r2_redundancy_threshold=derived_r2_threshold,
+            reliable=reliable_transformed,
         )
         log.derived_accepted = accepted
         log.derived_rejected = rejected
@@ -712,10 +784,10 @@ def run_matrix_prep(
     )
     log.variance_dropped = dropped_var
 
-    # Step 5: ComBat on texture features.
+    # Step 5: ComBat on every gated non-shape PyRadiomics feature (D035).
     df, feature_cols, audit = combat_harmonise(
         df, feature_cols,
-        columns_to_harmonise=PYRADIOMICS_TEXTURE_TO_HARMONISE,
+        columns_to_harmonise=harmonisable_columns(feature_cols),
         acceptance_max_post_r2=combat_max_post_r2,
     )
     log.combat_audit = audit
@@ -731,18 +803,52 @@ def run_matrix_prep(
     log.zscore_columns = list(feature_cols)
     log.zscore_means = dict(zinfo.get("means", {}))
     log.zscore_stds = dict(zinfo.get("stds", {}))
+    log.zscore_means_exact = dict(zinfo.get("means_exact", {}))
+    log.zscore_stds_exact = dict(zinfo.get("stds_exact", {}))
 
     log.n_patients_out = len(df)
     log.n_features_out = len(feature_cols)
     return df, feature_cols, log
 
 
+def production_prep_kwargs(cfg) -> dict:
+    """The ``run_matrix_prep`` settings of the production stage 5 run.
+
+    Stage 5 and stage 8 (which refits the production pipeline on the
+    published cohort and on cross-validation folds) both call this, so the
+    two cannot use different settings.
+    ``reliable_transformed`` (D040) comes from the gate's derived_icc.csv;
+    the D033 (realistic) gate requires it, the D014 gate has none.
+    """
+    from predict.config import gate_dir
+
+    derived_icc_csv = gate_dir(cfg) / "derived_icc.csv"
+    if derived_icc_csv.exists():
+        derived = pd.read_csv(derived_icc_csv)
+        reliable: set[str] | None = set(
+            derived.loc[derived["passes_gate"].astype(bool), "feature"])
+    elif cfg.stability.primary_gate == "realistic":
+        raise SystemExit(f"{derived_icc_csv} missing; rerun stage 5b (D040)")
+    else:
+        reliable = None
+    return {
+        "variance_threshold": cfg.reduce.variance_threshold,
+        "yj_skew_threshold": cfg.raw["reduce"].get("yeo_johnson_skewness_fallback", 1.0),
+        "combat_max_post_r2": 0.02,
+        "add_derived": True,
+        "reliable_transformed": reliable,
+    }
+
+
 __all__ = [
     "D017_DROPPED_FEATURES",
     "D018_BINARISE_SOURCE",
     "D018_BINARISE_TARGET",
+    "STAGE5_TRANSFORMED",
+    "stage5_transformed_columns",
     "SPARSE_COLUMNS",
-    "PYRADIOMICS_TEXTURE_TO_HARMONISE",
+    "production_prep_kwargs",
+    "harmonisable_columns",
     "MatrixPrepLog",
     "apply_d017_drops",
     "apply_d018_binarisation",

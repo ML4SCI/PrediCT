@@ -57,8 +57,11 @@ def test_hopkins_is_high_on_well_separated_clusters():
 
 
 def test_hopkins_is_near_half_on_uniform_random():
+    # The Hopkins seed must differ from the data seed: with the same seed the
+    # "uniform" queries replay the stream that generated the data and land
+    # on data points (H about 0.02 here). See the D021.1 tests below.
     X = _uniform_random(n=400, d=5)
-    H = hopkins_statistic(X, sample_size=40, random_state=0)
+    H = hopkins_statistic(X, sample_size=40, random_state=1)
     assert 0.40 <= H <= 0.60
 
 
@@ -126,7 +129,7 @@ def test_assess_verdict_clustered_on_blobs():
 
 def test_assess_verdict_random_on_uniform():
     X = _uniform_random(n=400, d=5)
-    result = assess_clusterability(X, random_state=0)
+    result = assess_clusterability(X, random_state=1)   # != data seed
     assert result.verdict == "random_or_regular"
 
 
@@ -149,7 +152,7 @@ def test_assess_verdict_ambiguous_band():
     # Force the band to include the uniform-random H (~0.5).
     result = assess_clusterability(X, threshold=0.65,
                                     ambiguous_band=(0.45, 0.65),
-                                    random_state=0)
+                                    random_state=1)   # != data seed
     assert result.verdict in ("ambiguous", "random_or_regular")
 
 
@@ -186,3 +189,29 @@ def test_assess_records_random_state():
     X = _three_clusters()
     result = assess_clusterability(X, random_state=99)
     assert result.random_state == 99
+
+
+# ───────────── D021.1: uniform queries use their nearest neighbour ─────────────
+
+
+# Data seed s, Hopkins seed 10_000 + s: independent streams. With equal seeds
+# the uniform queries replay the data's own draws and sit on data points
+# (cluster probe 2026-10-05: H 0.344 in 1-D, 0.024 in 5-D). The old
+# 2nd-neighbour version skipped that coincident point, which hid the overlap
+# (0.566 / 0.501) and is very likely how the 2nd-neighbour rule was chosen.
+
+
+def test_hopkins_calibrated_on_one_dimensional_uniform():
+    """Random queries have no self-match, so they must use the nearest
+    neighbour. The old 2nd-neighbour version averaged 0.659 here (probe);
+    this one 0.500."""
+    hs = [hopkins_statistic(np.random.default_rng(s).uniform(size=(300, 1)),
+                            sample_size=30, random_state=10_000 + s) for s in range(60)]
+    assert 0.45 <= float(np.mean(hs)) <= 0.55
+
+
+def test_hopkins_calibrated_on_uniform_in_five_dimensions():
+    """Old version 0.550 (the ambiguous band's lower edge), this one 0.501."""
+    hs = [hopkins_statistic(np.random.default_rng(s).uniform(size=(400, 5)),
+                            sample_size=40, random_state=10_000 + s) for s in range(40)]
+    assert 0.45 <= float(np.mean(hs)) <= 0.55

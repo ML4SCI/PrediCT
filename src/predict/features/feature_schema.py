@@ -12,13 +12,13 @@ columns equal to ``zero_features()`` keys + identification + metadata
 ``roundtrip_quality``, ``category``) + PyRadiomics features prefixed
 ``original_<family>_<name>``.
 
-The function returns a fresh dict on each call — callers may mutate it.
+The function returns a fresh dict on each call: callers may mutate it.
 
 Decisions referencing this module:
-    D007 — Lesion grouping rule
-    D008 — Per-artery masks
-    D010 — low_burden_flag (orchestration column)
-    D012 — excluded_roi_ids (does not change the schema, only the values)
+    D007: Lesion grouping rule
+    D008: Per-artery masks
+    D010: low_burden_flag (orchestration column)
+    D012: excluded_roi_ids (does not change the schema, only the values)
 """
 from __future__ import annotations
 
@@ -26,11 +26,11 @@ from predict.config import VESSEL_NAMES
 
 
 # Canonical lowercase suffixes used in feature names. Matches VESSEL_NAMES
-# elementwise — the upper-case name is the canonical token; the suffix is the
+# elementwise: the upper-case name is the canonical token; the suffix is the
 # lowercase form used in column names.
 VESSEL_SUFFIXES: tuple[str, ...] = tuple(v.lower() for v in VESSEL_NAMES)
 
-# Density tiers — Agatston factor groups per D009 / D024.
+# Density tiers: Agatston factor groups per D009 / D024.
 DENSITY_TIERS: tuple[str, ...] = ("d1", "d2", "d3", "d4")
 
 # Per-vessel feature stems (suffix is appended at build time).

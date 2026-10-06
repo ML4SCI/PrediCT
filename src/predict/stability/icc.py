@@ -1,4 +1,5 @@
-"""ICC(3,1) absolute-agreement implementation for stage-4 stability gating.
+"""ICC(3,1) absolute-agreement implementation for stage-4 stability gating,
+plus ICC(1,1) (:func:`icc_1_1`) for the D033 random-draw gate.
 
 Mathematical reference: Shrout and Fleiss 1979 / McGraw and Wong 1996,
 two-way mixed-effects, single measurement, absolute agreement.
@@ -92,6 +93,52 @@ def icc_3_1_absolute(matrix: np.ndarray) -> float:
     if denom == 0.0:
         return float("nan")
     return float((ms_subject - ms_error) / denom)
+
+
+def icc_1_1(matrix: np.ndarray, *, alpha: float = 0.05) -> tuple[float, float, float]:
+    """ICC(1,1), one-way random effects, single measurement (D033).
+
+    For designs where each subject's k measurements are random draws, not
+    the same raters across subjects (Shrout and Fleiss 1979, case 1):
+
+        ICC(1,1) = (MSB - MSW) / (MSB + (k - 1) * MSW)
+
+    with MSB the between-subject and MSW the within-subject mean square.
+    Returns ``(icc, ci_low, ci_high)``; the (1 - alpha) CI uses the F
+    distribution with df (n - 1, n(k - 1)) (McGraw and Wong 1996).
+
+    Rows with any NaN are dropped (listwise deletion; D033 counts and caps
+    these separately). NaN triple if fewer than 2 rows or k < 2, or if MSW
+    and MSB are both zero. If only MSW is zero the measurements agree
+    perfectly: ICC 1.0.
+    """
+    arr = np.asarray(matrix, dtype=float)
+    if arr.ndim != 2:
+        raise ValueError(f"matrix must be 2D, got shape {arr.shape}")
+    complete = arr[~np.isnan(arr).any(axis=1)]
+    n, k = complete.shape
+    nan3 = (float("nan"), float("nan"), float("nan"))
+    if n < 2 or k < 2:
+        return nan3
+
+    subject_means = complete.mean(axis=1)
+    grand_mean = complete.mean()
+    ms_between = k * float(((subject_means - grand_mean) ** 2).sum()) / (n - 1)
+    ms_within = float(((complete - subject_means[:, None]) ** 2).sum()) / (n * (k - 1))
+
+    if ms_within == 0.0:
+        return nan3 if ms_between == 0.0 else (1.0, 1.0, 1.0)
+
+    icc = (ms_between - ms_within) / (ms_between + (k - 1) * ms_within)
+
+    from scipy.stats import f as f_dist
+    df1, df2 = n - 1, n * (k - 1)
+    f_obs = ms_between / ms_within
+    f_low = f_obs / f_dist.ppf(1.0 - alpha / 2.0, df1, df2)
+    f_high = f_obs * f_dist.ppf(1.0 - alpha / 2.0, df2, df1)
+    ci_low = (f_low - 1.0) / (f_low + k - 1.0)
+    ci_high = (f_high - 1.0) / (f_high + k - 1.0)
+    return float(icc), float(ci_low), float(ci_high)
 
 
 # ───────────────────────── matrix assembly ─────────────────────────
@@ -244,6 +291,7 @@ __all__ = [
     "IccRecord",
     "IccSource",
     "icc_3_1_absolute",
+    "icc_1_1",
     "build_reliability_matrix",
     "gate_features",
     "invariant_by_construction_features",

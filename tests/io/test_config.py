@@ -1,4 +1,4 @@
-"""Tests for predict.config — config loader."""
+"""Tests for predict.config: the config loader."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,7 +17,8 @@ from predict.config import (
 def test_default_config_loads():
     cfg = load_config()
     assert cfg.seed == 42
-    assert cfg.resample.target_spacing == (0.5, 0.5, 3.0)
+    # D005: in-plane 0.375 mm, the cohort native median.
+    assert cfg.resample.target_spacing == (0.375, 0.375, 3.0)
     assert cfg.hu.agatston_threshold == 130
     assert cfg.hu.clip_min == -200
     assert cfg.hu.clip_max == 3000
@@ -62,3 +63,14 @@ def test_resample_target_spacing_property():
         cfg.resample.in_plane_mm,
         cfg.resample.slice_mm,
     )
+
+
+def test_data_raw_must_be_named_raw(tmp_path: Path):
+    """The loaders derive raw/<pid> from data_raw.parent; another name would
+    make them read a different folder than discovery."""
+    custom = tmp_path / "alt.yaml"
+    base = yaml.safe_load((REPO_ROOT / "configs" / "default.yaml").read_text(encoding="utf-8"))
+    base["paths"]["data_raw"] = str(tmp_path / "dicoms")
+    custom.write_text(yaml.safe_dump(base), encoding="utf-8")
+    with pytest.raises(ValueError, match="named 'raw'"):
+        load_config(custom)

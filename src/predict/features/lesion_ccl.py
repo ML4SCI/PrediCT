@@ -5,10 +5,16 @@ A "lesion" here is a maximal set of XML ROIs that:
   - share the same canonical vessel (``LAD`` / ``RCA`` / ``LCx`` / ``LM``);
   - have CT array slice indices within ``max_slice_gap`` (default 1);
   - have in-plane (XY) centroid distance ≤ ``max_inplane_mm`` (default 5 mm);
-  - are eligible — neither dirty (``vessel is None``) nor in the caller's
+  - are eligible: neither dirty (``vessel is None``) nor in the caller's
     ``excluded_roi_ids`` set (D012);
-  - have a Z-matched slice index (or a fallback ImageIndex slice index when
-    no ``Center`` is present in the XML, mirroring mask_builder's behaviour).
+  - have a slice index from ``resolve_roi_slice`` (Z match; the ImageIndex
+    fallback only when no ``Center`` is present, the same rule as
+    mask_builder and the D002 round-trip).
+
+Pipeline callers pass ``max_inplane_mm`` / ``max_slice_gap`` from the config
+(``predict.features.canonical.grouping_from_config``); the defaults here are
+for direct use and tests. Linking by slice INDEX means millimetres only
+because D039 guarantees evenly spaced, contiguous native slices.
 
 Each lesion is summarised as a :class:`Lesion` dataclass carrying the keys of
 its constituent ROIs (so callers can map back), the area-weighted physical
@@ -17,8 +23,8 @@ modules (``spatial``, ``per_vessel_aggregates``) consume these lesions to
 produce patient-level features.
 
 Decisions referencing this module:
-    D007 — Lesion grouping rule.
-    D012 — excluded_roi_ids as explicit input.
+    D007: Lesion grouping rule.
+    D012: excluded_roi_ids as explicit input.
 """
 from __future__ import annotations
 
@@ -31,8 +37,8 @@ import numpy as np
 
 from predict.io.xml_parser import ParseResult, ROI
 from predict.preprocess.slice_matcher import (
-    fallback_image_index_to_slice,
-    match_roi_to_slice,
+    Z_MATCH_TOLERANCE_MM,
+    resolve_roi_slice,
 )
 
 
@@ -101,7 +107,6 @@ def _build_nodes(
 ) -> list[_Node]:
     """Turn eligible ROIs into ``_Node`` objects ready for BFS."""
     nodes: list[_Node] = []
-    n_slices = len(slice_positions)
 
     for slice_ann in parse_result.slices:
         for roi_idx, roi in enumerate(slice_ann.rois):
@@ -113,11 +118,9 @@ def _build_nodes(
             if roi.n_points < 3 or len(roi.points_px) < 3:
                 continue
 
-            slice_idx = match_roi_to_slice(roi, slice_positions, tolerance_mm)
-            if slice_idx is None:
-                slice_idx = fallback_image_index_to_slice(
-                    slice_ann.image_index, n_slices,
-                )
+            slice_idx, _ = resolve_roi_slice(
+                roi, slice_ann.image_index, slice_positions, tolerance_mm,
+            )
             if slice_idx is None:
                 continue
 
@@ -198,7 +201,7 @@ def _build_lesion(
 
     # Area-weighted centroid (XY in mm using each ROI's centroid; Z using each
     # ROI's slice z). Falls back to unweighted mean if all areas are zero,
-    # which is a defensive guard — area=0 ROIs are filtered upstream.
+    # which is a defensive guard: area=0 ROIs are filtered upstream.
     if total_area > 0:
         cx = sum(m.area_mm2 * m.centroid_xy_mm[0] for m in members) / total_area
         cy = sum(m.area_mm2 * m.centroid_xy_mm[1] for m in members) / total_area
@@ -239,7 +242,7 @@ def group_rois_into_lesions(
     excluded_roi_ids: set | None = None,
     max_inplane_mm: float = 5.0,
     max_slice_gap: int = 1,
-    tolerance_mm: float = 1.5,
+    tolerance_mm: float = Z_MATCH_TOLERANCE_MM,
 ) -> dict[str, list[Lesion]]:
     """Group eligible ROIs into 3D lesions per canonical vessel.
 

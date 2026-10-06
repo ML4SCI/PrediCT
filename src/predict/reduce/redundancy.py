@@ -16,8 +16,7 @@ plus the ICC report from stage 4 and produces:
 Mathematical conventions:
 
 * Spearman correlation captures monotone redundancy regardless of distribution
-  shape. Pearson was used in v1 and underestimates redundancy on non-Gaussian
-  features. We assert NO NaN at entry; pairwise-complete fallback is exposed
+  shape. Pearson underestimates redundancy on non-Gaussian features. We assert NO NaN at entry; pairwise-complete fallback is exposed
   as a parameter but defaults off.
 * Distance is 1 - r^2, in [0, 1]. Diagonal is forced to exactly 0.
 * Average linkage (UPGMA) is the primary; ward and complete are reported as
@@ -239,30 +238,36 @@ def hierarchical_cluster(
 def build_icc_lookup(
     icc_report_df: pd.DataFrame,
     *,
-    derived_names: Iterable[str] = (),
+    derived_report_df: pd.DataFrame | None = None,
+    invariant_names: Iterable[str] = (),
 ) -> dict[str, IccInfo]:
-    """Build {feature_name: IccInfo} from the stage-4 ICC report.
+    """Build {feature_name: IccInfo} from the gate's ICC report, plus the
+    measured reliability of the stage-5 transformed features
+    (``derived_report_df``, stage 5b ``derived_icc.csv``; D040).
 
-    Derived features (e.g. high_density_fraction, vessel_burden_gini) added by
-    prepare_matrix do not appear in icc_report.csv. They inherit
-    invariant_by_construction with ICC = 1.0 because they are pure functions
-    of canonical XML-derived inputs (D019 rationale).
+    ``invariant_names`` assigns ICC 1.0 / invariant_by_construction only to
+    the names given, and only when no report row exists for them. It is for
+    the D014 classic gate, where canonical inputs are invariant by
+    construction; under D033 the transformed features vary across draws and
+    must come from ``derived_report_df``.
     """
     required = {"feature", "icc", "icc_source"}
-    missing = required - set(icc_report_df.columns)
-    if missing:
-        raise KeyError(f"icc_report_df missing columns: {sorted(missing)}")
-
     lookup: dict[str, IccInfo] = {}
-    for _, row in icc_report_df.iterrows():
-        try:
-            icc = float(row["icc"])
-        except (TypeError, ValueError):
-            icc = float("nan")
-        source = str(row["icc_source"])
-        lookup[str(row["feature"])] = IccInfo(icc=icc, icc_source=source)  # type: ignore[arg-type]
+    for df in (icc_report_df, derived_report_df):
+        if df is None:
+            continue
+        missing = required - set(df.columns)
+        if missing:
+            raise KeyError(f"ICC report missing columns: {sorted(missing)}")
+        for _, row in df.iterrows():
+            try:
+                icc = float(row["icc"])
+            except (TypeError, ValueError):
+                icc = float("nan")
+            source = str(row["icc_source"])
+            lookup[str(row["feature"])] = IccInfo(icc=icc, icc_source=source)  # type: ignore[arg-type]
 
-    for name in derived_names:
+    for name in invariant_names:
         if name not in lookup:
             lookup[name] = IccInfo(icc=1.0, icc_source="invariant_by_construction")
 
