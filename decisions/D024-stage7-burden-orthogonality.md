@@ -57,14 +57,14 @@ The 3-level column lets the paper sentence read e.g. "burden orthogonality: full
 
 ### Why qcut tertiles instead of agatston-category breakpoints
 
-The Agatston category breakpoints (1-99 / 100-399 / >=400) are clinically conventional but unbalanced in this cohort (the 400+ tier dominates per CLAUDE.md cohort facts). `pd.qcut(q=3)` produces equal-sized strata, which is what we need to test orthogonality with comparable statistical power per stratum.
+The Agatston category breakpoints (1-99 / 100-399 / >=400) are clinically conventional but unbalanced in this cohort (the 400+ tier dominates). `pd.qcut(q=3)` produces equal-sized strata, which is what we need to test orthogonality with comparable statistical power per stratum.
 
 ## Alternatives considered
 
-- **Skip burden-stratified replication** — rejected; it's the strongest orthogonality argument and replaces a substantially weaker single-cohort claim.
-- **t-test on log(agatston + 1) instead of Mann-Whitney** — rejected; even after log transformation Agatston is heavy-tailed, and we want the test to match the rank-based effect size.
-- **Use a single composite pass/fail instead of 3-level interpretation** — rejected per item A from the design review; nuance must be visible.
-- **Use the gap-statistic-selected k for the burden partition instead of qcut tertiles** — rejected; the gap statistic does not support discrete k for burden, and qcut is a more conservative choice that does not impose structure.
+- **Skip burden-stratified replication**: rejected; it's the strongest orthogonality argument and replaces a substantially weaker single-cohort claim.
+- **t-test on log(agatston + 1) instead of Mann-Whitney**: rejected; even after log transformation Agatston is heavy-tailed, and we want the test to match the rank-based effect size.
+- **Use a single composite pass/fail instead of 3-level interpretation**: rejected; nuance must be visible.
+- **Use the gap-statistic-selected k for the burden partition instead of qcut tertiles**: rejected; the gap statistic does not support discrete k for burden, and qcut is a more conservative choice that does not impose structure.
 
 ## Verified by
 

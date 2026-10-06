@@ -1,4 +1,4 @@
-# D004 — Cohort exclusions applied at patient discovery
+# D004 Cohort exclusions applied at patient discovery
 
 **Date**: 2026-06-01
 **Stage**: io
@@ -14,19 +14,19 @@ eligible cohort.
 
 Default exclusions (from the dataset analysis report):
 
-- **PID 12, 197** — XML present, no DICOM data.
-- **PID 268** — DICOM series replaced (1.5 mm → 3.0 mm); XML `ImageIndex`
+- **PID 12, 197**: XML present, no DICOM data.
+- **PID 268**: DICOM series replaced (1.5 mm → 3.0 mm); XML `ImageIndex`
   values exceed current slice count; spatial accuracy of annotations lost.
-- **GE scanners (4 patients)** — `Manufacturer != "SIEMENS"`; STANDARD kernel
+- **GE scanners (4 patients)**: `Manufacturer != "SIEMENS"`; STANDARD kernel
   + 2.5 mm slices differ materially from the Siemens 99% cohort. Held out
   as an external check rather than included in primary analysis.
 
 ## Rationale
 
 Centralising exclusions at discovery prevents silent inclusion of bad data
-downstream. v1 applied no exclusions; the pipeline ran on PID 12 / 197 (no
-DICOM, exception-driven failure) and PID 268 (1.5 mm annotation series
-silently producing wrong masks).
+downstream. Without them the pipeline would run on PID 12 / 197 (no DICOM,
+exception-driven failure) and PID 268 (1.5 mm annotation series silently
+producing wrong masks).
 
 ## Alternatives considered
 

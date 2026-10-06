@@ -33,7 +33,7 @@ cross-reference a stage 7 file.
 
 ### Why re-export instead of read-through
 
-- Stage 8 outputs need to be self-contained so that a reader / reviewer
+- Stage 8 outputs need to be self-contained so that a reader
   inspecting `outputs/08_validate/` can verify the full validation
   story without bouncing into stage 7.
 - The `pass_threshold` + `pass_verdict` columns add a verdict layer

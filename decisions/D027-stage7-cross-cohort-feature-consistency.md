@@ -81,10 +81,10 @@ The three rules together are a stable, replication-grade discriminator definitio
 
 ## Alternatives considered
 
-- **Use only ARI (partition-level), no feature-level criterion** — rejected; ARI tells you partition identity replicates, NOT that any given feature is a reliable discriminator. The paper needs both.
-- **Use only feature-level (3 rules), no ARI** — rejected; without partition ARI, we can't claim "cluster A in the full cohort IS cluster A in the strata", only that "the cluster-A signature has the same features".
-- **2-rule criterion (drop rule 3)** — rejected; rule 3 is the safety against effect-size dilution.
-- **Allow rule 1 to be "in 2 of 3" instead of "in all 3"** — rejected; cross-cohort direction inconsistency is exactly what we want to flag, never accept.
+- **Use only ARI (partition-level), no feature-level criterion**: rejected; ARI tells you partition identity replicates, NOT that any given feature is a reliable discriminator. The paper needs both.
+- **Use only feature-level (3 rules), no ARI**: rejected; without partition ARI, we can't claim "cluster A in the full cohort IS cluster A in the strata", only that "the cluster-A signature has the same features".
+- **2-rule criterion (drop rule 3)**: rejected; rule 3 is the safety against effect-size dilution.
+- **Allow rule 1 to be "in 2 of 3" instead of "in all 3"**: rejected; cross-cohort direction inconsistency is exactly what we want to flag, never accept.
 
 ## Verified by
 

@@ -36,7 +36,7 @@ Stage 5 input contains many non-Gaussian features (Yeo-Johnson-transformed spars
 
 ### Cut at r^2 > 0.75 (distance 0.25)
 
-The author of the stage 5 exploration suggested r > 0.75 (i.e. r^2 > 0.5625 or distance > 0.44 in the more common 1-r metric). That is conservative; many features above r=0.75 are still partially independent.
+An initial exploration suggested r > 0.75 (i.e. r^2 > 0.5625 or distance > 0.44 in the more common 1-r metric). That is conservative; many features above r=0.75 are still partially independent.
 
 We use the **r^2 > 0.75 (distance > 0.25)** cut on the (1 - r^2) distance, which corresponds to **r > 0.866**. This is stricter than r > 0.75 and matches the standard "tight redundancy" definition (e.g. Lin 2022 uses r > 0.85; Kolossvary 2025 uses r > 0.90).
 
@@ -62,7 +62,7 @@ Within a redundancy cluster, the published practice is to keep one representativ
 We use a **layered selection**:
 
 1. **Primary**: highest ICC value. Under D016, canonical features all have ICC = 1.0, so canonical features beat empirical PyRadiomics on ICC ties.
-2. **Tiebreaker 1**: canonical features beat PyRadiomics on equal ICC. This is the clinical-interpretability tiebreaker the user requested. Reason: in stage 6 cluster characterisation, `agatston_lad` is more interpretable than `original_glcm_Contrast`.
+2. **Tiebreaker 1**: canonical features beat PyRadiomics on equal ICC. This is a clinical-interpretability tiebreaker: in stage 6 cluster characterisation, `agatston_lad` is more interpretable than `original_glcm_Contrast`.
 3. **Tiebreaker 2**: alphabetical, for reproducibility.
 
 This rule is deterministic and easy to audit.
@@ -71,7 +71,7 @@ This rule is deterministic and easy to audit.
 
 For our 75-feature matrix expected to reduce to ~30 to 50 representatives, 0.85 retains roughly 10 to 20 PCs and 0.90 retains roughly 15 to 25.
 
-0.85 is the modal radiomics phenotyping choice (Lin 2022, Kolossvary 2025, Mackin 2015 all use 80 to 85%). 90% is also defensible. We lock 0.85 as primary, and write a sensitivity table at 0.90 so reviewers can see whether downstream clustering is sensitive to the cutoff.
+0.85 is the modal radiomics phenotyping choice (Lin 2022, Kolossvary 2025, Mackin 2015 all use 80 to 85%). 90% is also defensible. We lock 0.85 as primary, and write a sensitivity table at 0.90 to show whether downstream clustering is sensitive to the cutoff.
 
 Rationale for not going higher: lower-variance PCs in our matrix are likely to capture residual noise rather than phenotype signal. At n = 422, the curse of dimensionality starts to bite in clustering algorithms when k-PCs grows past ~25.
 

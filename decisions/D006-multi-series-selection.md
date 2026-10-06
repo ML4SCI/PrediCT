@@ -1,9 +1,9 @@
-# D006 — Multi-series DICOM folder reduction rule
+# D006 Multi-series DICOM folder reduction rule
 
 **Date**: 2026-06-02
 **Stage**: io
 **Status**: Active
-**Module**: `src/predict/io/dicom_loader.py` — `_select_single_series`
+**Module**: `src/predict/io/dicom_loader.py`: `_select_single_series`
 
 ## Decision
 
@@ -19,26 +19,23 @@ selection marker.
 
 ## Rationale
 
-v1's D012 used "lowest SeriesNumber" as the primary key. Empirically that
-selects the wrong series in at least two COCA cases:
+"Lowest SeriesNumber" as the primary key selects the wrong series in at least two COCA cases:
 
 - **Patient 388**: SeriesNumber 2 is a 1-slice scout/preview; SeriesNumber 3
   is the 44-slice diagnostic gated CAC scan. Lowest SeriesNumber selects
-  the scout — no annotations match, all 22 ROIs are unmatched.
+  the scout: no annotations match, all 22 ROIs are unmatched.
 - **Patient 159**: one DICOM file has missing ``SeriesInstanceUID`` and
-  malformed metadata; under the empty-UID fallback (D-loader fix in this
-  commit) it groups alone as a 1-file "series". Lowest SeriesNumber selects
+  malformed metadata; under the loader's empty-UID fallback it groups alone as a 1-file "series". Lowest SeriesNumber selects
   this broken group; SimpleITK then errors out trying to read pixel data.
 
 The annotated diagnostic scan is reliably the longest series in the folder
 across COCA. Sorting by slice count gives the right answer for both 388
-and 159, and is consistent with v1's intent for patient 78 (two equal-length
-series → tiebreak by SeriesNumber).
+and 159, and keeps the SeriesNumber tiebreak for patient 78 (two equal-length
+series).
 
 ## Alternatives considered
 
-- **v1 D012 (lowest SeriesNumber)**: empirically wrong on 388 and 159.
-  Superseded.
+- **Lowest SeriesNumber**: empirically wrong on 388 and 159. Rejected.
 - **Cross-reference XML SOPInstanceUID**: COCA plist XMLs do not store
   SOP references; not possible.
 - **Filter to series ≥ N slices** (e.g. ≥10): brittle. A patient with a
@@ -54,6 +51,3 @@ series → tiebreak by SeriesNumber).
 - `tests/io/test_dicom_loader.py::test_multi_series_final_tiebreak_by_uid_lex`
 - Empirical: patients 78, 159, 388 load the correct series under this rule.
 
-## Supersedes
-
-v1 D012 (lowest-SeriesNumber primary).

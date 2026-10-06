@@ -39,7 +39,7 @@ The block partition is therefore independent of any cluster the data may produce
 
 ### Why multi-block beats single-matrix for this dataset
 
-The single-matrix Spearman clustering (D020) absorbed all 6 PyRadiomics texture survivors and most spatial features into the burden clusters because, in a calcium-positive cohort, texture and spatial features correlate r > 0.866 with total burden. The resulting representative set (23 features in the full cohort) was dominated by burden / density tiers (16 of 23) with only 2 spatial and 0 texture features. This composition under-represents the clinical axes that v1 hypothesised (spatial topology) and that Lin 2022 cites (texture independent of burden).
+The single-matrix Spearman clustering (D020) absorbed all 6 PyRadiomics texture survivors and most spatial features into the burden clusters because, in a calcium-positive cohort, texture and spatial features correlate r > 0.866 with total burden. The resulting representative set (23 features in the full cohort) was dominated by burden / density tiers (16 of 23) with only 2 spatial and 0 texture features. This composition under-represents the clinical axes of spatial topology and texture independent of burden (Lin 2022).
 
 Multi-block clustering preserves the prior taxonomy: features can be absorbed only into clusters within their own block. The resulting representative set is more balanced and recovers the texture and spatial representations that single-matrix lost to burden collinearity.
 

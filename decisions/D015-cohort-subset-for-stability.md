@@ -15,14 +15,14 @@ The 22 skipped patients are not perturbed and not represented in the ICC computa
 
 ## Rationale
 
-- **Same population as downstream consumes**. v1 stage 4 used a stratified subset of ~200 patients for compute economy and then applied the resulting gate to the full cohort downstream. That is a population mismatch: ICC estimated on a small slice may not generalise to features computed across the full cohort. Using the full eligible cohort eliminates the gap.
+- **Same population as downstream consumes**. Estimating the gate on a stratified subset of ~200 patients for compute economy and then applying it to the full cohort would be a population mismatch: ICC estimated on a small slice may not generalise to features computed across the full cohort. Using the full eligible cohort eliminates the gap.
 - **Skip the 22**. Their PyRadiomics row is already NaN at stage 3. Re-running PyRadiomics on perturbed versions of their CT volumes will fail with the same `ValueError` from `minimumROISize`. We would generate NaN-only columns for them, which contribute nothing to ICC and waste roughly 22 * 14 = 308 extractions. Skip them at stage 4 and document the exclusion.
-- **Compute budget**. 422 patients * 14 perturbations = 5,908 PyRadiomics extractions. At ~10 to 30 seconds per extraction on the remote machine with 16 workers in parallel, full-cohort stage 4 runs in roughly 1.5 to 3 hours wall time, well within budget. The compute argument for a 200-patient subset (v1's reasoning) no longer applies.
+- **Compute budget**. 422 patients * 14 perturbations = 5,908 PyRadiomics extractions. At ~10 to 30 seconds per extraction on the remote machine with 16 workers in parallel, full-cohort stage 4 runs in roughly 1.5 to 3 hours wall time, well within budget, so a smaller subset is not needed for compute.
 - **Sample size for ICC**. Bonett 2002 gives the variance of ICC estimates as a function of n_subjects, n_raters, and the true ICC. At true ICC = 0.75, n_raters = 14, the 95% CI half-width drops below 0.05 at n_subjects ~ 50. With 422 we are far past that, giving tight CIs for the gate decision.
 
 ## Alternatives considered
 
-- **Stratified 200 by Agatston category** (v1's choice). Smaller computer budget but introduces a population mismatch between ICC and downstream. Rejected.
+- **Stratified 200 by Agatston category**. Smaller computer budget but introduces a population mismatch between ICC and downstream. Rejected.
 - **Include the 22 skipped patients with NaN columns**. They cannot produce numeric PyRadiomics under perturbation either; including them adds rows that ICC computation must skip, no benefit. Rejected.
 - **Random subsample (e.g., 200 random patients)**. Same compute saving as stratified, worse coverage of the Agatston distribution. Rejected.
 

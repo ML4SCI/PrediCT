@@ -1,4 +1,4 @@
-# D002 — XML stat round-trip as preprocessing correctness gate
+# D002 XML stat round-trip as preprocessing correctness gate
 
 **Date**: 2026-06-01
 **Stage**: preprocess / validate
@@ -42,7 +42,7 @@ binary mask includes whole boundary pixels at lower HU (calcium-to-soft-
 tissue gradient), pulling the mean down. The effect is consistent across
 all patients.
 
-`cv2.fillPoly`'s `shift` parameter does not close the gap — it adjusts
+`cv2.fillPoly`'s `shift` parameter does not close the gap: it adjusts
 polygon edge geometry but the pixel-inclusion rule remains center-based
 and integer-quantised, so the result is identical to int-rounded vertices
 for our polygons.
@@ -67,8 +67,8 @@ used by downstream feature extraction.
   coverage) but does not improve pipeline correctness; the binary mask we
   build and feed forward stays the same. Deferred unless a future
   application requires OsiriX-equivalent stats.
-- **No round-trip check** (v1's choice): would have missed the v1 Z-flip
-  for several stages. Rejected.
+- **No round-trip check**: a Z-flipped slice mapping (D001) would go
+  undetected through every later stage. Rejected.
 
 ## Verified by
 

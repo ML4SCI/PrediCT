@@ -33,7 +33,7 @@ Output `monotonicity_classification.csv` columns:
 
 Plus a summary table per cohort showing the count of features in each class.
 
-The classification informs the paper's mechanistic narrative for Finding 1 (continuum): the 28 robust features divide cleanly into a small burden axis, a small spatial-topology axis, and a moderate structure-character axis. This is the radiomic operationalisation of v1's "burden continuum dominates" finding.
+The classification informs the paper's description of Finding 1 (burden dominance): the robust features divide cleanly into a small burden axis, a small spatial-topology axis, and a moderate structure-character axis.
 
 ## Rationale
 
@@ -61,9 +61,9 @@ The classification informs the paper's mechanistic narrative for Finding 1 (cont
 
 ## Alternatives considered
 
-- **Pearson correlation** — rejected; Pearson is sensitive to outliers and Agatston is heavy-tailed.
-- **Linear regression with R^2** — rejected; assumes linear structure, and Agatston-vs-features is monotonic but rarely linear.
-- **Cluster the 28 features by their Spearman-with-everything-else profile and assign block labels post-hoc** — rejected; the D022 block partition is prospective and binding (the entire point of multi-block clustering was to use prospective biological groups, not to discover them post-hoc).
+- **Pearson correlation**: rejected; Pearson is sensitive to outliers and Agatston is heavy-tailed.
+- **Linear regression with R^2**: rejected; assumes linear structure, and Agatston-vs-features is monotonic but rarely linear.
+- **Cluster the 28 features by their Spearman-with-everything-else profile and assign block labels post-hoc**: rejected; the D022 block partition is prospective and binding (the entire point of multi-block clustering was to use prospective biological groups, not to discover them post-hoc).
 
 ## Verified by
 

@@ -104,7 +104,7 @@ The 19 columns subject to YJ + fallback:
 
 Two scaling architectures were considered:
 
-- **Per-block z-score** (author of stage 5 proposal): apply z-score within each of 6 hand-defined blocks (burden, density, spatial, morphology, texture, per-vessel HU) before concatenating. Implicitly weights blocks equally regardless of block size.
+- **Per-block z-score**: apply z-score within each of 6 hand-defined blocks (burden, density, spatial, morphology, texture, per-vessel HU) before concatenating. Implicitly weights blocks equally regardless of block size.
 - **Global z-score**: apply z-score across the full matrix. Variance allocates weight naturally; features with higher variance contribute more to PCA.
 
 Global z-score is the principled default for unsupervised PCA. Per-block z-score is editorial weighting that presupposes the block partition is correct and that all blocks deserve equal voice; in the absence of strong prior reason to weight blocks equally, this is hypothesis-baking. We adopt global z-score and use the block structure only for stage 6 interpretation (grouping features by block when characterising clusters), not as a PCA preprocessing step.

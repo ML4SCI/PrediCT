@@ -1,4 +1,4 @@
-# D012 — `excluded_roi_ids` as explicit input to every feature path
+# D012 `excluded_roi_ids` as explicit input to every feature path
 
 **Date**: 2026-06-02
 **Stage**: features
@@ -17,7 +17,7 @@ The orchestration script `scripts/03_features.py` loads `outputs/02_preprocessed
 - `compute_density_tiers(...)`
 - `build_per_artery_masks(...)`
 
-Dirty-vessel ROIs (`roi.vessel is None`) are *separately* skipped inside each module — D012 covers the round-trip-failure exclusion, the parser-time dirty filter is a different layer.
+Dirty-vessel ROIs (`roi.vessel is None`) are *separately* skipped inside each module, D012 covers the round-trip-failure exclusion, the parser-time dirty filter is a different layer.
 
 ## Rationale
 
@@ -27,12 +27,12 @@ Making the exclusion set an explicit input rather than a module-level constant o
 
 ## Alternatives considered
 
-- **Filter the `ParseResult` once at the top and pass the filtered version everywhere** — would also work, and is in some ways simpler. Rejected because:
+- **Filter the `ParseResult` once at the top and pass the filtered version everywhere**: would also work, and is in some ways simpler. Rejected because:
   - It rebuilds the `ParseResult` dataclass with a filtered `slices` field, which changes `roi_idx_in_slice` numbering (the index within each slice's `rois` tuple). The exclusion set was computed against the *original* indices; renumbering them is error-prone.
-  - Module signatures still need to be tested with both empty and non-empty exclusion sets — the explicit-input form makes that obvious.
-- **Module-level exclusion state** — anti-pattern. Forces module-level mutation per patient inside a multi-process worker. Rejected.
+  - Module signatures still need to be tested with both empty and non-empty exclusion sets: the explicit-input form makes that obvious.
+- **Module-level exclusion state**: anti-pattern. Forces module-level mutation per patient inside a multi-process worker. Rejected.
 
 ## Verified by
 
-- `tests/features/test_*` for each module — each has a test that an excluded ROI does not contribute (Agatston unchanged, lesion grouping skips it, density tier count drops, per-vessel volume drops, per-artery mask doesn't rasterise it).
+- `tests/features/test_*` for each module: each has a test that an excluded ROI does not contribute (Agatston unchanged, lesion grouping skips it, density tier count drops, per-vessel volume drops, per-artery mask doesn't rasterise it).
 - Orchestration test: a patient with 1 excluded ROI has the SAME features whether passed `excluded_roi_ids={(img_idx, roi_idx)}` or with that ROI manually removed from the source XML.

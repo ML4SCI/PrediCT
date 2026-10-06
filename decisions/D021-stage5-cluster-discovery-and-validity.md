@@ -1,9 +1,9 @@
 # D021 Stage 5 cluster discovery, validity checks, and sensitivity cohorts
 
 **Date**: 2026-06-04
-**Stage**: discover (stage 6; split out from reduce on 2026-06-05 Phase B; decision number unchanged)
+**Stage**: discover (stage 6)
 **Status**: Active
-**Module**: `scripts/07_discover.py` (Phase B); consumes `outputs/06_reduce/{prepared_matrix,pca_scores}.csv` from D020. Pre-Phase-B, this logic lived inside `scripts/06_reduce.py`.
+**Module**: `scripts/07_discover.py`; consumes `outputs/06_reduce/{prepared_matrix,pca_scores}.csv` from D020.
 
 ## Decision
 
@@ -134,7 +134,7 @@ Hopkins is run BEFORE gap statistic to short-circuit the 500-bootstrap cost if t
 The three-run design is essential for an unsupervised phenotyping paper:
 
 - **Run 1 (full)** answers "is there ANY discrete structure?" The default test.
-- **Run 2 (burden-residualised)** answers "is there phenotype structure BEYOND the burden axis?" This is the most important run for v1's "continuum, no discrete phenotypes" hypothesis. v1's continuum was likely driven by burden alone; if Run 2 returns k=1, this strengthens the continuum interpretation.
+- **Run 2 (burden-residualised)** answers "is there phenotype structure BEYOND the burden axis?" This is the most important run for the question of structure beyond burden.
 - **Run 3 (spatial-only)** answers "is there spatial-distribution structure on its own?" This isolates the spotty / diffuse / dense hypothesis from burden and texture confounders.
 
 `log(agatston_total + 1)` (rather than raw agatston_total) is the standard burden regressor because Agatston is right-skewed across nearly 3 orders of magnitude (1 to 3000+) and a linear regressor on raw values would overweight the high tail. The +1 protects against log(0).
@@ -165,7 +165,7 @@ Whatever gap statistic returns, we additionally run k-means / Ward / GMM at k=3 
 - If gap returns k=3, the forced k=3 result describes the discovered phenotypes.
 - If gap returns k != 3, the forced k=3 is reported as a one-line note ("clustering at the hypothesised k=3 produces the following profiles, but gap statistic selects k=X").
 
-This discipline is essential to avoid v1's failure mode of presenting a forced cluster solution as if it were a discovered phenotype.
+This discipline is essential to avoid presenting a forced cluster solution as if it were a discovered phenotype.
 
 ### Validity checks
 
@@ -192,7 +192,7 @@ GE-scanner holdout (N=4 from D004) is deferred to stage 7 / validate (planned ex
 - **n_bootstrap = 50 (existing config)**: rejected as below Tibshirani 2001's recommendation; gap-curve estimates would be too noisy at the boundary k values.
 - **CI threshold 0.50 or 0.70**: rejected; 0.60 is Monti 2003's threshold.
 - **No forced k=3 characterisation**: rejected because the spotty/diffuse/dense hypothesis is the explicit basis of the entire project and needs a descriptive report regardless of what gap selects.
-- **Robust cohort defined differently (e.g. Agatston > 100)**: rejected; `low_burden_flag == False` aligns with D010 and matches the previously planned sensitivity probe.
+- **Robust cohort defined differently (e.g. Agatston > 100)**: rejected; `low_burden_flag == False` aligns with D010.
 
 ## Verified by
 

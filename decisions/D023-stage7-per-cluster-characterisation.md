@@ -24,7 +24,7 @@ For each (cohort x partition x cluster x feature) tuple we compute:
 
 Plus two cohort-level gates that fail-loud the pipeline:
 
-- **Biological sanity check** (per cohort, spatial partition): median `max_hu_global` in the focal cluster must be >= 130 HU (the IBSI / Agatston calcium definition). This is an ABSOLUTE FLOOR, not a relative ratio. The earlier draft of D023 (2026-06-06 morning) used a relative ratio rule (focal >= 0.9 * diffuse) which fires false-positively on the real cohort, where focal clusters have legitimately lower peak HU (387) than diffuse (744) by ~50% as a biological phenomenon (focal disease is earlier-stage / softer plaque). The 130-HU absolute floor catches the actual failure mode we care about (soft-tissue voxels in the focal cluster -> max_hu near 0 or negative) without firing on real biology. Additionally, if focal_median / diffuse_median < 0.5, log a WARNING (do not raise) so unexpected biology is visible in the audit log.
+- **Biological sanity check** (per cohort, spatial partition): median `max_hu_global` in the focal cluster must be >= 130 HU (the IBSI / Agatston calcium definition). This is an ABSOLUTE FLOOR, not a relative ratio. A relative ratio rule (focal >= 0.9 * diffuse) fires false-positively on the real cohort, where focal clusters have legitimately lower peak HU (387) than diffuse (744) by ~50% as a biological phenomenon (focal disease is earlier-stage / softer plaque). The 130-HU absolute floor catches the actual failure mode we care about (soft-tissue voxels in the focal cluster -> max_hu near 0 or negative) without firing on real biology. Additionally, if focal_median / diffuse_median < 0.5, log a WARNING (do not raise) so unexpected biology is visible in the audit log.
 - **Label balance check** (per cohort, every partition): minority class size must be > 15% of the cohort. If a partition ends up >= 85/15 imbalanced, the smaller cluster's median + IQR statistics are too noisy to publish.
 
 Both checks raise at the orchestrator entry, before any output file is written.
@@ -50,9 +50,9 @@ Both checks raise at the orchestrator entry, before any output file is written.
 
 ### Biological sanity check rationale
 
-- The two spatial GMM k=2 clusters are labelled "focal" / "diffuse" by D026's deterministic rule (lower median `n_calcified_arteries` = focal). If a pipeline regression were to put a soft-tissue mask into the "focal" cluster, max_hu_global in that cluster would collapse to noise-floor (mean HU ~ -264 per CLAUDE.md cohort facts) far below the 130 HU calcium definition.
+- The two spatial GMM k=2 clusters are labelled "focal" / "diffuse" by D026's deterministic rule (lower median `n_calcified_arteries` = focal). If a pipeline regression were to put a soft-tissue mask into the "focal" cluster, max_hu_global in that cluster would collapse to noise-floor (mean HU about -264 for soft tissue) far below the 130 HU calcium definition.
 - The 130 HU absolute floor is the IBSI / Agatston standard for calcium identification and is therefore an objective, non-arbitrary threshold.
-- The earlier relative-ratio rule (focal >= 0.9 * diffuse) failed in production because focal disease in COCA has lower peak HU (387) than diffuse (744) - a real biological pattern, not a pipeline bug. We raise only on the absolute floor; the ratio is a logged warning so unexpected biology is visible without blocking the pipeline.
+- A relative-ratio rule (focal >= 0.9 * diffuse) fails on this cohort because focal disease in COCA has lower peak HU (387) than diffuse (744) - a real biological pattern, not a pipeline bug. We raise only on the absolute floor; the ratio is a logged warning so unexpected biology is visible without blocking the pipeline.
 - Failing loud at the absolute floor is the desired behaviour.
 
 ### Label balance threshold
@@ -62,10 +62,10 @@ Both checks raise at the orchestrator entry, before any output file is written.
 
 ## Alternatives considered
 
-- **Cohen's d on z-scored data** — rejected for the reasons above; sentinel-prone density tiers and Agatston skew break the Gaussian assumption.
-- **Bonferroni correction** — rejected as too conservative for radiomics-style exploratory characterisation. FDR-BH is the standard.
-- **Per-cluster vs (everyone-else) instead of focal-vs-diffuse only** — for the spatial k=2 partition the two are identical. For the burden k=3 partition we explicitly use "this-cluster-vs-(other-two-combined)" because pairwise comparisons would multiply the FDR adjustment unnecessarily.
-- **Permutation-based effect-size CIs** — under consideration for the paper but out of scope for stage 7. Reproducibility is via fixed random_state on bootstrap helpers if needed for figure CIs.
+- **Cohen's d on z-scored data**: rejected for the reasons above; sentinel-prone density tiers and Agatston skew break the Gaussian assumption.
+- **Bonferroni correction**: rejected as too conservative for radiomics-style exploratory characterisation. FDR-BH is the standard.
+- **Per-cluster vs (everyone-else) instead of focal-vs-diffuse only**: for the spatial k=2 partition the two are identical. For the burden k=3 partition we explicitly use "this-cluster-vs-(other-two-combined)" because pairwise comparisons would multiply the FDR adjustment unnecessarily.
+- **Permutation-based effect-size CIs**: under consideration for the paper but out of scope for stage 7. Reproducibility is via fixed random_state on bootstrap helpers if needed for figure CIs.
 
 ## Verified by
 

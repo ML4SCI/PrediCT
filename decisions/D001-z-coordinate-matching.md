@@ -1,4 +1,4 @@
-# D001 — Z-coordinate matching as primary ROI→slice mapping
+# D001 Z-coordinate matching as primary ROI→slice mapping
 
 **Date**: 2026-06-01
 **Stage**: io / preprocess
@@ -24,7 +24,7 @@ ImageIndex=15 ROI with XML `Mean=156.2`, `Max=182.0`.
 | Mapping | Slice voxel Mean | Slice voxel Max |
 |---|---|---|
 | Direct (`slice_idx = ImageIndex`) | 122.8 | **182.0** (matches XML) |
-| Flipped (`slice_idx = n - 1 - ImageIndex`, v1 D011) | 11.4 | 56.0 (soft tissue) |
+| Flipped (`slice_idx = n - 1 - ImageIndex`) | 11.4 | 56.0 (soft tissue) |
 
 The XML stat round-trip succeeds with direct mapping and fails with flipped.
 
@@ -36,7 +36,7 @@ counter exposed in the XML.
 
 ## Alternatives considered
 
-- **v1 D011** (`slice_idx = (n_slices - 1) - ImageIndex`): empirically wrong;
+- **Flipped index** (`slice_idx = (n_slices - 1) - ImageIndex`): empirically wrong;
   produces Z-flipped masks. Rejected.
 - **`InstanceNumber - 1` mapping**: matches ~50% of patients per dataset
   report § 7.3; scanner-dependent. Rejected.
@@ -46,9 +46,3 @@ counter exposed in the XML.
 
 - `tests/preprocess/test_slice_matcher.py`
 - `tests/preprocess/test_mask_builder.py::test_xml_roundtrip_on_fixture`
-- Diagnostic: `slice_direction_check.py` (one-off, kept under
-  `docs/experiments/` for reference).
-
-## Supersedes
-
-v1 D011.

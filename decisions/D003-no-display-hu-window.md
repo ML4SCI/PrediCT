@@ -1,4 +1,4 @@
-# D003 — No display HU window in pipeline outputs
+# D003 No display HU window in pipeline outputs
 
 **Date**: 2026-06-01
 **Stage**: preprocess
@@ -14,8 +14,8 @@ Preprocessing emits **one** CT volume per patient: raw HU values, clipped to
 ## Rationale
 
 PyRadiomics and downstream feature extraction require raw HU. The display
-window (HU center 300, width 1500 in v1) is a visualisation convenience that
-no downstream module reads. v1 saved it anyway, doubling the storage cost of
+window (for example HU center 300, width 1500) is a visualisation convenience
+that no downstream module reads. Saving it would double the storage cost of
 preprocessing outputs (>20 GB on the full cohort).
 
 ## Alternatives considered

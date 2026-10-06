@@ -30,7 +30,7 @@ The robust cohort outputs are run by the orchestrator as a second pass after the
 ### Why low_burden_flag = False is the right cut
 
 - D010 set `low_burden_flag = True` at mask_voxels < 100. This is the threshold below which PyRadiomics texture results become noisy (mask too small for stable GLCM / GLRLM matrices). It is a per-patient quality flag, not a per-feature one.
-- 142 of 422 stage-4-gated patients carry this flag; nearly all are in Agatston 1-99 (per CLAUDE.md cohort insights, item 7 in "Critical empirical findings"). Removing them gives a cohort dominated by clinically-significant calcium burden.
+- 142 of 422 stage-4-gated patients carry this flag; nearly all are in Agatston 1-99. Removing them gives a cohort dominated by clinically-significant calcium burden.
 - The 280 remaining patients still span Agatston tiers 1-99 to >=400 (the high-burden patients also have low_burden_flag = False, by definition).
 
 ### Why don't we just run the main analysis on the 280-patient cohort
@@ -44,9 +44,9 @@ The 15-row main table is structured as (3 cohorts x 5 clusters). Including the r
 
 ## Alternatives considered
 
-- **Embed as 4 extra rows in the main paper table** — rejected per the design review (item 9); keeps the main table clean.
-- **Run an entirely separate stage 5 / 6 pipeline on the 280-patient cohort and produce a full set of stage 7 outputs** — rejected for the relabelling complication described above.
-- **Skip the robust sensitivity entirely** — rejected; the user explicitly requested it as a hedge against the low-burden patients' noise contaminating the main findings.
+- **Embed as 4 extra rows in the main paper table**: rejected; keeps the main table clean.
+- **Run an entirely separate stage 5 / 6 pipeline on the 280-patient cohort and produce a full set of stage 7 outputs**: rejected for the relabelling complication described above.
+- **Skip the robust sensitivity entirely**: rejected; it is the hedge against the low-burden patients' noise contaminating the main findings.
 
 ## Verified by
 

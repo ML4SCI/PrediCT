@@ -7,7 +7,7 @@
 
 ## Decision
 
-Six pre-specified, pre-registered, one-sided Mann-Whitney U tests on the focal-vs-diffuse comparison for the spatial-only k=2 phenotype. The 6 hypotheses are locked from the design discussion (informed by v1 hypothesis and Hoori 2024 / Lin 2022) before any stage 7 numerical result was observed:
+Six pre-specified, pre-registered, one-sided Mann-Whitney U tests on the focal-vs-diffuse comparison for the spatial-only k=2 phenotype. The 6 hypotheses are locked from the design discussion (informed by Hoori 2024 / Lin 2022) before any stage 7 numerical result was observed:
 
 | # | Feature | Predicted direction (focal vs diffuse) | Clinical interpretation |
 |---|---|---|---|
@@ -64,7 +64,7 @@ The 6 directional hypotheses are a closed, pre-specified family with their own m
 
 - Pre-registering an "all 6 must confirm" criterion is too brittle: a single feature that fails for any reason (poor stage-3 implementation, kernel-specific quirk, sentinel pattern) refutes the whole finding.
 - >= 4 of 6 (66.7%) is a substantial majority that allows for 1-2 expected "noise" hypotheses while still requiring the bulk of the directional model to hold.
-- This threshold is pre-registered along with the hypotheses themselves; the user explicitly approved.
+- This threshold is pre-registered along with the hypotheses themselves.
 
 ### Why secondary criterion is direction-only
 
@@ -75,15 +75,15 @@ The 6 directional hypotheses are a closed, pre-specified family with their own m
 ### Why this 6-hypothesis list
 
 - They are independent enough that one feature failing does not necessarily drag the others down (e.g., `lesion_count_lad` (count) and `dist_from_top_max` (distance) measure different things even though both describe the LAD focal pattern).
-- They cover the four geometric dimensions of "focal" disease per v1 / Hoori 2024 / Lin 2022: vessel concentration (#2, #5), proximal-vs-distal (#3), volume concentration (#4), per-vessel compactness (#1, #6).
+- They cover the four geometric dimensions of "focal" disease per Hoori 2024 / Lin 2022: vessel concentration (#2, #5), proximal-vs-distal (#3), volume concentration (#4), per-vessel compactness (#1, #6).
 - The list was finalised BEFORE any stage 7 numerical result was observed and BEFORE any of these features were ranked by Cliff's delta.
 
 ## Alternatives considered
 
-- **All 6 must confirm** — rejected as too brittle.
-- **Bayesian directional inference (posterior P(direction | data))** — rejected; we want a frequentist criterion the radiomics literature recognises.
-- **Two-sided Mann-Whitney with direction reported separately** — rejected; pre-registered directional tests should be one-sided.
-- **Skip the secondary stratified criterion** — rejected per item B from the design review; full-cohort pass alone is vulnerable to kernel-imbalance confounding.
+- **All 6 must confirm**: rejected as too brittle.
+- **Bayesian directional inference (posterior P(direction | data))**: rejected; we want a frequentist criterion the radiomics literature recognises.
+- **Two-sided Mann-Whitney with direction reported separately**: rejected; pre-registered directional tests should be one-sided.
+- **Skip the secondary stratified criterion**: rejected; full-cohort pass alone is vulnerable to kernel-imbalance confounding.
 
 ## Verified by
 
