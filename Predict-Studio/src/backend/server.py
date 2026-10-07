@@ -28,6 +28,10 @@ from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Form, Que
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from src.backend import accounts, ratelimit
 from src.backend.paths import (study_id_from_series, user_root, raw_dir, out_dir, tmp_dir,
@@ -552,7 +556,12 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8002)
+    args, _ = parser.parse_known_args()
+    
     if not accounts.access_hashes():
         print("\n  NOTE: PREDICT_ACCESS_TOKENS is not set, so only the admin can sign in.")
-    print("\n  PrediCT Studio -> http://127.0.0.1:8001\n")
-    uvicorn.run(app, host="127.0.0.1", port=8001, log_level="warning")
+    print(f"\n  PrediCT Studio -> http://127.0.0.1:{args.port}\n")
+    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")

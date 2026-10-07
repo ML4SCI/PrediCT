@@ -8,12 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap">
+    href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;600;700&family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <!-- ?v= forces browsers to fetch the new files after an update (the server
        sends no cache headers). Bump it whenever app.css / app.js / view3d.js change. -->
-  <link rel="stylesheet" href="app.css?v=4">
+  <link rel="stylesheet" href="app.css?v=14">
 
   <script type="importmap">
   { "imports": {
@@ -127,10 +127,10 @@
 
   <!-- Workspace Header & Tab Bar -->
   <header id="tabs">
-    <div class="tabs-label">
+    <a href="/ui/index.html" class="tabs-label" style="text-decoration: none;">
       <span class="material-symbols-outlined tabs-label-icon">clinical_notes</span>
       <span>PrediCT Studio</span>
-    </div>
+    </a>
 
     <button data-dir="1" class="on">01 Argument</button>
     <button data-dir="2">02 Instrument</button>
@@ -168,11 +168,10 @@
       </div>
 
       <ol class="welcome-steps">
-        <li>
+        <li id="welcome-upload" class="welcome-upload-card" tabindex="0" role="button" aria-label="Upload a DICOM or NIfTI folder">
           <span class="material-symbols-outlined">upload</span>
           <b>1 · Upload</b>
           <span>a DICOM or NIfTI folder</span>
-          <button class="run-btn" id="welcome-upload">Upload scan</button>
         </li>
         <li>
           <span class="material-symbols-outlined">play_circle</span>

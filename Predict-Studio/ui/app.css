@@ -2,7 +2,7 @@
 
 :root {
   /* Google M3 Core Color Tokens */
-  --md-sys-color-primary: #1a73e8;
+  --md-sys-color-primary: #3b82f6;
   --md-sys-color-on-primary: #ffffff;
   --md-sys-color-primary-container: #e8f0fe;
   --md-sys-color-on-primary-container: #174ea6;
@@ -599,6 +599,7 @@ body:not(.is-admin) .admin-only {
   align-items: center;
   justify-content: center;
   padding: 32px 24px;
+  background: linear-gradient(135deg, var(--md-sys-color-surface) 0%, var(--md-sys-color-surface-dim) 100%);
 }
 
 .welcome-card {
@@ -612,15 +613,23 @@ body:not(.is-admin) .admin-only {
 }
 
 .welcome-title {
-  font-family: var(--font-sans);
-  font-size: 32px;
-  font-weight: 500;
-  color: var(--md-sys-color-on-surface);
+  font-family: 'MuseoModerno', sans-serif;
+  font-size: 128px;
+  font-weight: 700;
+  color: #2962ff;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+  margin-bottom: 8px;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .welcome-sub {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 500;
+  font-family: 'Google Sans', sans-serif;
   color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 24px;
 }
 
 .welcome-err {
@@ -658,28 +667,44 @@ body:not(.is-admin) .admin-only {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 18px 16px;
+  gap: 8px;
+  padding: 24px 20px;
   background: var(--md-sys-color-surface);
   border: 1px solid var(--md-sys-color-outline);
   border-radius: var(--radius-lg);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--md-sys-color-on-surface-variant);
+  font-family: 'Google Sans', sans-serif;
 }
 
 .welcome-steps .material-symbols-outlined {
-  font-size: 28px;
+  font-size: 36px;
   color: var(--md-sys-color-primary);
+  margin-bottom: 4px;
 }
 
 .welcome-steps b {
-  font-family: var(--font-sans);
-  font-size: 15px;
+  font-family: 'MuseoModerno', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--md-sys-color-on-surface);
+  letter-spacing: 0.5px;
 }
 
 .welcome-steps .run-btn {
   margin-top: 6px;
+}
+
+.welcome-upload-card {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.welcome-upload-card:hover, .welcome-upload-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--elevation-2);
+  border-color: var(--md-sys-color-primary);
+  outline: none;
 }
 
 .welcome-hint {
@@ -1893,11 +1918,11 @@ details:not([open]) > summary::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 2px solid var(--prediction);
+  border: 2px solid var(--md-sys-color-primary);
 }
 
 .cs-frame.cs-cursor {
-  outline: 2px solid var(--md-sys-color-primary);
+  outline: 3px solid #202124;
   outline-offset: 2px;
   z-index: 5;
 }
