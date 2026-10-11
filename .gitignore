@@ -2,3 +2,6 @@ __pycache__/
 .pytest_cache
 data/
 ._dbindex_/
+Predict-Studio/models/nnunet_dob_scv/nnUNet_results/Dataset001_CAC/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0
+Predict-Studio/models/nnunet_simple_scv/nnUNet_results/Dataset001_CAC/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0
+Predict-Studio/models/rero_no_coord/best_dice.pth

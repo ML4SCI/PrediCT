@@ -1,0 +1,85 @@
+{
+  "model_config": {
+    "MODEL_NAME": "RIU_NET_V1.0",
+    "USE_DEEP_SUPERVISION": false,
+    "BASE_CHANNELS": 32,
+    "NUM_CLASSES": 1,
+    "DEBUG_MODE": true,
+    "VERBOSE": false,
+    "IN_CHANNELS": 2,
+    "DA_NUM_HEADS": 8,
+    "DA_NUM_POINTS": 4,
+    "FNO_MODES": [
+      8,
+      8,
+      8
+    ],
+    "ROI_SIZE": [
+      128,
+      128,
+      32
+    ]
+  },
+  "dataloader_config": {
+    "BATCH_SIZE": 2,
+    "ROI_SIZE": [
+      128,
+      128,
+      32
+    ],
+    "CACHE_RATE": 1.0,
+    "NUM_WORKERS": 8,
+    "HEART_MASK_FLAG": true,
+    "ADD_HEART_MASK_CHANNEL": false,
+    "HEART_MODEL_PATH": "/pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat_3/LW_UNET_TVERSKY/best_model.pth",
+    "ADD_COORD_CHANNELS": false,
+    "COORD_MODE": "normalized",
+    "DUAL_HU_WINDOWING": true,
+    "NUM_OF_SAMPLES_PER_BATCH": 4
+  },
+  "train_config": {
+    "EPOCHS": 400,
+    "LR": 0.03,
+    "WEIGHT_DECAY": 0.0,
+    "WARMUP_EPOCHS": 5,
+    "GRAD_CLIP_NORM": 1.0,
+    "AMP": false,
+    "FORCE_INPUT_DTYPE": "float32",
+    "WEIGHTS_DTYPE": "float32",
+    "DS_LEVEL_WEIGHTS": [
+      1,
+      0.125,
+      0.25,
+      0.5
+    ],
+    "DUMP_EPOCHS": [
+      0,
+      10,
+      50,
+      100,
+      150,
+      199
+    ],
+    "SAVE_EVERY_EPOCH": false,
+    "KEEP_LAST_N_CKPTS": 3,
+    "EARLY_STOP_PATIENCE": 30,
+    "CKPT_POLICY": "best",
+    "LOSS_TYPE": "TverskyCE",
+    "POS_WEIGHT_CAP": 1000.0,
+    "POS_WEIGHT_BATCHES": 10,
+    "VAL_THRESHOLD": 0.97,
+    "TVERSKY_ALPHA": 0.3,
+    "TVERSKY_BETA": 0.7,
+    "TVERSKY_WEIGHT": 0.5,
+    "CE_WEIGHT": 0.5
+  },
+  "hu_config": {
+    "WINDOW_LEVEL": 100,
+    "WINDOW_WIDTH": 500,
+    "A_MIN": -150,
+    "A_MAX": 350
+  },
+  "runtime": {
+    "pos_weight": 1000.0
+  }
+}

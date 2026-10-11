@@ -136,6 +136,9 @@ def run(user_id: int, study_id: str, model_id: str, crop: bool = None, progress=
     if m.get("arch") == "nnunet":
         from src.backend.pipeline_nnunet import predict_nnunet
         prob = predict_nnunet(image, m) # returns (Z, Y, X)
+    elif m.get("arch") == "rero":
+        from src.backend.pipeline_rero import predict_rero
+        prob = predict_rero(image, m) # returns (Z, Y, X)
     else:
         x = normalize(np.transpose(array, (2, 1, 0)), tuple(m["hu_window"])) # (X, Y, Z)
         prob_xyz = predict(

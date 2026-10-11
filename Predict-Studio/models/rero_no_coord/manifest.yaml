@@ -1,0 +1,19 @@
+id: rero_no_coord
+name: ReRo-Net (no-coord)
+source_run: Segmentation_Rajat/runs/run_no_coord   # ML4SCI/PrediCT@rajat_segmentation 43cd95a
+arch: rero              # runs code/infer.py via src/backend/pipeline_rero.py
+weights: best_dice.pth  # Drive ReRoNet_Anonymous_Models/RUN_NO_COORD/best_dice.pth (3.37 GB)
+# sha256 left out: registry hashes the weights on every model listing, and 3.37 GB would stall the UI.
+output: binary          # infer.py returns a mask already cut at 0.97 (code/config.py)
+threshold: 0.5
+hu_window: [0, 1200]    # display only; the model's own windows are in code/config.py
+spacing: [0.375, 0.375, 3.0]
+orientation: RAS
+crop: true              # app's TotalSegmentator crop stands in for ReRo's LW-UNet heart ROI
+margin_mm: 8
+locator: totalsegmentator
+locator_version: "2.15.0"
+ts_fast: false
+activation: sigmoid
+patch: [128, 128, 32]
+overlap: 0.25
