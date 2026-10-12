@@ -1,8 +1,10 @@
+import importlib.util
 import os
 import sys
 import shutil
 import tempfile
 import zipfile
+import gc
 from pathlib import Path
 
 import SimpleITK as sitk
@@ -22,6 +24,31 @@ for p in [
 
 from Segmentation_Rajat.wrapper import predict as reronet_predict
 from nnunet_dob_scv.predict import predict as nnunet_predict
+
+
+AGATSTON_SCRIPT_PATH = Path(r"E:\MyProjects\Gsoc_2026_Official\Segmentation_Rajat\agatston_script.py")
+
+
+def _load_agatston_function(script_path: Path):
+    """Dynamically imports calculate_agatston() from agatston_script.py
+    without requiring it to be installed as a package."""
+    if not script_path.exists():
+        print(f"  [warn] Agatston script not found at {script_path}; "
+              f"GT/Pred Agatston scores will show N/A")
+        return None
+    try:
+        spec = importlib.util.spec_from_file_location("agatston_script", script_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules["agatston_script"] = module
+        spec.loader.exec_module(module)
+        return module.calculate_agatston
+    except Exception as e:
+        print(f"  [warn] Failed to import calculate_agatston from {script_path}: {e}")
+        return None
+
+
+_calculate_agatston = _load_agatston_function(AGATSTON_SCRIPT_PATH)
+
 
 app = FastAPI(title="Medical Segmentation API")
 
@@ -135,6 +162,32 @@ async def convert_dicom(background: BackgroundTasks, dicom_zip: UploadFile = Fil
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/agatston")
+async def agatston(ct: UploadFile = File(..., description="CT scan as .nii / .nii.gz"),
+                   mask: UploadFile = File(..., description="Predicted calcium mask as .nii / .nii.gz")):
+    """Runs calculate_agatston() from agatston_script.py on a CT + mask pair. Nothing is kept on the server."""
+    if _calculate_agatston is None:
+        raise HTTPException(status_code=503, detail=f"Agatston script could not be loaded from {AGATSTON_SCRIPT_PATH} (see server console).")
+
+    def suffix(name: str) -> str:
+        return ".nii.gz" if (name or "").lower().endswith(".gz") else ".nii"
+
+    temp_dir = tempfile.mkdtemp()
+    try:
+        ct_path = Path(temp_dir) / ("ct" + suffix(ct.filename))
+        mask_path = Path(temp_dir) / ("mask" + suffix(mask.filename))
+        for src, dst in ((ct, ct_path), (mask, mask_path)):
+            with open(dst, "wb") as buffer:
+                shutil.copyfileobj(src.file, buffer)
+        return _calculate_agatston(str(ct_path), str(mask_path))
+    except ValueError as e:  # e.g. CT / mask shape mismatch
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cleanup_temp_dir(temp_dir)
+
+
 @app.post("/reronet/nifti")
 async def reronet_nifti(background: BackgroundTasks, file: UploadFile = File(..., description="Upload a .nii or .nii.gz file")):
     temp_dir = tempfile.mkdtemp()
@@ -154,6 +207,14 @@ async def reronet_nifti(background: BackgroundTasks, file: UploadFile = File(...
             output_dir=str(output_dir),
             riunet_ckpt_path=RERONET_CKPT
         )
+
+        # Flush VRAM
+        gc.collect()
+        try:
+            import torch
+            torch.cuda.empty_cache()
+        except ImportError:
+            pass
 
         background.add_task(cleanup_temp_dir, temp_dir)
         return create_download_response(result_path)
@@ -181,6 +242,14 @@ async def reronet_dicom(background: BackgroundTasks, dicom_zip: UploadFile = Fil
             riunet_ckpt_path=RERONET_CKPT
         )
 
+        # Flush VRAM
+        gc.collect()
+        try:
+            import torch
+            torch.cuda.empty_cache()
+        except ImportError:
+            pass
+
         background.add_task(cleanup_temp_dir, temp_dir)
         return create_download_response(result_path)
     except Exception as e:
@@ -202,6 +271,14 @@ async def nnunet_nifti(background: BackgroundTasks, file: UploadFile = File(...,
             shutil.copyfileobj(file.file, buffer)
 
         nnunet_predict("nii", str(file_path), str(output_dir))
+
+        # Flush VRAM
+        gc.collect()
+        try:
+            import torch
+            torch.cuda.empty_cache()
+        except ImportError:
+            pass
 
         predictions = list(output_dir.glob("*.nii.gz"))
         if not predictions:
@@ -228,6 +305,14 @@ async def nnunet_dicom(background: BackgroundTasks, dicom_zip: UploadFile = File
         extract_dicom_zip(dicom_zip, input_dir)
 
         nnunet_predict("dicom", str(input_dir), str(output_dir))
+
+        # Flush VRAM
+        gc.collect()
+        try:
+            import torch
+            torch.cuda.empty_cache()
+        except ImportError:
+            pass
 
         predictions = list(output_dir.glob("*.nii.gz"))
         if not predictions:
@@ -307,6 +392,18 @@ VIEWER_HTML = r"""<!doctype html>
   .pane span { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 999px;
                background: rgba(12, 14, 17, .72); color: var(--text); font-size: 11px; letter-spacing: .06em;
                text-transform: uppercase; border: 1px solid rgba(255, 255, 255, .14); }
+  .card { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  #agTotal { font-size: 30px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+  #agCat { align-self: flex-start; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 9px;
+           border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  #agStats { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; }
+  #agStats b { color: var(--text); font-weight: 500; }
+  #agat details summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+  #agList { max-height: 160px; overflow-y: auto; margin-top: 6px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+  #agList div { display: flex; justify-content: space-between; padding: 1px 2px; }
+  #agList b { color: var(--text); font-weight: 500; }
+  #agErr { color: var(--danger); font-size: 12.5px; }
+  #agNote { color: var(--muted); font-size: 11px; line-height: 1.4; }
   #hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
           text-align: center; color: var(--muted); pointer-events: none; padding: 24px; }
   #hint div { border: 1.5px dashed #34404d; border-radius: 14px; padding: 34px 40px; line-height: 1.7; }
@@ -347,6 +444,20 @@ VIEWER_HTML = r"""<!doctype html>
     <button class="btn primary" id="run" disabled>Run segmentation</button>
     <div id="bar"><b></b></div>
     <div id="status">Load a scan to begin.</div>
+  </section>
+
+  <section id="agat" class="hide">
+    <div class="lbl">Agatston score</div>
+    <div class="card">
+      <div id="agErr" class="hide"></div>
+      <div id="agBody">
+        <div id="agTotal">–</div>
+        <div id="agCat">–</div>
+        <div id="agStats"><span>Lesions <b id="agLes">–</b></span><span>Slices with calcium <b id="agSl">–</b></span></div>
+        <details><summary>Per-slice scores</summary><div id="agList"></div></details>
+        <div id="agNote">Computed from the predicted mask with your agatston_script.py. Slice numbers follow its RAS-oriented order. Risk bands (1–10 minimal, 11–100 mild, 101–400 moderate, &gt;400 severe) are reference only, not a diagnosis.</div>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -420,6 +531,7 @@ const S = {
   niftiFile: null,     // original File when kind === 'nifti'
   zipBlob: null,       // zipped DICOM when kind === 'dicom'
   scanUrl: null, maskUrl: null,
+  scanBlob: null, scanName: 'scan.nii.gz',    // the NIfTI shown in the viewer (original or DICOM-converted)
   maskBlob: null, maskName: 'mask.nii.gz',
   model: 'reronet', busy: false,
   autoWin: null, range: [0, 1],
@@ -492,6 +604,7 @@ async function ingest(files) {
 
     if (files.length === 1 && isNii(files[0])) {
       S.kind = 'nifti'; S.niftiFile = files[0];
+      S.scanBlob = files[0]; S.scanName = files[0].name;
       niftiUrl = URL.createObjectURL(files[0]); niftiName = files[0].name;
       setStatus('Loading scan…');
     } else {
@@ -507,6 +620,7 @@ async function ingest(files) {
       }
       const fd = new FormData(); fd.append('dicom_zip', S.zipBlob, 'dicom.zip');
       const r = await post('/convert/dicom', fd, 'Converting DICOM for display');
+      S.scanBlob = r.blob; S.scanName = 'scan.nii.gz';
       niftiUrl = URL.createObjectURL(r.blob); niftiName = 'scan.nii.gz';
     }
     await showScan(niftiUrl, niftiName);
@@ -538,6 +652,41 @@ function clearMask() {
   S.maskBlob = null; $('dl').disabled = true;
   if (S.maskUrl) { URL.revokeObjectURL(S.maskUrl); S.maskUrl = null; }
   $('rMask').textContent = '–';
+  $('agat').classList.add('hide');
+}
+
+/* ---------- Agatston score (server runs your agatston_script.py on CT + mask) ---------- */
+function agCategory(s) { return s <= 0 ? 'No calcification' : s <= 10 ? 'Minimal' : s <= 100 ? 'Mild' : s <= 400 ? 'Moderate' : 'Severe'; }
+function showAgatstonError(msg) {
+  $('agat').classList.remove('hide'); $('agBody').classList.add('hide');
+  $('agErr').classList.remove('hide'); $('agErr').textContent = 'Agatston score unavailable: ' + msg;
+}
+async function scoreAgatston() {
+  if (!S.scanBlob || !S.maskBlob) return;
+  $('agat').classList.remove('hide'); $('agErr').classList.add('hide'); $('agBody').classList.remove('hide');
+  $('agTotal').textContent = '…'; $('agCat').textContent = 'computing'; $('agLes').textContent = $('agSl').textContent = '–';
+  $('agList').textContent = '';
+  try {
+    const fd = new FormData();
+    fd.append('ct', S.scanBlob, S.scanName);
+    fd.append('mask', S.maskBlob, S.maskName);
+    const r = await fetch('/agatston', { method: 'POST', body: fd });
+    if (!r.ok) {
+      let msg = 'HTTP ' + r.status;
+      try { msg = (await r.json()).detail || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    const a = await r.json();
+    $('agTotal').textContent = Number(a.agatston_total).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    $('agCat').textContent = agCategory(a.agatston_total);
+    $('agLes').textContent = a.n_lesions; $('agSl').textContent = a.n_slices_with_calcium;
+    for (const s of a.agatston_per_slice || []) {
+      const row = document.createElement('div');
+      const l = document.createElement('span'); l.textContent = 'slice ' + s.slice;
+      const v = document.createElement('b'); v.textContent = Number(s.score).toFixed(2);
+      row.append(l, v); $('agList').appendChild(row);
+    }
+  } catch (e) { showAgatstonError(e.message); }
 }
 
 async function showMask(blob, name) {
@@ -620,6 +769,8 @@ $('run').addEventListener('click', async () => {
     const label = (S.model === 'reronet' ? 'ReRoNet' : 'nnU-Net') + ' running';
     const r = await post(`/${S.model}/${S.kind}`, fd, label);
     await showMask(r.blob, r.name);
+    setStatus(`Done – mask overlaid (${r.name}). Computing Agatston score…`);
+    await scoreAgatston();
     setStatus(`Done – mask overlaid (${r.name}).`);
   } catch (e) { setStatus('Segmentation failed: ' + e.message, true); }
   finally { setBusy(false); }
