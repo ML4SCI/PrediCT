@@ -30,7 +30,7 @@ from scipy.optimize import linear_sum_assignment
 #  AGATSTON CALCULATOR — dynamic loader
 # ══════════════════════════════════════════════════════════════════
 
-AGATSTON_SCRIPT_PATH = Path(r"/pscratch/sd/r/rajatns/gsoc_2026_official/try1/Segmentation_Rajat/agatston_script.py")
+AGATSTON_SCRIPT_PATH = Path(r"E:\MyProjects\Gsoc_2026_Official\Segmentation_Rajat\agatston_script.py")
 
 
 def _load_agatston_function(script_path: Path):

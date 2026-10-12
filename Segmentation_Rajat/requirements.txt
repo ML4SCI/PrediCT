@@ -14,3 +14,12 @@ notebook
 nnunetv2 #only if u want to train nnunetv2 models
 jupyter
 opencv-python
+fastapi 
+uvicorn 
+requests
+python-multipart
+python-dotenv
+mcp
+langgraph
+langchain
+langchain-google-genai

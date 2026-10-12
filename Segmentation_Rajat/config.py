@@ -48,7 +48,7 @@ dataloader_config = {
     "HEART_MASK_FLAG": do_heart_roi_masking,
     "ADD_HEART_MASK_CHANNEL": add_heart_mask_channel,
     "HEART_MODEL_PATH": str(BASE_DIR / "LW_UNET_TVERSKY" / "best_model.pth"),
-    "ADD_COORD_CHANNELS": True,
+    "ADD_COORD_CHANNELS": False,
     "COORD_MODE": "normalized",       # "normalized" or "absolute"
     "DUAL_HU_WINDOWING": True,
     "NUM_OF_SAMPLES_PER_BATCH": 4,
@@ -130,6 +130,8 @@ train_config = {
     "POS_WEIGHT_BATCHES": 10,         # was 20 — matches --n-samples so pos_weight
                                        # is computed from the same batches training uses
     "VAL_THRESHOLD": 0.97,
+    "VAL_SW_BATCH_SIZE": 1,
+    "VAL_SW_OVERLAP": 0.25,
 
     # Explicit now (previously relied on _build_loss's hidden defaults,
     # which happen to be these same values — TverskyWeightedCE(alpha=0.3,

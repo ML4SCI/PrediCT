@@ -13,10 +13,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from riu_modules.conv_blocks import ConvBlockIN, Down, Up
-from riu_modules.deform_attention import DeformableAttention3d
-from riu_modules.fno3d import FNOBlock3d
-from riu_modules.deep_supervision import DeepSupervisionHead
+from rero_modules.conv_blocks import ConvBlockIN, Down, Up
+from rero_modules.deform_attention import DeformableAttention3d
+from rero_modules.fno3d import FNOBlock3d
+from rero_modules.deep_supervision import DeepSupervisionHead
 
 import config as cfg
 
