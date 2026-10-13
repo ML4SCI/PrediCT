@@ -22,9 +22,6 @@ for p in [
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from Segmentation_Rajat.wrapper import predict as reronet_predict
-from nnunet_dob_scv.predict import predict as nnunet_predict
-
 
 AGATSTON_SCRIPT_PATH = Path(r"E:\MyProjects\Gsoc_2026_Official\Segmentation_Rajat\agatston_script.py")
 
@@ -66,6 +63,17 @@ RERONET_CKPT = str(PROJECT_ROOT / "Segmentation_Rajat" / "runs" / "run_no_coord"
 # Removed OUTPUT_BASE_DIR to ensure no permanent storage of medical data on server
 
 
+
+def cleanup_vram():
+    """Aggressively clear VRAM and system memory."""
+    gc.collect()
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+    except ImportError:
+        pass
 
 def cleanup_temp_dir(temp_dir: str):
     """Removes the temporary directory after the response is sent."""
@@ -201,6 +209,7 @@ async def reronet_nifti(background: BackgroundTasks, file: UploadFile = File(...
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+        from Segmentation_Rajat.wrapper import predict as reronet_predict
         result_path = reronet_predict(
             mode="nii",
             input_path=str(file_path),
@@ -208,19 +217,13 @@ async def reronet_nifti(background: BackgroundTasks, file: UploadFile = File(...
             riunet_ckpt_path=RERONET_CKPT
         )
 
-        # Flush VRAM
-        gc.collect()
-        try:
-            import torch
-            torch.cuda.empty_cache()
-        except ImportError:
-            pass
-
         background.add_task(cleanup_temp_dir, temp_dir)
         return create_download_response(result_path)
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cleanup_vram()
 
 
 @app.post("/reronet/dicom")
@@ -235,6 +238,7 @@ async def reronet_dicom(background: BackgroundTasks, dicom_zip: UploadFile = Fil
         # Extract the uploaded .zip of DICOM slices into input_dir
         extract_dicom_zip(dicom_zip, input_dir)
 
+        from Segmentation_Rajat.wrapper import predict as reronet_predict
         result_path = reronet_predict(
             mode="dicom",
             input_path=str(input_dir),
@@ -242,19 +246,13 @@ async def reronet_dicom(background: BackgroundTasks, dicom_zip: UploadFile = Fil
             riunet_ckpt_path=RERONET_CKPT
         )
 
-        # Flush VRAM
-        gc.collect()
-        try:
-            import torch
-            torch.cuda.empty_cache()
-        except ImportError:
-            pass
-
         background.add_task(cleanup_temp_dir, temp_dir)
         return create_download_response(result_path)
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cleanup_vram()
 
 
 @app.post("/nnunet/nifti")
@@ -270,15 +268,8 @@ async def nnunet_nifti(background: BackgroundTasks, file: UploadFile = File(...,
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+        from nnunet_dob_scv.predict import predict as nnunet_predict
         nnunet_predict("nii", str(file_path), str(output_dir))
-
-        # Flush VRAM
-        gc.collect()
-        try:
-            import torch
-            torch.cuda.empty_cache()
-        except ImportError:
-            pass
 
         predictions = list(output_dir.glob("*.nii.gz"))
         if not predictions:
@@ -290,6 +281,8 @@ async def nnunet_nifti(background: BackgroundTasks, file: UploadFile = File(...,
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cleanup_vram()
 
 
 @app.post("/nnunet/dicom")
@@ -304,15 +297,8 @@ async def nnunet_dicom(background: BackgroundTasks, dicom_zip: UploadFile = File
         # Extract the uploaded .zip of DICOM slices into input_dir
         extract_dicom_zip(dicom_zip, input_dir)
 
+        from nnunet_dob_scv.predict import predict as nnunet_predict
         nnunet_predict("dicom", str(input_dir), str(output_dir))
-
-        # Flush VRAM
-        gc.collect()
-        try:
-            import torch
-            torch.cuda.empty_cache()
-        except ImportError:
-            pass
 
         predictions = list(output_dir.glob("*.nii.gz"))
         if not predictions:
@@ -324,6 +310,8 @@ async def nnunet_dicom(background: BackgroundTasks, dicom_zip: UploadFile = File
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cleanup_vram()
 
 
 # ---------------------------------------------------------------------------
