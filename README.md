@@ -56,6 +56,19 @@ is a research framework, not a clinical risk model.
 
 ## Measurement reliability and the 33-feature deliverable
 
+```mermaid
+flowchart TB
+    A["175 candidate features"]
+    A --> B["Primary reliability testing"]
+    A --> X["Supplementary perturbation tests"]
+    B --> C["166 features pass the reliability gate"]
+    X --> Y["Separate sensitivity report"]
+    C --> D["Redundancy reduction"]
+    D --> E["35 full-cohort representatives"]
+    E --> F["Comparison across scanner-kernel groups"]
+    F --> G["33 shared representative features"]
+```
+
 The primary perturbation experiment tests plausible changes in positioning, image grid,
 field of view, reconstruction, dose noise, HU calibration, and annotation boundaries.
 It uses 20 draws per patient and a predefined ICC threshold of 0.75. **166 of 175
@@ -74,6 +87,17 @@ After variance screening, scanner-kernel harmonisation of eligible radiomics
 columns, and within-family Spearman redundancy reduction, 35 representatives
 remain in the full patient cohort. **33 are also selected in both scanner-kernel
 subgroups.** They span six predefined feature families:
+
+```mermaid
+pie showData
+    title Composition of the 33-feature set
+    "Density by artery" : 15
+    "Intensity and texture" : 8
+    "Peak attenuation" : 4
+    "Burden" : 2
+    "Shape" : 2
+    "Anatomical spread" : 2
+```
 
 | Family (count) | Representative features | What they describe |
 |---|---|---|
@@ -102,6 +126,23 @@ clinical questions remain subjects for separate research and validation.
 
 ## Validation framework (no clinical endpoints)
 
+```mermaid
+flowchart TB
+    A["Candidate imaging patterns"]
+    A --> B["Measurement reliability"]
+    A --> C["Clustering stability"]
+    A --> D["Calcium burden comparisons"]
+    A --> E["Scanner sensitivity"]
+    A --> F["Methodological checks"]
+    B --> G["Endpoint-free research assessment"]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+    G --> H["Independent clinical validation needed"]
+    H --> I["Future studies with longitudinal outcomes"]
+```
+
 | Axis | Methods |
 |---|---|
 | Agatston stratification | burden orthogonality (Mann-Whitney, Levene, Cliff's delta), burden tertiles, feature monotonicity, burden-matched comparisons |
@@ -113,9 +154,21 @@ clinical questions remain subjects for separate research and validation.
 
 ## Pipeline
 
-```
-io -> preprocess -> features -> stability -> reduce -> discover -> analyse -> validate
-   -> lesion analyses -> figures
+```mermaid
+flowchart TB
+    CT["Cardiac CT scans (DICOM)"]
+    XML["Expert calcium annotations (XML)"]
+    CT --> IO["01: Patient discovery and input checks"]
+    XML --> IO
+    IO --> PRE["02: Preprocessing and masks"]
+    PRE --> FEAT["03: Quantitative feature extraction"]
+    FEAT --> STAB["04: Reliability testing"]
+    STAB --> RED["05: Feature selection and PCA"]
+    RED --> DISC["06: Unsupervised discovery"]
+    DISC --> ANAL["07: Analysis"]
+    ANAL --> VAL["08: Validation"]
+    VAL --> LES["09: Lesion-level analyses"]
+    LES --> FIG["10: Figures and research outputs"]
 ```
 
 | Stage | Purpose |
