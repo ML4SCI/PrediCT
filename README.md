@@ -1,4 +1,4 @@
-# PrediCT: Radiomics Feature Extraction and Calcium Phenotype Discovery
+# Radiomics Feature Extraction and Calcium Phenotype Discovery
 
 A reproducible framework that extracts radiomics features from coronary artery calcium (CAC)
 masks, selects the features that survive realistic acquisition and annotation variation,
