@@ -1,112 +1,104 @@
-# Radiomics Feature Extraction and Calcium Phenotype Discovery
+<p align="center">
+  <img src="assets/banner.png"
+       alt="Radiomics Feature Extraction and Calcium Phenotype Discovery"
+       width="100%">
+</p>
 
-A reproducible framework that extracts radiomics features from coronary artery calcium (CAC)
-masks, selects the features that survive realistic acquisition and annotation variation,
-discovers calcium phenotypes with unsupervised clustering, and validates them **without
-clinical endpoints**. Built for **Google Summer of Code 2026 (ML4SCI)** on the **Stanford
-COCA** dataset of gated, non-contrast cardiac CT with expert calcium annotations.
+## Radiomics Feature Extraction and Calcium Phenotype Discovery
 
-The Agatston score summarises calcium as one number. This project asks what the shape,
-texture, density and spatial distribution of calcium add to that number, and builds the
-tools to answer it reproducibly.
+A reproducible framework for measuring coronary artery calcium (CAC) beyond a single
+score. This **Google Summer of Code 2026** project was developed within **ML4SCI's
+PrediCT research initiative**, using the Stanford COCA dataset of gated, non-contrast
+cardiac CT scans and expert calcium annotations. The framework extracts radiomics and
+anatomical features, tests measurement reliability, explores calcium patterns with
+unsupervised methods, and evaluates them **without clinical outcome labels**.
+
+The Agatston score summarises calcium burden as one number. This project asks what
+calcium shape, texture, density, and spatial distribution can add to its description,
+and builds the tools needed to investigate that question reproducibly. The pipeline
+is a research framework, not a clinical risk model.
 
 ## Highlights
 
-- **Complete feature pipeline on every usable gated COCA scan.** 175 features per patient
-  (68 XML-derived burden, density, per-vessel and spatial features plus 107 PyRadiomics
-  shape, first-order and texture features) for 439 scans, plus 3,171 individual 3D lesions.
-- **A robust feature set.** 166 of 175 features pass a realistic perturbation gate that
-  combines positioning, grid shift, field of view, reconstruction kernel, dose noise, HU
-  calibration drift and annotator-boundary jitter (ICC >= 0.75 over 20 draws per patient).
-- **Distinct lesion-level phenotypes.** Lesions cluster strongly (Hopkins 0.95; 12 clusters,
-  all bootstrap-stable), group into soft, moderate and dense calcium, and include a dense,
-  RCA-dominant plaque type with zero left-main lesions that is recovered at every cluster
-  count from 7 to 12, in both scanner-kernel subgroups and under annotation perturbation.
-- **Anatomical patterns.** Lesion types are tied to vessel territories (RCA, LAD, LCx), and
-  a small low-burden group with isolated left-main calcification stands out.
-- **An endpoint-free validation framework** with Agatston stratification, cluster-quality
-  and bootstrap stability, perturbation reproducibility, cross-scanner replication, an
-  external-scanner holdout, clinical-pattern alignment, and planted-cluster simulations
-  that check whether the discovery methods can find structure when it exists.
+- **End-to-end analysis at cohort scale.** The pipeline processed 439 usable gated COCA
+  scans and measured 175 patient-level features: 68 canonical and annotation-derived
+  measurements plus 107 PyRadiomics features. It also constructs 3D masks for 3,171
+  individual lesions and retains their vessel context.
+- **Reliability-tested measurements.** Under a composite perturbation gate covering
+  acquisition and annotation variation, 166 of 175 features meet the predefined
+  ICC >= 0.75 threshold. The experiment uses 20 draws per patient. Annotation-derived
+  values that cannot change under a perturbation are marked as stable by construction.
+- **A focused, interpretable feature set.** Redundancy reduction retains 35 patient-level
+  representatives in the full cohort; 33 are also selected in both scanner-kernel
+  subgroups. The set spans burden, attenuation, density tiers, shape, texture, and
+  anatomical spread.
+- **An endpoint-free phenotype-analysis toolkit.** Multiple clustering methods,
+  perturbation and bootstrap stability checks, burden-aware comparisons, scanner
+  subgroup analyses, a held-out scanner subset, and planted-structure simulations
+  support careful evaluation of candidate patterns.
+- **A traceable ten-stage workflow.** Tests, configuration, per-stage documentation,
+  dated decisions, and completion records make the analysis inspectable and rerunnable.
 
 ## Project goals and what was delivered
 
 | ML4SCI goal | Delivered |
 |---|---|
-| Shape, intensity, texture and spatial features with PyRadiomics and SimpleITK | 107 PyRadiomics features (all 7 IBSI families) and 68 canonical features (Agatston, volume, mass, density tiers, per-vessel burden, lesion count, inter-lesion distances, diffusivity, Gini concentration) for all 439 scans ([features](docs/modules/features.md)) |
-| A robust, documented pipeline with 50 to 100 key features | 166 features pass the realistic reliability gate; redundancy clustering keeps 35 representative features for the patient analysis, 33 of them in all three cohorts (the key robust set); each of 10 stages documented in `docs/modules/` and backed by a dated decision record |
-| PCA "eigen features" | 15 principal components explain 86% of the variance of the representative features ([reduce](docs/modules/reduce.md)) |
-| Unsupervised clustering (K-means, hierarchical, GMM, DBSCAN) | K-means, Ward hierarchical and GMM with gap statistic, consensus clustering and Hennig bootstrap stability, on three feature spaces (full, burden-removed, spatial-only) and on lesions ([discover](docs/modules/discover.md)) |
-| Feature-space visualisation and Agatston correlation | PCA projections by Agatston tertile (Figure 1); burden orthogonality tests and per-feature burden monotonicity ([analyse](docs/modules/analyse.md)) |
-| Perturbation invariance (rotation ±5°, translation, noise) | Exactly that set (D014: rotations ±5° and ±10°, translations ±2 and ±5 mm, noise 5 and 10 HU) plus a realistic composite set anchored to COCA's own variation (D033), with per-arm results ([stability](docs/modules/stability.md)) |
-| Literature patterns (spotty / dense / diffuse) | Lesions grouped into soft-microspot, moderate and dense classes by fixed HU / volume rules; patients split into focal and diffuse disease; both compared with the unsupervised clusters |
-| Vessel territory distribution | Per-cluster vessel enrichment (obs/exp, chi-square, Cramer's V); RCA-, LAD- and LCx-biased lesion clusters |
-| Main phenotype distinguishers | Effect-size ranking (Cliff's delta with FDR control) replicated across scanner subgroups, plus burden / structure / spatial classification of each feature |
-| Validation without clinical endpoints | Agatston stratification, cluster quality, reproducibility, clinical alignment, cross-scanner replication, external GE holdout, leave-k-out cross-validation, planted-cluster detectability checks |
+| Shape, intensity, texture, and spatial features with PyRadiomics and SimpleITK | 107 PyRadiomics features across seven feature families and 68 canonical features (Agatston, volume, mass, density tiers, vessel burden, lesion count, distances, diffusivity, and concentration) for 439 scans ([features](docs/modules/features.md)) |
+| A robust, documented pipeline with an interpretable key feature set | 166 features pass the primary reliability gate; 35 non-redundant representatives are selected in the full cohort and 33 are shared with both scanner-kernel subgroups. Ten stages have guides in `docs/modules/` and dated methodological decisions |
+| PCA "eigen features" | PCA reduces the representative feature matrix; 15 retained components explain 86% of its variance ([reduce](docs/modules/reduce.md)) |
+| Unsupervised clustering | K-means, Ward hierarchical clustering, and Gaussian mixture models are evaluated in full, burden-adjusted, and spatial feature spaces, with consensus and bootstrap stability checks ([discover](docs/modules/discover.md)). DBSCAN was proposed but is not part of the final pipeline |
+| Feature-space visualisation and Agatston correlation | PCA projections, Agatston stratification, burden-aware comparisons, and per-feature monotonicity analysis ([analyse](docs/modules/analyse.md)) |
+| Perturbation invariance | Controlled rotations, translations, and noise tests, plus a primary composite experiment based on acquisition and annotation variation observed in COCA ([stability](docs/modules/stability.md)) |
+| Comparison with literature-derived patterns | Fixed descriptive rules for soft, moderate, and dense calcium and analyses of focal versus diffuse burden, compared with unsupervised outputs without assuming that a cluster is a clinical subtype |
+| Vessel territory distribution | Per-vessel features and tests of anatomical enrichment across LAD, LCx, RCA, and left main territories |
+| Feature interpretation | Effect-size ranking with FDR control, scanner-subgroup checks, and separation of burden-related from other feature relationships; no classifier is trained on clusters derived from the same features |
+| Validation without clinical endpoints | Reliability, clustering stability, burden stratification, scanner-subgroup replication, GE-scanner holdout, leave-k-out refitting, and planted-structure simulations |
 
-## Key findings
+## Measurement reliability and the 33-feature deliverable
 
-### 1. A reliable, interpretable feature set
+The primary perturbation experiment tests plausible changes in positioning, image grid,
+field of view, reconstruction, dose noise, HU calibration, and annotation boundaries.
+It uses 20 draws per patient and a predefined ICC threshold of 0.75. **166 of 175
+features pass**. The supplementary controlled experiment applies rotations,
+translations, and noise while holding the mask fixed. It answers a different, more
+stressful image-mask alignment question; the two experiments are reported separately.
 
-Under the realistic perturbation gate, all 68 canonical features and 98 of 107 PyRadiomics
-features are reliable (166 / 175). The 9 that fail are low-intensity and zone-size texture
-descriptors. The simulated variation stays below published rescan variability (Agatston
-4.6% between draws vs about 20% between real rescans), so the gate tests realistic, not
-extreme, conditions. The classic fixed-mask set (rotation, translation, noise) keeps 89
-features; every one of them also passes the realistic gate. After redundancy clustering,
-35 representative features, selected within six pre-defined blocks (burden, HU statistics,
-density tiers, spatial, texture, shape), carry the patient analysis.
+The reliability result needs an important distinction: 20 of the 33 final features
+are derived from supplied XML values that particular perturbations cannot alter.
+Their stability under those perturbations holds **by construction**, not because
+annotation quality was independently validated. The other 13 final features are
+directly measured from the image and mask; their primary-gate ICCs range from
+0.878 to 1.000.
 
-**The key robust feature set: 33 features** that are reliable and non-redundant in the full
-cohort and in both scanner-kernel subgroups: 15 per-vessel density-tier counts, 8 texture
-features, 4 maximum-HU values, total and left-main mass, two shape features (maximum 3D
-diameter, elongation), the number of calcified arteries and the left-main lesion count.
-Seventeen track burden, and four carry information largely independent of it: shape
-elongation, GLCM correlation, and NGTDM contrast and strength. Twenty of the 33 are
-XML-derived values that the perturbations cannot change, so their reliability holds by
-construction; the 13 measured features have ICC 0.88 to 1.00. Full table:
-[docs/modules/reduce.md](docs/modules/reduce.md#cross-cohort-robust-feature-set-33-features).
+After variance screening, scanner-kernel harmonisation of eligible radiomics
+columns, and within-family Spearman redundancy reduction, 35 representatives
+remain in the full patient cohort. **33 are also selected in both scanner-kernel
+subgroups.** They span six predefined feature families:
 
-### 2. Patient level: burden is the dominant axis
+| Family (count) | Representative features | What they describe |
+|---|---|---|
+| Burden (2) | `mass_total`, `mass_lm` | Total calcium mass and left-main calcium mass |
+| Density by artery (15) | `n_rois_d1_lad`, `n_rois_d2_lad`, `n_rois_d3_lad`, `n_rois_d4_lad`; `n_rois_d1_lcx`, `n_rois_d2_lcx`, `n_rois_d3_lcx`, `n_rois_d4_lcx`; `n_rois_d1_rca`, `n_rois_d2_rca`; `n_rois_d1_lm`, `n_rois_d2_lm`, `n_rois_d3_lm`, `n_rois_d4_lm`; `has_dense_calcium` | Four maximum-HU bands per named artery, plus a flag for any annotated region above 1,000 HU. These count 2D ROIs, not distinct 3D lesions |
+| Peak attenuation (4) | `max_hu_global`, `max_hu_lcx`, `max_hu_rca`, `max_hu_lm` | Highest recorded calcium attenuation overall or in a named artery |
+| Shape (2) | `original_shape_Maximum3DDiameter`, `original_shape_Elongation` | Greatest 3D extent and elongation of the combined calcium mask |
+| Anatomical spread (2) | `n_calcified_arteries`, `lesion_count_lm` | Number of arteries with calcium and number of 3D left-main lesions |
+| Intensity and texture (8) | `original_firstorder_Kurtosis`, `original_glcm_Idn`, `original_glcm_Correlation`, `original_glrlm_RunLengthNonUniformity`, `original_glrlm_RunPercentage`, `original_glszm_ZoneVariance`, `original_ngtdm_Contrast`, `original_ngtdm_Strength` | Intensity distribution, neighbouring-voxel relationships, same-intensity runs and zones, and local texture contrast |
 
-- The most reproducible patient split separates **focal** disease (median one calcified
-  artery, Agatston about 26) from **diffuse** disease (three arteries, Agatston about 420).
-  It is stable under bootstrap (Hennig Jaccard 0.84 to 0.94) within the full cohort and
-  both scanner subgroups, reproduces under leave-k-out refitting (median ARI 0.82), and transfers to
-  four held-out GE scans (assigned by their burden).
-- Agatston correlation shows that this split follows total burden (Cliff's delta -0.90
-  between the groups). It matches the clinical focal / diffuse
-  pattern, and it is best read as a burden gradient, not as a burden-independent subtype.
-- The planted-cluster simulations show why this matters: on a strongly skewed burden axis
-  the gap statistic and taxometric tests cannot tell groups from a continuum, so the
-  framework reports them descriptively and claims neither.
-- Scanner kernel is not a hidden driver: the kernel-by-cluster association disappears once
-  burden is accounted for.
+Here `d1` means 130 to below 200 HU, `d2` 200 to below 300 HU, `d3` 300
+to below 400 HU, and `d4` at least 400 HU. LAD, LCx, RCA, and LM denote the
+left anterior descending, left circumflex, right coronary, and left main arteries.
+These 33 features are interpretable image descriptors, **not 33 validated risk
+predictors**. The lower-dimensional patient analysis uses PCA on the selected
+representatives; 15 components explain 86% of their variance.
 
-This is a useful result in its own right: any morphology-beyond-Agatston claim has to be
-tested against burden, and the framework does that by construction.
+## Research outputs
 
-### 3. Lesion level: clear phenotypes with anatomical signatures
-
-- **Strong lesion structure**: 3,171 lesions, Hopkins 0.95, 12 clusters that are all
-  bootstrap-stable, organised into 1 soft, 4 moderate and 7 dense clusters.
-- **A robust dense RCA plaque type (C8)**: large (median 290 mm³), dense (max HU 842),
-  multi-slice lesions, RCA-enriched 2.6-fold with zero left-main lesions; found at every
-  k from 7 to 12, in both scanner subgroups, and 94% stable under annotation perturbation.
-  Its carriers have extensive disease elsewhere (other-lesion volume 990 vs 79 mm³).
-- **An LAD-dominant dense type**: two clusters over-represented in the LAD whose lesions sit
-  higher in the vessel than other LAD lesions (p < 0.001), replicated in both subgroups.
-- **Isolated left-main calcification at low burden**: in the lowest Agatston tertile, 11
-  patients stand apart in feature space and 9 of them have left-main calcium, against 16
-  of the other 135 (p = 1e-6). Their lesions are dense, not soft microspots.
-- **Composition tracks burden**: dense lesion types make up a larger share of disease at
-  higher Agatston tertiles (9 of 12 clusters, Jonckheere-Terpstra p < 0.001).
-
-Whether these lesion types carry information beyond total burden could not yet be settled:
-too few burden-matched pairs were available in this cohort. Details and every number:
-[lesion morphology](experiments/lesion_morphology/findings.md),
-[LAD phenotype](experiments/lad_phenotype/findings.md),
-[isolated LM](experiments/lm_isolated_low_burden/findings.md).
+Beyond the feature table, the framework produces a documented lesion catalogue,
+scanner-subgroup analyses, burden-aware patient and lesion comparisons, stability
+and holdout reports, and figures generated from completed pipeline outputs. It
+includes checks that distinguish reproducible measurements from the stronger
+claim that a pattern is a distinct biological phenotype. Those phenotype and
+clinical questions remain subjects for separate research and validation.
 
 ## Validation framework (no clinical endpoints)
 
@@ -115,7 +107,7 @@ too few burden-matched pairs were available in this cohort. Details and every nu
 | Agatston stratification | burden orthogonality (Mann-Whitney, Levene, Cliff's delta), burden tertiles, feature monotonicity, burden-matched comparisons |
 | Cluster quality | Hopkins statistic, gap statistic, consensus clustering (PAC), Hennig bootstrap Jaccard |
 | Reproducibility | ICC gates under two perturbation sets, lesion-cluster stability under annotation jitter, leave-k-out cross-validation |
-| Generalisation | replication within each scanner-kernel subgroup, external GE-scanner holdout |
+| Scanner sensitivity | replication within each scanner-kernel subgroup and a held-out GE-scanner subset from COCA |
 | Clinical alignment | soft / moderate / dense lesion classes, focal / diffuse disease, vessel-territory enrichment |
 | Method checks | planted-cluster detectability and taxometric simulations; every threshold fixed in `decisions/` before the result it governs |
 
@@ -135,7 +127,7 @@ io -> preprocess -> features -> stability -> reduce -> discover -> analyse -> va
 | 5 `reduce` | Variance filter, ComBat kernel harmonisation, Spearman redundancy clustering, PCA |
 | 6 `discover` | Hopkins, gap statistic, consensus clustering, Hennig stability, kernel association |
 | 7 `analyse` | Cluster characterisation, burden orthogonality, pre-registered hypotheses, cross-cohort consistency |
-| 8 `validate` | External GE holdout, leave-k-out cross-validation, cross-cohort ARI |
+| 8 `validate` | Held-out GE-scanner subset, leave-k-out cross-validation, cross-cohort ARI |
 | 9 lesions | Pre-registered lesion-level analyses in `experiments/` |
 | 10 figures | Six main and five supplementary figures from the published outputs |
 
@@ -151,15 +143,15 @@ params.yaml   PyRadiomics extraction settings
 src/predict/  Library code, one subpackage per stage
 scripts/      Stage scripts (numbered) and the diagnostic / probe scripts cited by the decisions
 tests/        pytest suite mirroring src/predict/
-experiments/  Pre-registered lesion-level analyses, each with a plan and findings
+experiments/  Lesion-level study plans, analysis scripts, tests, and reports
 decisions/    Design-decision registry, one dated record per decision
 docs/         Per-stage documentation, cohort and dataset reports, reproducibility notes
 ```
 
 ## Data
 
-This repository contains **code only**. The Stanford COCA dataset is available from the
-Stanford AIMI shared datasets and is not redistributed here. Place the DICOM series and
+This repository does **not** redistribute patient CT scans or annotations. The Stanford
+COCA dataset is available from the Stanford AIMI shared datasets. Place the DICOM series and
 calcium XML annotations at the paths in `configs/default.yaml` (`data/raw/`,
 `data/calcium_xml/`). Cohort details and exclusions: [docs/data.md](docs/data.md).
 
@@ -183,10 +175,12 @@ step is seeded, and parallel results do not depend on the number of workers.
 
 ## Limitations and next steps
 
-- COCA has no outcome data, so no result here is validated against MACE. The framework is
-  ready to test the lesion phenotypes and the isolated left-main group on a cohort with
-  follow-up.
-- Burden-matched tests of the lesion types need a larger cohort.
+- COCA has no outcome data, so none of these features or exploratory patterns is validated
+  against MACE. A cohort with follow-up is needed to test whether the measurements add
+  prognostic value beyond Agatston scoring.
+- An independent cohort is needed to assess how well the feature set and candidate
+  patterns transfer across populations and acquisition settings. Some burden-matched
+  lesion comparisons also require more cases.
 - Not yet included: t-SNE / UMAP views, DBSCAN, and model-based feature attribution (random
   forest, SHAP); effect sizes with FDR control are used instead, which avoids training a
   classifier on labels derived from the same features.
