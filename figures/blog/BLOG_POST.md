@@ -61,7 +61,7 @@ Standard U-Net segmentation models trained on CECT data completely fail when app
 
 Our solution draws from the classical medical image analysis literature: **Multi-Atlas Label Propagation (MALP)**. The key insight is that if we have a library of pre-segmented atlas images (where a human expert has already drawn the vessel boundaries), we can *warp* those atlases into the space of a new patient and use the warped labels as the segmentation.
 
-The PrediCT atlas pool consists of healthy NCCT scans with manually annotated coronary artery masks. For a new patient, the pipeline executes the following steps:
+The PrediCT atlas pool consists of scans from the ImageCAS dataset with manually annotated coronary artery masks. All volumes are pre-processed to LPS orientation, resampled to **1.5mm isotropic** resolution for registration and **1.0mm isotropic** for final evaluation, and intensity-windowed to the cardiac range (−200 to +600 HU). For a new patient, the pipeline executes the following steps:
 
 #### Step 1: NCC-Based Pre-Selection
 
@@ -69,40 +69,74 @@ Running full registration for every atlas in the pool is computationally expensi
 
 ![NCC Equation](equations/eq_01.png)
 
-where F is the fixed (patient) image and M is the moving (atlas) image, both windowed to the cardiac HU range (−100 to +700 HU). This reduces the full registration pool to the N most promising candidates (typically N=5).
+where F is the fixed (patient) image and M is the moving (atlas) image, both downsampled to **6mm isotropic resolution** (producing ~25×25×20 voxel volumes at ~0.05s per pair). This reduces the full registration pool to the **N=5** most promising candidates.
 
-#### Step 2: Three-Stage Registration Pipeline
+**Critical implementation detail:** Before computing NCC, each atlas is centroid-aligned to the patient using a `TranslationTransform`. At 6mm downsampling, coordinate origins between ImageCAS (CCTA) and COCA (NCCT) atlases differ by hundreds of millimetres, which produces near-zero NCC for all atlases without this correction. The fix computes each image's physical bounding-box centroid and shifts the atlas centroid onto the patient centroid before computing the correlation score.
 
-Each selected atlas is registered to the patient using a cascaded pipeline:
+Note that NCC is used only for *pre-selection*. The actual registration metric throughout all stages is **Mattes Mutual Information (MI)**, which is the correct metric for multi-modal CT registration.
+
+#### Step 2: Three-Stage Registration Pipeline (Rigid → Affine → B-Spline)
+
+Each selected atlas is registered to the patient using a cascaded three-stage pipeline:
 
 ![Multi-Atlas Registration Pipeline](02_phase1_registration_pipeline.jpg)
 
-The **Cardiac ROI** cropping between Stage 1 and Stage 2 was a critical engineering decision. Global affine registration across the full thorax was consistently failing to align the tiny coronary arteries accurately — the optimizer was distracted by the large, globally dominant structures (aorta, ribs, spine). By tightly cropping the bounding box around the heart after rigid alignment, we dramatically improved affine accuracy on the actual coronary structures.
+**Stage A — 6-DOF Rigid (Euler3D):** Full-thorax rigid alignment using a 4-level Gaussian pyramid (shrink factors [8,4,2,1], σ = [3,2,1,0] mm), 250 iterations, learning rate 2.0, 20% REGULAR sampling. Initialized via `CenteredTransformInitializer` with GEOMETRY mode.
 
-#### Step 3: Best-Atlas Voting
+**Stage B — 12-DOF Affine:** After rigid alignment, the rigid-warped atlas is pre-resampled into patient space to avoid out-of-bounds at coarse pyramid levels. Affine then optimises over a **cardiac ROI mask** — a 25mm-margin bounding box derived from the rigidly-projected vessel label — using 3-level pyramid (shrink [4,2,1], σ = [2,1,0] mm), 200 iterations, learning rate 1.0, 50% RANDOM sampling. This cardiac ROI focus is critical: global affine on the full thorax consistently fails to align the small coronary structures because the optimizer is dominated by large structures like the aorta and spine.
 
-After all N atlases are registered, we must select a single vessel scaffold. We evaluate each registration using **Mutual Information (MI)** between the registered atlas and the patient scan:
+The affine stage includes two safety fallbacks:
+- **MI regression guard:** If the affine Mattes MI is worse (less negative) than the preceding rigid MI by >0.01, the affine is considered to have diverged and a rigid-only composite is returned.
+- **Matrix sanity check:** If the affine matrix determinant falls outside [0.3, 3.0] (collapsed/reflected transform) or translation exceeds 50mm in any axis, the affine is rejected and rigid-only is used.
+
+**Stage C — B-Spline Non-Rigid Deformation:** The final registration stage captures local, non-rigid deformations — vessel tortuosity, bifurcation angle differences, patient-specific coronary anatomical variation — that a 12-DOF affine cannot model. A cubic B-spline free-form deformation field is initialized on a **[6,6,6] control-point base mesh**, then refined hierarchically through 2 scale levels ([6,6,6] → [12,12,12], ~11–13mm spacing). This is optimised over the cardiac ROI at 2-level pyramid (shrink [2,1], σ = [1,0] mm), 40 iterations per level, learning rate 1.0, 10% sampling.
+
+Three safety guards prevent anatomically implausible deformations:
+- **MI regression guard:** If B-spline MI is worse than affine MI by >0.01, fall back to affine-only.
+- **Max displacement guard:** If any voxel is displaced >15mm, the deformation is anatomically implausible — fall back to affine-only.
+- **Jacobian determinant guard:** If `min(det(J)) < 0.05`, the displacement field contains topology-violating folds — fall back to affine-only.
+
+The final composite transform is **Rigid → Affine → B-Spline**, applied sequentially to warp the atlas label into the patient's coordinate space.
+
+#### Step 3: Label Warping with SDT Fusion
+
+After the composite transform is determined, the atlas vessel label is warped using a two-pass strategy in `LabelTransformer.transform_labels()`:
+
+1. **Nearest-neighbour warp** of the binary label — fast and preserves exact binary values but can produce small topological tears at highly curved vessel segments.
+2. **Signed Maurer Distance Transform (SDT) warp** — the continuous signed distance field of the label is warped with linear interpolation, then re-thresholded at 0.0. This fills any topological gaps left by the NN warp.
+
+The two results are combined with `sitk.Or()`, producing a vessel mask that is both binary-exact and topologically continuous.
+
+#### Step 4: Best-Atlas Voting (NO Fusion)
+
+After all N=5 atlases are registered, a single vessel scaffold is selected. Each successfully registered atlas is ranked by its final **affine-stage Mattes MI** (the most negative MI = best alignment). The winner is the atlas with the lowest (most negative) affine MI score.
 
 ```
-MI(F, M) = H(F) + H(M) − H(F, M)
-         = Σ p(f,m) log [ p(f,m) / (p(f) · p(m)) ]
+best_atlas = argmin(affine_MI)   across all N registered atlases
 ```
 
-The atlas with the **most negative MI score** (highest information overlap) is selected as the winner. Its warped label mask becomes the Phase 1 output.
+> **Why Affine MI, not B-Spline MI for voting?** The B-Spline stage can occasionally overfit to local intensity patterns that happen to improve the MI metric while producing anatomically inconsistent deformations. The affine MI is a more globally reliable quality signal. The B-Spline deformation is still applied to the winning atlas's label — it improves the geometric accuracy of the warp — but voting is based on affine MI.
 
-> **Key Design Decision:** An earlier version used **Majority Vote Fusion** — averaging all N registered atlases together. This produced smoother, more rounded vessel masks with fewer registration artifacts. But testing revealed a critical failure: fusion blurred out sharp vessel bifurcations and inner curvatures — exactly the geometric features that drive turbulent flow and calcium formation in Phase 2. Switching to single-winner Best-Atlas Voting preserved these features at the cost of slightly higher registration variance on poor-quality scans. The biological accuracy trade-off was worth it.
+> **Why Best-Atlas Voting, not Majority Vote Fusion?** An earlier design explored majority-vote fusion — averaging all N registered atlas masks together. This produced smoother vessel masks with fewer single-atlas registration artifacts. However, testing revealed a critical failure: averaging blurred out sharp vessel bifurcations and inner curvatures — exactly the geometric features that generate turbulent flow and drive calcium formation in Phase 2. Switching to single-winner Best-Atlas Voting preserved these critical geometric features. The `fuse_labels()` function remains in the codebase as a legacy utility but is **not called** in the active pipeline.
+
+#### Step 5: Topology Cleaning
+
+The winning atlas mask is passed through `clean_coronary_topology()`, which:
+1. Removes isolated dust components with fewer than 20 voxels (connected component analysis, `RelabelComponentImageFilter`).
+2. Applies **Curvature Flow smoothing** (timeStep=0.0625, 2 iterations) to remove jagged boundary artifacts from the registration without altering the overall vessel geometry.
+3. Retains only the **top 2 connected components** by size (the LCA and RCA trees), eliminating any residual chest-wall or myocardial fragments.
 
 ### Phase 1 Registration Diagnostics
 
 After generating the best-atlas vessel mask, the pipeline runs the `PlaqueValidator` suite to evaluate the registration quality. Because ground-truth vessel masks do not exist for the COCA dataset, we use proxy metrics to ensure anatomical validity before physics simulation:
 
-1. **Ensemble Consensus:** Computes the mean pairwise centerline distance between the top registered atlases. A low distance (< 5.0mm) indicates that multiple independent atlases agreed on the vessel geometry.
-2. **Ostial Anchoring:** Checks the deviation of the mask's center of mass from the expected location of the aortic root.
-3. **Ground Truth Calcium Overlap:** Loads the patient's actual COCA calcium segmentation at native resolution and checks what percentage of it falls near our generated vessel wall.
+1. **Ensemble Consensus:** Computes the mean pairwise symmetric centerline distance (mm) between the top N registered atlas skeletons. A score < 5.0mm indicates that multiple independent atlases agreed on vessel location.
+2. **Ostial Anchoring:** Computes the center of mass of the largest connected component of the vessel mask (proxy for the aortic root) and checks its deviation from the expected cardiac center.
+3. **Ground Truth Calcium EDT Overlap:** Loads the patient's actual COCA calcium segmentation and computes what percentage of calcium voxels fall within **3.0mm** of the generated vessel wall surface. A threshold of ≥60% is the pass criterion.
 
-These metrics are logged as diagnostic warnings to help flag patients whose NCCT scans are too low-quality or anomalous for successful registration, without hard-aborting the pipeline prematurely.
+These metrics are logged to flag patients whose NCCT scans are too low-quality or anatomically anomalous for successful registration, without hard-aborting the pipeline prematurely.
 
-**Phase 1 Output:** `{patient_id}_synthetic_vessel.nii.gz` — a binary 3D NIfTI image delineating the coronary artery tree in patient space.
+**Phase 1 Output:** `{patient_id}_synthetic_vessel.nii.gz` — a binary 3D NIfTI image delineating the coronary artery tree in patient space at 1.0mm isotropic resolution.
 
 ---
 
@@ -123,11 +157,11 @@ This is completely intractable at scale — you cannot run traditional CFD on hu
 
 ### The PINN Architecture
 
-The hemodynamic surrogate is a **fully-connected Physics-Informed Neural Network (PINN)** that learns the mapping from spatial coordinates to flow variables directly, without ever being given labelled training data.
+The hemodynamic surrogate is a **fully-connected Physics-Informed Neural Network (PINN)** that learns the mapping from spatial coordinates to flow variables directly, without ever being given labelled training data. The default architecture (`ArchitectureConfig`) consists of **6 hidden layers** of **128 neurons** each, with SiLU activations, ResNet-style skip connections between adjacent layers, and a **Random Fourier Feature** input embedding (32 frequencies, scale σ=2.0) that lifts the 3D coordinate input into a higher-dimensional spectral space — a well-known technique for overcoming the spectral bias of deep networks against high-frequency PDE solutions.
 
 ![PINN Architecture](03_phase2_pinn_architecture.jpg)
 
-**Why Tanh activations?** The network must compute second-order spatial derivatives via autograd (for the Laplacian terms in the viscous stress). Tanh is twice-differentiable and well-conditioned for this purpose. ReLU activations produce zero second derivatives almost everywhere and were tested — they caused complete loss convergence failure.
+**Why smooth activations (SiLU/Swish)?** The network must compute second-order spatial derivatives via autograd (for the Laplacian terms in the viscous stress). The activation must be infinitely differentiable and well-conditioned across the full input range. The default activation is **SiLU (Swish)** (`activation = "silu"` in `ArchitectureConfig`), chosen because its smooth, non-saturating response avoids the vanishing-gradient pathology in deep networks while remaining C∞ differentiable — a strict requirement for computing PDE residuals via autograd. ReLU activations produce zero second derivatives almost everywhere and were tested — they caused complete loss convergence failure. Tanh is also supported as an alternative via the configuration flag.
 
 ### Non-Dimensionalization
 
@@ -191,16 +225,22 @@ The network is trained not on a fixed mesh, but on randomly sampled **collocatio
 
 | Region | Count | Sampling Method |
 |---|---|---|
-| **Interior** | 4,000 pts | Uniform random inside vessel mask |
-| **Wall** | 2,000 pts | Surface voxel boundary detection |
-| **Inlet** | 500 pts | Circular disk at aortic ostium |
-| **Outlet** | 500 pts/outlet | Circular disk at each branch termination |
+| **Interior** | 25,000 pts | Uniform random inside vessel mask |
+| **Wall** | 10,000 pts | Surface voxel boundary detection |
+| **Inlet** | 2,500 pts | Circular disk at aortic ostium |
+| **Outlet** | 2,500 pts/outlet | Circular disk at each branch termination |
 
 During development, these counts were calibrated to balance accuracy against memory constraints. Increasing wall points beyond 2,000 improved boundary-layer resolution for ESS but at diminishing returns for the additional GPU memory cost.
 
 ### Optimization
 
-Training uses the **Adam optimizer** with an initial learning rate of $1 \times 10^{-3}$. A `ReduceLROnPlateau` scheduler decays the learning rate when the loss plateaus. **Early stopping** is triggered if the best validation loss does not improve over 5,000 consecutive epochs, preventing unnecessary computation.
+Training uses the **Adam optimizer** with an initial learning rate of $1 \times 10^{-3}$ and gradient norm clipping at $\|\mathbf{g}\|_2 = 1.0$ to prevent exploding gradients from the high-order viscous Laplacian terms. No learning rate scheduler is active in the deployed pipeline — the `PINNTrainer` accepts an optional `ReduceLROnPlateau` argument but `run_phase2.py` does not pass one. **Early stopping** is triggered if the best total loss does not decrease by at least $10^{-5}$ over 5,000 consecutive epochs, preventing unnecessary computation.
+
+Two additional training strategies are deployed:
+
+- **Curriculum Learning:** For the first `bc_pretrain_epochs` (default: `min(5000, total_epochs / 3)`) iterations, the continuity, momentum, and integral mass loss terms are zeroed — the network is pretrained exclusively on the boundary conditions. Physics residuals are switched on only after this warm-up, preventing the PDE loss from overwhelming the boundary losses during initialization.
+
+- **Residual-Based Adaptive Refinement (RAR):** Every 5,000 epochs, 10,000 candidate interior points are evaluated for PDE residual magnitude. The 1,000 highest-residual candidates replace the 1,000 lowest-residual existing interior points. This concentrates collocation density in regions where the network is currently least accurate — a well-known technique for improving PINN convergence in geometrically complex domains.
 
 Training time varies by patient geometry.
 
@@ -351,7 +391,7 @@ This single line is the biological hard constraint that makes PrediCT physically
 
 **Note on Empirical Tuning:** While the plaque placement is guided by physical ESS boundaries, the seed counts (`N_seeds`) and maximum growth depths are empirically tuned to roughly target a desired Agatston score. This is a deliberate design choice to ensure clinical utility, acknowledging that biological simulation alone cannot deterministically predict exact clinical score thresholds without these tuning knobs.
 
-**Phase 3 Output:** `{patient_id}_synthetic_calcium_mask.nii.gz` — a NIfTI volume containing the binary calcium mask and an associated BFS depth field for intensity grading.
+**Phase 3 Output:** `{patient_id}_synthetic_calcium_mask.nii.gz` — a NIfTI volume containing a **float32 intensity field** (values 0.0–1.0) encoding the BFS depth gradient for each grown calcium voxel. Voxels with value 0.0 are background (no calcium); voxels with value > 0.0 encode intensity proportional to proximity to each seed. This float32 field is passed directly to Phase 4 as the alpha channel for radiometric blending.
 
 ![Phase 3 Growth Results](06_phase3_sde_growth.png)
 
@@ -419,7 +459,7 @@ The computed score is logged alongside the target score. The ratio serves as a k
 The figure above shows the output of a complete end-to-end pipeline run on patient `1cc17f65f909` from the COCA dataset, with a target Agatston score of 400. The synthetic calcium deposit is visible as a bright, high-HU region within the coronary artery, with a natural intensity gradient blending into the surrounding tissue.
 
 The pipeline successfully:
-- Registered and extracted the coronary vessel geometry (Phase 1)
+- Registered and extracted the coronary vessel geometry via 3-stage Rigid→Affine→B-Spline registration (Phase 1)
 - Solved for the hemodynamic ESS field using the PINN (Phase 2)
 - Seeded and grew calcium in low-ESS atherogenic regions (Phase 3)
 - Composited the calcium into the original NCCT with realistic HU values and partial-volume blending (Phase 4)
@@ -490,9 +530,9 @@ By simulating the mechanobiological process that causes coronary atherosclerosis
 - **Radiometrically faithful** (calibrated HU distributions, partial-volume blending)
 - **Clinically scoreable** (valid Agatston score computation)
 
-The four-phase pipeline — multi-atlas registration, PINN hemodynamics, stochastic plaque growth, and alpha-blended radiometric texturing — forms a complete, automated, and scientifically rigorous data synthesis system for cardiovascular AI.
+The four-phase pipeline — multi-atlas registration with 3-stage deformable B-spline warping, PINN hemodynamics, stochastic plaque growth, and alpha-blended radiometric texturing — forms a complete, automated, and scientifically rigorous data synthesis system for cardiovascular AI.
 
-The code is fully open-source and available at [**https://github.com/ML4SCI/PrediCT/edit/Augmentation-ShriYam**](https://github.com/ML4SCI/PrediCT/edit/Augmentation-ShriYam).
+The code is fully open-source and available at [**github.com/CodeShrek/Predi_CT**](https://github.com/CodeShrek/Predi_CT).
 
 ---
 
