@@ -16,6 +16,37 @@ from LW_UNET_TVERSKY.lw_model import LightweightUNet3D as Heart_Seg_Model
 from model import RIUnet
 from pre_process import generate_roi_masks
 
+target_spacing = ([0.375, 0.375, 3.0])  # Target spacing in mm for resampling
+do_resampling_for_rero_flag = True  # Flag to control whether resampling is performed
+
+def resample_volume(volume: sitk.Image) -> sitk.Image:
+        """
+        Resamples a single SimpleITK image to the target spacing.
+        Uses Linear interpolation for images and Nearest Neighbor for masks.
+        """
+        original_spacing = volume.GetSpacing()
+        original_size = volume.GetSize()
+        
+        # Calculate new size to maintain physical extent
+        # NewSize = OldSize * (OldSpacing / NewSpacing)
+        new_size = [
+            int(round(original_size[i] * (original_spacing[i] / target_spacing[i])))
+            for i in range(3)
+        ]
+        
+        resample = sitk.ResampleImageFilter()
+        resample.SetOutputSpacing(target_spacing)
+        resample.SetSize(new_size)
+        resample.SetOutputDirection(volume.GetDirection())
+        resample.SetOutputOrigin(volume.GetOrigin())
+        resample.SetTransform(sitk.Transform())
+        resample.SetDefaultPixelValue(volume.GetPixelIDValue())
+
+        # Linear provides smoother anatomical transitions
+        resample.SetInterpolator(sitk.sitkLinear)
+
+        return resample.Execute(volume)
+
 
 def read_dicom_folder(dicom_dir: Path, output_nifti_path: Path):
     """
@@ -53,6 +84,15 @@ def predict_single_nifti(
     out_dir = Path(output_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
+
+    # Be it Dicom or NIfTI, we always resample to the target spacing for consistency
+    if do_resampling_for_rero_flag:
+        print(f"[0/4] Resampling input volume to target spacing: {target_spacing} mm")
+        sitk_image = sitk.ReadImage(str(input_path))
+        resampled_image = resample_volume(sitk_image)
+        resampled_nifti_path = out_dir / f"{input_path.stem}_resampled.nii.gz"
+        sitk.WriteImage(resampled_image, str(resampled_nifti_path))
+        input_path = resampled_nifti_path
 
     # -------------------------------------------------------------------------
     # 1. Heart Segmentation & ROI Mask Generation (pre_process.py logic)

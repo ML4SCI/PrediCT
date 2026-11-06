@@ -187,6 +187,15 @@ async def agatston(ct: UploadFile = File(..., description="CT scan as .nii / .ni
         for src, dst in ((ct, ct_path), (mask, mask_path)):
             with open(dst, "wb") as buffer:
                 shutil.copyfileobj(src.file, buffer)
+
+        # If resampling flag is True, resample input CT scan to target spacing
+        from Segmentation_Rajat.wrapper import do_resampling_for_rero_flag, resample_volume
+        if do_resampling_for_rero_flag:
+            import SimpleITK as sitk
+            ct_img = sitk.ReadImage(str(ct_path))
+            resampled_ct = resample_volume(ct_img)
+            sitk.WriteImage(resampled_ct, str(ct_path))
+
         return _calculate_agatston(str(ct_path), str(mask_path))
     except ValueError as e:  # e.g. CT / mask shape mismatch
         raise HTTPException(status_code=422, detail=str(e))
