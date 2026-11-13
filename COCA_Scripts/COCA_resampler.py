@@ -6,6 +6,8 @@ import cc3d
 from pathlib import Path
 from tqdm import tqdm
 
+"This is COCA Resampler, file path is COCA_Scripts\COCA_resampler.py"
+
 class COCAResampler:
     def __init__(self, project_root: str, target_spacing: list = [0.375, 0.375, 3.0], max_voxel_threshold: int = 15000):
         """

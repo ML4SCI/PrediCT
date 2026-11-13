@@ -38,7 +38,6 @@ DATASET_CSV   = config.preprocessing_config["DATASET_CSV"] #provdies address for
 HEART_MODEL_PATH = Path(config.dataloader_config["HEART_MODEL_PATH"]) # Path for model
 
 
-
 # ==================================================
 # Loading Model and Generating ROI Masks
 # ==================================================
@@ -75,8 +74,6 @@ ROI_SIZE = (96, 128, 96)
 HU_MIN = -150.0
 HU_MAX =  350.0
 
-SPACING = (1.0, 1.0, 1.0)
-
 from monai.data import CacheDataset, DataLoader
 from monai.transforms import (
     Compose,
@@ -101,6 +98,8 @@ from monai.transforms import (
     Invertd,    
 )
 
+
+
 def get_transforms(mode: str) -> Compose:
     """
     Full transform pipeline for heart segmentation.
@@ -114,7 +113,9 @@ def get_transforms(mode: str) -> Compose:
     CropForeground MUST come after HU window (needs non-zero content).
     Augmentation MUST come after CropForeground (smaller volume = faster).
     """
-    assert mode in ("train", "val", "test")
+    assert mode in ("train", "val", "test", "inference"), f"Invalid mode: '{mode}'. Expected one of: 'train', 'val', 'test', 'inference'."
+
+    SPACING_FOR_HEART = (1.0, 1.0, 1.0)
 
     # ── Base pipeline (all modes) ─────────────────────────────────
     base = [
@@ -131,7 +132,7 @@ def get_transforms(mode: str) -> Compose:
         # mode="nearest" for label to avoid interpolation artifacts
         Spacingd(
             keys=["image", "label"],
-            pixdim=SPACING,
+            pixdim=SPACING_FOR_HEART,
             mode=("bilinear", "nearest"),
         ),
 
@@ -319,19 +320,28 @@ def postprocess_heart_mask(pred_np: np.ndarray) -> np.ndarray:
 
     return pred_np
 
-def generate_roi_masks(image_paths, model, margin=5):
+# Resampler Import
+
+from COCA_Scripts.COCA_resampler import COCAResampler
+
+def generate_roi_masks(image_paths, model, margin=5, FINAL_SPACING=config.preprocessing_config["FINAL_SPACING"]):
+    
+    # Initialize resampler (uses __new__ to avoid creating unwanted default directories on init)
+    resampler = COCAResampler.__new__(COCAResampler)
+    resampler.target_spacing = FINAL_SPACING
+
     roi_paths = []
+    test_transforms = get_transforms("test")
+    device = next(model.parameters()).device
 
     for image_path in image_paths:
+        image = sitk.ReadImage(str(image_path))
 
-        image = sitk.ReadImage(image_path)
-
-        test_transforms = get_transforms("test")
         data = test_transforms(
             {"image": image_path, "label": image_path}
         )
 
-        x = data["image"].unsqueeze(0).float().to(next(model.parameters()).device)
+        x = data["image"].unsqueeze(0).float().to(device)
 
         # ── inference ─────────────────────────────────────────────
         with torch.no_grad():
@@ -345,8 +355,6 @@ def generate_roi_masks(image_paths, model, margin=5):
             pred = (torch.sigmoid(pred) > 0.5).float()
 
         # ── attach transform history from image to pred ────────────
-        # data["image"] is MetaTensor with full applied_operations history
-        # We clone it and replace values with our prediction
         data["pred"] = data["image"].clone()  # preserves ALL metadata + history
         data["pred"].data = pred[0].cpu()     # swap in prediction values only
 
@@ -366,12 +374,6 @@ def generate_roi_masks(image_paths, model, margin=5):
         # ── post-process ───────────────────────────────────────────
         heart_mask = postprocess_heart_mask(heart_mask)
 
-        # print(f"Image size: {image.GetSize()}, Heart mask size: {heart_mask.shape}")
-        heart_mask_image = sitk.GetImageFromArray(heart_mask.T)
-        heart_mask_image.CopyInformation(image)     
-        # print(f"Image size: {image.GetSize()}, Heart mask size: {heart_mask_image.GetSize()}")
-
-
         # ── bbox ──────────────────────────────────────────────────
         coords = np.argwhere(heart_mask.T > 0)
 
@@ -380,8 +382,8 @@ def generate_roi_masks(image_paths, model, margin=5):
             roi_paths.append(None)
             continue
 
-        xmin, ymin, zmin,  = coords.min(0)
-        xmax, ymax, zmax   = coords.max(0)
+        xmin, ymin, zmin = coords.min(0)
+        xmax, ymax, zmax = coords.max(0)
 
         zmin = max(0, zmin - margin)
         ymin = max(0, ymin - margin)
@@ -393,18 +395,20 @@ def generate_roi_masks(image_paths, model, margin=5):
         roi_mask = np.zeros_like(heart_mask, dtype=np.uint8)
         roi_mask[zmin:zmax+1, ymin:ymax+1, xmin:xmax+1] = 1
 
-        # ── save ──────────────────────────────────────────────────
-        roi_img = sitk.GetImageFromArray(roi_mask.T) 
+        # ── resample & save ───────────────────────────────────────
+        roi_img = sitk.GetImageFromArray(roi_mask.T)
         roi_img.CopyInformation(image)
 
-        image_id = image_path.split("/")[-1].replace("_img.nii.gz", "")
+        # Resample to FINAL_SPACING using Nearest Neighbor (is_mask=True)
+        roi_img_resampled = resampler.resample_volume(roi_img, is_mask=True)
 
+        image_id = Path(image_path).name.replace("_img.nii.gz", "")
         roi_path = Path(image_path).parent / f"{image_id}_roi_mask.nii.gz"
-        sitk.WriteImage(roi_img, str(roi_path))
+        
+        sitk.WriteImage(roi_img_resampled, str(roi_path), useCompression=True)
         roi_paths.append(str(roi_path))
 
-    return roi_paths
-
+    return roi_paths    
 
 
 # END OF LOADING MODELS ------------------

@@ -30,6 +30,7 @@ preprocessing_config = {
     "TEST_SIZE":   0.15,
     "RANDOM_SEED": 42,
     "TASK": "binary",  # can also be "multi" -> RCA, LCA, LCX, LADX
+    "FINAL_SPACING": (0.375, 0.375, 3.0),  # target spacing for resampling (in mm)
 }
 
 do_heart_roi_masking = True
@@ -146,6 +147,6 @@ eval_config = {
     "POST_PROCESS_BIG_LESIONS": True,
     "APPLY_ROI_MASK": True, 
     "MORPHOLOGICAL_CLEANUP": False, #Not Tested yet, so keep it False
-    "ANISTROPIC GRAPH CUTTING": True, #Not Tested yet, so keep it False
+    "ANISTROPIC GRAPH CUTTING": False, #Not Tested yet, so keep it False
     "ROI_EXCLUDE_EDGE_VOXELS": 3,  # number of voxels to exclude on all sides when applying ROI mask
 }

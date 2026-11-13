@@ -32,9 +32,9 @@ import torch.nn as nn
 import cc3d
 from monai.inferers import sliding_window_inference
 
-import config as cfg
-from dataset import build_dataloaders
-from model import RIUnet
+import Segmentation_Rajat.config as cfg
+from Segmentation_Rajat.dataset import build_dataloaders
+from Segmentation_Rajat.model import RIUnet
 
 
 
