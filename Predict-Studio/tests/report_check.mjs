@@ -57,7 +57,7 @@ const build = (run, slices, lesions, lesions3d) =>
   assert.deepEqual(m.key_slices, [1, 2]);       // both calcium slices, in slice order
   const html = renderReportHtml(m, { aspect: '1', slices: m.key_slices.map(i => ({ idx: i, ct: 'a.png', mask: 'b.png' })) });
   assert.equal(html.split('class="key"').length - 1, 2);
-  assert.ok(html.includes('Predi<span>CT</span> Studio') && html.includes('31.0') && html.includes('L003'));
+  assert.ok(html.includes('PrediCT Studio') && html.includes('31.0') && html.includes('L003'));
 
   // CSV: header + one row per lesion component + TOTAL, total equals the report total
   const csv = buildCsv(m).trim().split('\r\n');

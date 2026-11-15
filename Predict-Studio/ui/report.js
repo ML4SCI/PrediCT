@@ -1,10 +1,11 @@
 /* PrediCT Studio — one-page clinical result report.
  *
- * Turns the result that is already open in the viewer into a modern one-page A4
- * medical report card (PrediCT Studio header, hero score card with risk spectrum,
- * axial Z-distribution bar, key-slice CT overlays, lesion-wise table including
- * all scored and withheld components, clinical conclusions, and pipeline method)
- * and opens the browser's print dialog, where "Save as PDF" makes the document.
+ * Turns the result that is already open in the viewer into a one-page A4
+ * report (PrediCT Studio header, score summary with linear risk scale,
+ * axial Z-distribution profile, key-slice CT overlays, lesion-wise table
+ * including all scored and withheld components, clinical conclusions, and
+ * pipeline parameters) and opens the browser's print dialog, where
+ * "Save as PDF" makes the document.
  *
  * Why it is separate: app.js has already loaded run.json, slices.json and both
  * CSVs into `state`, so the report needs nothing new from the server. It
@@ -30,16 +31,12 @@
   const TOL_SLICE = 0.01;           // lesions.csv vs slices.json, per slice
   const TOL_TOTAL = 0.05;           // sum of included lesions vs run.json total
   const KEY_IMAGES = 2;             // top-scoring slices shown as thumbnails
-  const TIER_SCALE_MAX = 1400;      // matches app.js TIER_SCALE_MAX for the risk spectrum bar
+  const TIER_SCALE_MAX = 1400;      // matches app.js TIER_SCALE_MAX for the risk scale bar
 
-  // Print-safe clinical palette per tier. Tier NAMES come from app.js (TIER_SCHEMES).
+  // Restrained print-safe clinical ink per tier. Tier NAMES come from app.js (TIER_SCHEMES).
   const TIER_HEX = {
-    ZERO: '#64748b', MILD: '#15803d', MODERATE: '#b45309',
-    'MOD-HIGH': '#c2410c', SEVERE: '#b91c1c', EXTENSIVE: '#7f1d1d',
-  };
-  const TIER_BG = {
-    ZERO: '#f1f5f9', MILD: '#dcfce7', MODERATE: '#fef3c7',
-    'MOD-HIGH': '#ffedd5', SEVERE: '#fee2e2', EXTENSIVE: '#fecaca',
+    ZERO: '#4b5563', MILD: '#166534', MODERATE: '#92400e',
+    'MOD-HIGH': '#9a3412', SEVERE: '#991b1b', EXTENSIVE: '#7f1d1d',
   };
 
   const fmt = (v, d = 1) => (v == null || v === '' || Number.isNaN(Number(v))) ? '—' : Number(v).toFixed(d);
@@ -130,7 +127,7 @@
     const keys = [...calcSlices].sort((a, b) => b.slice_score - a.slice_score)
       .slice(0, KEY_IMAGES).map(s => s.idx).sort((a, b) => a - b);
 
-    // Axial profile across the scan for the Z-distribution visual.
+    // Axial profile across the scan for the Z-distribution figure.
     const zProfile = slices.map(s => ({
       idx: s.idx, z_mm: s.z_mm, score: s.slice_score || 0, has_calcium: Boolean(s.has_calcium),
     }));
@@ -170,8 +167,8 @@
     return out;
   }
 
-  // ── visuals (pure SVG/HTML, no external requests) ───────────────────────
-  // 1. Risk spectrum bar showing where the patient's total sits across the 4 clinical bounds.
+  // ── figures (pure SVG/HTML, sharp geometry, no external requests) ────────
+  // 1. Linear risk scale bar (same geometry as the app's tierbar: sharp rectangular track + boundary ticks).
   function renderSpectrumHtml(total, color) {
     const pct = Math.max(0, Math.min(100, (total / TIER_SCALE_MAX) * 100));
     const t100 = (100 / TIER_SCALE_MAX) * 100;
@@ -180,136 +177,130 @@
       `<div class="spec-track">` +
       `<i class="spec-fill" style="width:${pct.toFixed(1)}%;background:${color}"></i>` +
       `<u style="left:${t100.toFixed(1)}%"></u><u style="left:${t400.toFixed(1)}%"></u>` +
-      `<b class="spec-pin" style="left:${pct.toFixed(1)}%;border-color:${color}"></b>` +
       `</div>` +
       `<div class="spec-labels"><span>0 Zero</span><span>1–100 Mild</span><span>101–400 Mod</span><span>&gt;400 Severe</span></div>` +
       `</div>`;
   }
 
-  // 2. Axial cranio-caudal (Z) calcium distribution bar across all slices of the scan.
+  // 2. Axial cranio-caudal (Z) calcium distribution plot across all slices of the scan.
   function renderAxialChartHtml(m, color) {
     const prof = m.z_profile || [];
     if (!prof.length) return '';
     const maxSc = Math.max(...prof.map(s => s.score), 1);
     const keySet = new Set(m.key_slices || []);
-    const W = 520, H = 32, padB = 9, barH = H - padB - 3;
+    const W = 520, H = 30, padB = 9, barH = H - padB - 2;
     const step = W / prof.length;
-    const bw = Math.max(1.8, Math.min(8, step * 0.72));
+    const bw = Math.max(1.8, Math.min(7.5, step * 0.7));
     const bars = prof.map((s, i) => {
       const x = (i + 0.5) * step - bw / 2;
       if (!s.has_calcium || s.score <= 0) {
-        return `<rect x="${x.toFixed(1)}" y="${(barH + 1).toFixed(1)}" width="${bw.toFixed(1)}" height="1.5" fill="#cbd5e1"/>`;
+        return `<rect x="${x.toFixed(1)}" y="${barH.toFixed(1)}" width="${bw.toFixed(1)}" height="1" fill="#bbb"/>`;
       }
-      const h = Math.max(3, (s.score / maxSc) * barH);
-      const y = barH + 2 - h;
-      const fill = keySet.has(s.idx) ? color : '#0f172a';
-      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1" fill="${fill}"/>`;
+      const h = Math.max(2.5, (s.score / maxSc) * barH);
+      const y = barH + 1 - h;
+      const fill = keySet.has(s.idx) ? color : '#111';
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${fill}"/>`;
     }).join('');
     const z0 = fmt(prof[0].z_mm, 0), z1 = fmt(prof[prof.length - 1].z_mm, 0);
-    return `<div class="axial-card">` +
+    return `<div class="axial-box">` +
       `<div class="axial-head"><span>Axial Calcium Distribution (Cranio-Caudal Z-Profile)</span>` +
-      `<span class="axial-sub">${m.calc_slices.length} of ${m.n_slices} slices · z ${z0} to ${z1} mm · peak slice ${fmt(maxSc)} Agatston</span></div>` +
-      `<svg viewBox="0 0 ${W} ${H}" class="axial-svg" preserveAspectRatio="none">${bars}` +
+      `<span class="axial-sub">${m.calc_slices.length} of ${m.n_slices} slices scored · z ${z0}–${z1} mm · peak slice ${fmt(maxSc)} Agatston (highlighted)</span></div>` +
+      `<svg viewBox="0 0 ${W} ${H}" class="axial-svg" preserveAspectRatio="none">` +
+      `<line x1="0" y1="${barH + 1}" x2="${W}" y2="${barH + 1}" stroke="#888" stroke-width="0.6"/>${bars}` +
       `<text x="0" y="${H - 1}" class="ax-t">sl 0 (${z0} mm)</text>` +
       `<text x="${W}" y="${H - 1}" text-anchor="end" class="ax-t">sl ${prof[prof.length - 1].idx} (${z1} mm)</text>` +
       `</svg></div>`;
   }
 
-  // ── model → one A4 HTML document ────────────────────────────────────────
+  // ── model → one A4 HTML document (sharp, formal research/clinical layout) ─
   const CSS = `
-    @page { size: A4; margin: 9mm 10mm; }
-    * { box-sizing: border-box; }
+    @page { size: A4; margin: 10mm; }
+    * { box-sizing: border-box; border-radius: 0; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    body { margin: 9mm 10mm; font: 8.5pt/1.35 "Inter", "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: #0f172a; }
+    body { margin: 10mm; font: 8.5pt/1.35 "Segoe UI", -apple-system, Arial, sans-serif; color: #111; }
     @media print { body { margin: 0; } }
     .page { width: 190mm; }
 
-    /* Brand Header */
-    .hdr { display: flex; justify-content: space-between; align-items: center; padding-bottom: 2.5mm; border-bottom: 2px solid #0f172a; }
-    .brand { display: flex; align-items: center; gap: 3mm; }
-    .brand-mark { width: 9.5mm; height: 9.5mm; border-radius: 2mm; background: #0f172a; color: #fff; display: grid; place-items: center; flex-shrink: 0; }
-    .brand-mark svg { width: 5.8mm; height: 5.8mm; }
-    .brand-name { font-size: 16pt; font-weight: 800; letter-spacing: -0.02em; color: #0f172a; line-height: 1; }
-    .brand-name span { color: #2563eb; }
-    .brand-sub { font-size: 7.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-top: 0.8mm; }
-    .hdr-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 0.6mm 4.5mm; text-align: right; font-size: 7.8pt; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.8mm; padding: 1.8mm 3mm; }
-    .hdr-meta b { color: #0f172a; font-weight: 600; }
+    /* Header: single-color software name at top-left, no icon, formal double rule */
+    .hdr { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 2.2mm; border-bottom: 1.8pt solid #111; }
+    .brand-name { font-size: 16pt; font-weight: 700; letter-spacing: -0.01em; color: #111; line-height: 1; margin: 0; }
+    .brand-sub { font-size: 7.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-top: 1mm; }
+    .hdr-meta { display: grid; grid-template-columns: repeat(2, auto); gap: 0.5mm 5mm; text-align: right; font-size: 7.8pt; color: #444; }
+    .hdr-meta b { color: #111; font-weight: 600; }
 
-    /* Hero Summary Row */
-    .hero { display: grid; grid-template-columns: 55mm 1fr auto; gap: 2.8mm; margin-top: 2.8mm; align-items: stretch; }
-    .score-card { border: 1px solid #cbd5e1; border-top: 3.5px solid var(--tier-c, #0f172a); border-radius: 2mm; padding: 2.2mm 2.8mm; background: #ffffff; display: flex; flex-direction: column; justify-content: space-between; }
-    .sc-kicker { font-size: 6.8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; }
+    /* Summary Grid: sharp hairline-bordered panels, no rounded corners */
+    .hero { display: grid; grid-template-columns: 55mm 1fr auto; gap: 3mm; margin-top: 2.8mm; align-items: stretch; }
+    .score-box { border: 0.75pt solid #222; border-top: 2.2pt solid #111; padding: 2.2mm 2.8mm; display: flex; flex-direction: column; justify-content: space-between; }
+    .sc-kicker { font-size: 6.8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; }
     .sc-main { display: flex; align-items: baseline; justify-content: space-between; gap: 2mm; margin: 0.6mm 0; }
-    .sc-val { font-size: 25pt; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: #0f172a; font-variant-numeric: tabular-nums; }
-    .sc-badge { font-size: 7.8pt; font-weight: 800; padding: 0.6mm 2mm; border-radius: 99px; letter-spacing: 0.04em; }
-    .sc-sub { font-size: 7pt; color: #64748b; margin-bottom: 1mm; }
-    .spec-track { position: relative; height: 2.2mm; background: #e2e8f0; border-radius: 99px; overflow: visible; }
-    .spec-fill { display: block; height: 100%; border-radius: 99px; }
-    .spec-track u { position: absolute; top: 0; bottom: 0; width: 1px; background: #ffffff; text-decoration: none; }
-    .spec-pin { position: absolute; top: -0.9mm; width: 4mm; height: 4mm; margin-left: -2mm; border-radius: 50%; background: #fff; border: 2px solid #0f172a; }
-    .spec-labels { display: flex; justify-content: space-between; font-size: 6.2pt; color: #64748b; margin-top: 1mm; }
+    .sc-val { font-size: 25pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #111; font-variant-numeric: tabular-nums; }
+    .sc-tier { font-size: 9pt; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .sc-sub { font-size: 7pt; color: #555; margin-bottom: 1mm; }
+    .spec-track { position: relative; height: 2mm; background: #e5e5e5; border: 0.4pt solid #aaa; }
+    .spec-fill { display: block; height: 100%; }
+    .spec-track u { position: absolute; top: -0.6mm; bottom: -0.6mm; width: 0.8pt; background: #111; text-decoration: none; }
+    .spec-labels { display: flex; justify-content: space-between; font-size: 6.2pt; color: #555; margin-top: 0.9mm; }
 
-    /* Key Metrics Card */
-    .metrics-card { border: 1px solid #e2e8f0; border-radius: 2mm; background: #f8fafc; padding: 2.4mm 3.2mm; display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: 2mm 3mm; align-content: space-between; min-width: 0; }
+    /* Key Metrics Table-Grid */
+    .metrics-box { border: 0.75pt solid #888; padding: 2.2mm 3mm; display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: 2mm 3mm; align-content: space-between; min-width: 0; }
     .m-item { display: flex; flex-direction: column; }
-    .m-lbl { font-size: 6.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; white-space: nowrap; }
-    .m-val { font-size: 10.5pt; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; line-height: 1.2; white-space: nowrap; margin-top: 0.4mm; }
-    .m-val small { font-size: 7pt; font-weight: 500; color: #64748b; }
+    .m-lbl { font-size: 6.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #555; white-space: nowrap; }
+    .m-val { font-size: 10.2pt; font-weight: 700; color: #111; font-variant-numeric: tabular-nums; line-height: 1.2; white-space: nowrap; margin-top: 0.4mm; }
+    .m-val small { font-size: 7pt; font-weight: 400; color: #555; }
 
-    /* Key Slice Images */
-    .keys { display: flex; gap: 2mm; align-items: stretch; }
-    .key-card { width: 29.5mm; border: 1px solid #cbd5e1; border-radius: 2mm; padding: 1.1mm; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
-    .key { position: relative; background: #000; aspect-ratio: var(--ar, 1); border-radius: 1.2mm; overflow: hidden; }
+    /* Key Slice Exhibits */
+    .keys { display: flex; gap: 2.2mm; align-items: stretch; }
+    .key-box { width: 29.5mm; border: 0.75pt solid #888; padding: 1mm; display: flex; flex-direction: column; justify-content: space-between; }
+    .key { position: relative; background: #000; aspect-ratio: var(--ar, 1); overflow: hidden; }
     .key img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
-    .key.broken::after { content: "image unavailable"; position: absolute; inset: 0; display: grid; place-items: center; color: #94a3b8; font-size: 6.5pt; }
+    .key.broken::after { content: "image unavailable"; position: absolute; inset: 0; display: grid; place-items: center; color: #aaa; font-size: 6.5pt; }
     .key.broken img { display: none; }
-    .cap { font-size: 6.6pt; color: #334155; margin-top: 1mm; line-height: 1.2; text-align: center; font-variant-numeric: tabular-nums; }
-    .cap b { color: #0f172a; }
+    .cap { font-size: 6.5pt; color: #333; margin-top: 0.8mm; line-height: 1.2; text-align: center; font-variant-numeric: tabular-nums; }
+    .cap b { color: #111; }
 
     /* Axial Distribution Strip */
-    .axial-card { margin-top: 2.5mm; border: 1px solid #e2e8f0; border-radius: 1.8mm; background: #f8fafc; padding: 1.5mm 3mm 1.2mm; }
-    .axial-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; margin-bottom: 0.8mm; }
-    .axial-sub { font-weight: 500; text-transform: none; letter-spacing: 0; color: #64748b; }
-    .axial-svg { width: 100%; height: 8.5mm; display: block; }
-    .ax-t { font-size: 7px; fill: #64748b; font-family: inherit; }
+    .axial-box { margin-top: 2.5mm; border-top: 0.75pt solid #222; border-bottom: 0.75pt solid #888; padding: 1.4mm 0 1mm; }
+    .axial-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #222; margin-bottom: 0.8mm; }
+    .axial-sub { font-weight: 400; text-transform: none; letter-spacing: 0; color: #555; }
+    .axial-svg { width: 100%; height: 8mm; display: block; }
+    .ax-t { font-size: 7px; fill: #555; font-family: inherit; }
 
     /* Section Headings */
-    .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; margin: 2.8mm 0 1.2mm; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.6mm; }
-    .sec-head h2 { font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; color: #0f172a; white-space: nowrap; }
-    .sec-head span { font-size: 6.9pt; color: #64748b; text-align: right; white-space: nowrap; }
+    .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; margin: 2.8mm 0 1mm; }
+    .sec-head h2 { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; color: #111; white-space: nowrap; }
+    .sec-head span { font-size: 6.9pt; color: #555; text-align: right; white-space: nowrap; }
 
-    /* Lesion-wise Table */
-    .tables { display: grid; gap: 3.5mm; align-items: start; }
+    /* Booktabs-style Lesion-wise Table */
+    .tables { display: grid; gap: 4mm; align-items: start; }
     .tables.two { grid-template-columns: 1fr 1fr; }
-    table { width: 100%; border-collapse: collapse; font-size: 7.6pt; }
-    th { text-align: right; font-size: 7.2pt; font-weight: 700; color: #334155; background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 0.9mm 1.4mm; }
-    td { text-align: right; padding: 0.55mm 1.4mm; border-bottom: 0.5px solid #e2e8f0; font-variant-numeric: tabular-nums; color: #1e293b; }
+    table { width: 100%; border-collapse: collapse; font-size: 7.6pt; border-top: 1.2pt solid #111; border-bottom: 1.2pt solid #111; }
+    th { text-align: right; font-size: 7.2pt; font-weight: 700; color: #111; border-bottom: 0.75pt solid #111; padding: 0.8mm 1.3mm; }
+    td { text-align: right; padding: 0.5mm 1.3mm; border-bottom: 0.35pt solid #ddd; font-variant-numeric: tabular-nums; color: #111; }
     th:first-child, td:first-child, th:nth-child(3), td:nth-child(3) { text-align: left; }
-    tr.g3-first td { border-top: 1px solid #cbd5e1; }
+    tr.g3-first td { border-top: 0.6pt solid #999; }
     tbody tr:first-child td { border-top: none; }
-    td.b { font-weight: 700; color: #0f172a; }
-    td.les { font-weight: 600; color: #0f172a; }
-    td.les-cont { color: #64748b; font-weight: 500; }
-    tr.ex td { color: #94a3b8; background: #fafafa; }
-    .tag-ex { font-size: 6.2pt; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.03em; margin-left: 1mm; }
-    tfoot td { border-top: 1.5px solid #0f172a; border-bottom: 1.5px solid #0f172a; background: #f8fafc; font-weight: 700; color: #0f172a; padding: 0.9mm 1.4mm; }
-    .none { font-size: 7.5pt; color: #64748b; margin: 1mm 0 0; }
+    td.b { font-weight: 700; }
+    td.les { font-weight: 600; color: #111; }
+    td.les-cont { color: #555; }
+    tr.ex td { color: #777; }
+    .tag-ex { font-size: 6pt; font-weight: 600; color: #777; text-transform: uppercase; letter-spacing: 0.03em; margin-left: 1mm; }
+    tfoot td { border-top: 0.9pt solid #111; border-bottom: none; font-weight: 700; color: #111; padding: 0.8mm 1.3mm; }
+    .none { font-size: 7.5pt; color: #555; margin: 1mm 0 0; }
 
     /* Bottom Two-Column Split: Findings + Method */
-    .bottom { display: grid; grid-template-columns: 1.15fr 1fr; gap: 3.5mm; margin-top: 2.5mm; align-items: stretch; }
-    .card-box { border: 1px solid #e2e8f0; border-radius: 1.8mm; background: #f8fafc; padding: 2mm 2.8mm; }
-    .card-box h3 { font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #0f172a; margin: 0 0 1.2mm; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.6mm; }
-    ul.findings { margin: 0; padding-left: 3.8mm; font-size: 7.6pt; color: #1e293b; }
-    ul.findings li { margin-bottom: 0.7mm; }
-    .method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5mm 3mm; font-size: 7pt; }
-    .method h4 { margin: 0 0 0.4mm; font-size: 6.6pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
-    .method dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.2mm 2mm; }
-    .method dt { color: #64748b; }
-    .method dd { margin: 0; color: #0f172a; font-weight: 500; word-break: break-word; }
+    .bottom { display: grid; grid-template-columns: 1.15fr 1fr; gap: 5mm; margin-top: 2.8mm; padding-top: 2mm; border-top: 0.75pt solid #222; align-items: start; }
+    .sec-block h3 { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #111; margin: 0 0 1.2mm; }
+    ul.findings { margin: 0; padding-left: 3.8mm; font-size: 7.6pt; color: #111; }
+    ul.findings li { margin-bottom: 0.6mm; }
+    .method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.4mm 3mm; font-size: 7pt; }
+    .method h4 { margin: 0 0 0.3mm; font-size: 6.6pt; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
+    .method dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.15mm 2mm; }
+    .method dt { color: #555; }
+    .method dd { margin: 0; color: #111; font-weight: 500; word-break: break-word; }
 
-    .warn { border: 1.5px solid #b91c1c; color: #7f1d1d; background: #fef2f2; border-radius: 1.5mm; padding: 1.5mm 2.5mm; margin-top: 2.5mm; font-size: 7.8pt; }
-    .disc { margin-top: 2.2mm; border-top: 1px solid #cbd5e1; padding-top: 1.2mm; display: flex; justify-content: space-between; gap: 3mm; font-size: 6.7pt; color: #64748b; white-space: nowrap; }
-    @media screen { body { background: #e2e8f0; } .page { box-sizing: content-box; background: #fff; padding: 8mm 10mm; border-radius: 2mm; box-shadow: 0 2px 12px rgba(0,0,0,.12); } }`;
+    .warn { border: 1.2pt solid #991b1b; color: #7f1d1d; background: #fef2f2; padding: 1.5mm 2.5mm; margin-top: 2.5mm; font-size: 7.8pt; }
+    .disc { margin-top: 2.4mm; border-top: 0.75pt solid #888; padding-top: 1.2mm; display: flex; justify-content: space-between; gap: 3mm; font-size: 6.7pt; color: #444; white-space: nowrap; }
+    @media screen { body { background: #e5e5e5; } .page { box-sizing: content-box; background: #fff; padding: 10mm; } }`;
 
   function rowHtml(r) {
     const lesCell = r.first_in_3d
@@ -331,8 +322,7 @@
 
   /* img: { aspect, slices: [{ idx, ct, mask }] } URLs of the key slices' PNGs (the viewer's own files), or null. */
   function renderReportHtml(m, img) {
-    const color = TIER_HEX[m.cat4] || '#0f172a';
-    const badgeBg = TIER_BG[m.cat4] || '#f1f5f9';
+    const color = TIER_HEX[m.cat4] || '#111111';
     const half = Math.ceil(m.rows.length / 2), two = m.rows.length > TWO_COLUMN_FROM;
     const tables = !m.rows.length ? '<p class="none">No lesion component above the delineation threshold was detected in this scan.</p>'
       : two ? `<div class="tables two">${tableHtml(m.rows.slice(0, half))}${tableHtml(m.rows.slice(half), m.totals)}</div>`
@@ -340,22 +330,18 @@
     const keyBox = img && img.slices.length ? `<div class="keys">${img.slices.map(s => {
       const cs = (m.calc_slices || []).find(x => x.idx === s.idx);
       const z = cs ? fmt(cs.z_mm) : '—', sc = cs ? fmt(cs.slice_score) : '—';
-      return `<div class="key-card"><div class="key" style="--ar:${img.aspect}">` +
+      return `<div class="key-box"><div class="key" style="--ar:${img.aspect}">` +
         `<img src="${esc(s.ct)}" alt="" onerror="this.parentNode.classList.add('broken')">` +
         `<img src="${esc(s.mask)}" alt="" onerror="this.parentNode.classList.add('broken')"></div>` +
         `<div class="cap"><b>Slice ${s.idx}</b> · z ${z} mm<br>Score ${sc}</div></div>`;
     }).join('')}</div>` : '<div></div>';
     const nCalcSl = (m.calc_slices || []).length;
-    const brandIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg>`;
 
     return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(`PrediCT_${m.study}_${m.model}`)}</title><style>${CSS}</style></head><body><div class="page">
 <header class="hdr">
-  <div class="brand">
-    <div class="brand-mark">${brandIcon}</div>
-    <div>
-      <div class="brand-name">Predi<span>CT</span> Studio</div>
-      <div class="brand-sub">Coronary Artery Calcium Scoring Report</div>
-    </div>
+  <div>
+    <div class="brand-name">PrediCT Studio</div>
+    <div class="brand-sub">Coronary Artery Calcium Scoring Report</div>
   </div>
   <div class="hdr-meta">
     <span>Study: <b>${esc(m.study)}</b></span><span>Model: <b>${esc(m.model)}</b></span>
@@ -364,18 +350,18 @@
 </header>
 ${m.warnings.length ? `<div class="warn"><b>Check before use — numbers disagree:</b><ul>${m.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
 <div class="hero">
-  <div class="score-card" style="--tier-c:${color}">
+  <div class="score-box">
     <div>
       <div class="sc-kicker">Total Agatston Score</div>
       <div class="sc-main">
         <div class="sc-val">${fmt(m.total)}</div>
-        <div class="sc-badge" style="color:${color};background:${badgeBg}">${esc(m.cat4 || '—')}</div>
+        <div class="sc-tier" style="color:${color}">${esc(m.cat4 || '—')}</div>
       </div>
       <div class="sc-sub">4-tier: <b>${esc(m.cat4 || '—')}</b> · 6-tier: <b>${esc(m.tier6)}</b></div>
     </div>
     ${renderSpectrumHtml(m.total, color)}
   </div>
-  <div class="metrics-card">
+  <div class="metrics-box">
     <div class="m-item"><span class="m-lbl">Components</span><span class="m-val">${m.totals.n_included} <small>of ${m.totals.n_all} scored</small></span></div>
     <div class="m-item"><span class="m-lbl">3D Lesions</span><span class="m-val">${m.n_lesions_3d} <small>grouped</small></span></div>
     <div class="m-item"><span class="m-lbl">Ca+ Slices</span><span class="m-val">${nCalcSl} <small>of ${m.n_slices}</small></span></div>
@@ -392,11 +378,11 @@ ${renderAxialChartHtml(m, color)}
 </div>
 ${tables}
 <div class="bottom">
-  <div class="card-box">
+  <div class="sec-block">
     <h3>Clinical Summary &amp; Audit Findings</h3>
     <ul class="findings">${m.conclusions.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
   </div>
-  <div class="card-box">
+  <div class="sec-block">
     <h3>Pipeline Provenance (from run.json)</h3>
     <div class="method">${m.params.map(([g, kv]) =>
       `<div><h4>${esc(g)}</h4><dl>${kv.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`).join('')}</div>
