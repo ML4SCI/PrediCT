@@ -164,7 +164,9 @@ What happens to one scan, from file to reviewed result (`src/backend/run.py`):
 upload with real progress · searchable scan picker (newest first) · per-run
 heart-crop toggle · runs continue on the server while you browse · 4-tier /
 6-tier risk view · resizable, collapsible panels · delete results or whole
-studies · keyboard navigation.
+studies · keyboard navigation · **one-page report** (icon on the Argument view → print or Save as PDF: score, key-slice images,
+slice-by-slice table, conclusions, method) and **CSV of the slice table**, both built in the
+browser from the open result; nothing is written to the server.
 
 ---
 
@@ -304,7 +306,7 @@ Predict-Studio/
 │   ├── mesh.py             3D surfaces for the Anatomy view
 │   ├── registry.py         manifest validation, weights SHA-256 lock
 │   └── ingest.py           fixes DICOM files without an extension
-├── ui/                     PrediCT Studio: index.html · app.js · app.css · view3d.js
+├── ui/                     PrediCT Studio: index.html · app.js · app.css · view3d.js · report.js
 ├── models/<model id>/      manifest.yaml + weights
 ├── tests/                  pytest suites
 ├── docs/                   SYSTEM.md (system design) · Principles.md (code rules) · figures
@@ -341,6 +343,7 @@ python -m pytest tests -v
 | `test_paths.py` | safe names, per-account folders |
 | `test_grouping.py` | 3D linking never changes a score |
 | `test_mesh.py` | mesh geometry and orientation (needs scikit-image) |
+| `test_report.py` | one-page report numbers match `run.json` (needs Node; skipped without it) |
 
 ---
 

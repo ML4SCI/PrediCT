@@ -457,22 +457,6 @@ button {
   margin-left: 8px;
 }
 
-/* Laptop widths: keep every control on one line by dropping the header's app
-   name (it is in the page title and on the start screen) and tightening tabs. */
-@media (max-width: 1400px) {
-  .tabs-label span:last-child {
-    display: none;
-  }
-
-  .tabs-label {
-    padding-right: 8px;
-  }
-
-  #tabs button[data-dir] {
-    padding: 0 10px;
-  }
-}
-
 .tabs-study {
   display: block;
   min-width: 0;
@@ -499,8 +483,8 @@ body.no-study #tabs button:not(#logout-btn) {
 }
 
 .tabs-user {
-  flex-shrink: 0;
-  /* the study badge shrinks first */
+  min-width: 0;
+  /* the study badge shrinks first, then the name; Sign out never shrinks */
   max-width: 160px;
   margin-left: 12px;
   overflow: hidden;
@@ -512,6 +496,56 @@ body.no-study #tabs button:not(#logout-btn) {
 
 #logout-btn {
   margin-left: 2px;
+}
+
+/* The header is a size container: the sidebar takes a varying share of the
+   window, so what fits depends on the header's own width, not the viewport's
+   (a viewport query let Sign out slide off screen at 100% zoom with the sidebar
+   open). Items drop out in order of least importance; Sign out always stays.
+   Container queries measure the content box, i.e. header width minus its 32px
+   padding. */
+#tabs {
+  container: tabs / inline-size;
+}
+
+@container tabs (max-width: 1290px) {
+  /* app name (it is in the page title and on the start screen), tighter tabs */
+  .tabs-label span:last-child {
+    display: none;
+  }
+
+  .tabs-label {
+    padding-right: 8px;
+  }
+
+  #tabs button[data-dir] {
+    padding: 0 10px;
+  }
+}
+
+@container tabs (max-width: 1150px) {
+  /* the study name is already highlighted in the sidebar */
+  .tabs-study {
+    display: none;
+  }
+}
+
+@container tabs (max-width: 1020px) {
+  #tabs button[data-view],
+  #tabs button[data-tiers] {
+    padding: 4px 8px;
+  }
+
+  #tabs button[data-dir] {
+    padding: 0 8px;
+  }
+}
+
+@container tabs (max-width: 940px) {
+  /* the signed-in name stays in the Sign out tooltip */
+  .tabs-user {
+    display: none;
+  }
 }
 
 /* ── Session states ───────────────────────────────────────────────────────── */

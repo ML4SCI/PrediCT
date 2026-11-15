@@ -103,6 +103,7 @@ their own process, so a crashed run cannot take the server down.
 | `ui/index.html`, `ui/app.css` | layout and styles | — |
 | `ui/app.js` | state, render loop, all server calls (`api()`), sign-in screen | compute scores |
 | `ui/view3d.js` | 3D viewer (meshes, slice plane, picking) | fetch CSVs or score |
+| `ui/report.js` | one-page A4 report and slice-table CSV of the open result (§11.1) | write files, call the server, change `state` or recompute a score |
 
 Dependency direction is one-way (from `Principles.md`):
 
@@ -642,14 +643,75 @@ scheme, panel width, folded sections, tile size) are kept in `localStorage`.
 
 | Area | What it shows | Server calls |
 |---|---|---|
-| Header | tabs, view mode (original / prediction / calcium), 4/6-tier, study, user, sign out | `POST /auth/logout` |
+| Header | tabs, view mode (original / prediction / calcium), 4/6-tier, study, user, sign out (see below) | `POST /auth/logout` |
 | Sidebar · upload | progress card (bytes, then "checking") | `POST /studies`, `/studies/clean/…` |
 | Sidebar · Run Pipeline | scan picker (search, newest first), model, crop toggle, name, runs panel; server path field for the admin | `GET /raw_patients`, `GET /models`, `POST /jobs`, `GET /jobs` |
 | Sidebar · studies | one row per study, result chips, filter, delete dialog | `GET /studies`, `DELETE /studies/{id}` |
-| 01 Argument | score, tier bar, findings, exhibit + scrolling strip, Pipeline Parameters, 3D lesion index, withheld | `/files/…` |
+| 01 Argument | score, tier bar, findings, exhibit + scrolling strip, Pipeline Parameters, 3D lesion index, withheld; **report + CSV export icons** (top-right of the title bar) | `/files/…` |
 | 02 Instrument | slice track, zoomable viewer (Ctrl+wheel, drag, scale bar), lesion details | `/files/…` |
 | 03 Contact Sheet | every slice, tile size slider, counted components | `/files/…` |
 | 04 Anatomy | 3D meshes, slice plane, camera presets, "not vessel-attributed" banner | `/files/…/mesh/*.ply` |
+
+**Header width.** The header is a CSS size container (`#tabs { container: tabs / inline-size }`), so what
+fits is decided by the header's own width, which shrinks when the sidebar is open, not by the window's.
+As it narrows, items drop out in this order: app name, study badge, signed-in name, then tab and
+button padding is tightened. **Sign out never shrinks or leaves the screen** (checked down to a ~900 px header).
+The thresholds are the `@container tabs (…)` rules in `ui/app.css`.
+
+### 11.1 One-page report and CSV export
+
+Two icons at the top-right of the **01 Argument** title bar (not in the header: the header is
+already full at a 100 % browser zoom and would push Sign out off screen) work on the
+result that is already open:
+
+* **Report** (`summarize` icon) builds a one-page A4 report: score and tier, the
+  two highest-scoring slices as CT + prediction thumbnails, a slice-by-slice table,
+  short conclusions and the method. The user prints it or chooses *Save as PDF* in
+  the browser's print dialog. There is no extra dialog: the title is "PrediCT
+  Studio", the study line is the name the user gave the scan at upload, and the
+  reader is the signed-in username.
+* **CSV** (`table_view` icon) downloads the same slice table as
+  `PrediCT_<study>_<model>_slices.csv`: one row per calcium slice plus a `TOTAL` row,
+  with `study` and `model` on every row. A study name starting with `= + - @` is
+  defused against spreadsheet formulas, and commas or quotes are quoted.
+
+```text
+  state (run.json · slices.json · lesions.csv · lesions_3d.csv,
+         already loaded by app.js)
+                     │ read only
+                     ▼
+  ┌──────────────────────────────────┐   no total in run.json
+  │ buildReportModel()   pure, no DOM│ ───────────────────────► toast, no report
+  │ rows · totals · conclusions      │
+  │ cross-checks → warnings          │
+  └─────────────────┬────────────────┘
+                    ▼
+  ┌──────────────────────────────────┐
+  │ renderReportHtml()  A4 HTML+CSS  │   user-typed text is escaped, never parsed as HTML
+  └─────────────────┬────────────────┘
+                    ▼
+  ┌──────────────────────────────────┐   the only requests: the key slice's two PNGs,
+  │ hidden iframe (same origin) →    │   through the same /files route as the viewer
+  │ wait for images → print()        │
+  └──────────────────────────────────┘
+```
+
+| Design point | What it means |
+|---|---|
+| **Read-only, no new route** | `ui/report.js` is loaded after `app.js` and only reads its globals. Nothing is written to `data/`, the server, or `out/`; `server.py`, `run.py` and `app.js` are unchanged. The PDF is made by the browser. |
+| **Same authorisation as the viewer** | The two key-slice images come through `/files/{study}/{model}/…` with the session cookie (§5). |
+| **Numbers are copied, not recomputed** | Per-slice values come from `slices.json` / `lesions.csv`; tier from `run.json` (`risk_category`) plus the 6-tier reading from the UI's own scheme. |
+| **Disagreements are printed** | The table is summed only to *check* it. If a slice, the total, the component count or the tier disagrees between files, a red box on the report lists it (principle: no silent wrong number). |
+| **One page** | Table rows are the slices with calcium (the rest are summarised as a count). More than 18 rows are split into two side-by-side tables. If the page still overflows, a toast says it will print on two pages. |
+| **Missing data shows `—`** | A field an older `run.json` lacks is never guessed. |
+| **Conclusions** | Generated from the numbers only: score and tier, lesions and slice span, largest slice and lesion with share of the total, peak density, withheld ledger, and what the area means for this model (coverage or binary). No treatment advice; the footer states it is automated output for clinician review. |
+| **Method block** | The same `paramGroups()` the Pipeline Parameters panel uses, so the report describes the run that produced the numbers, not today's settings. |
+| **File names** | The print dialog proposes `PrediCT_<study>_<model>` as the PDF name; the CSV is built in memory and saved by the browser (`Blob`), so there is no server round trip either. |
+| **Patient identity** | The app never reads DICOM patient fields, so the only identifier on the report and CSV is the study name typed at upload (the report also names the signed-in user). |
+
+Verified by `tests/test_report.py` (§15): the report's and CSV's totals equal `run.json`
+for a hand-made result and for every result found under `data/`; disagreements,
+the zero-calcium case, HTML escaping and CSV formula defusing are covered too.
 
 Every server call goes through `api()`: a `401` anywhere shows the sign-in
 screen (expired, signed out elsewhere, or access revoked).
@@ -757,6 +819,7 @@ Security events are logged one per line in the server output: `[auth] <time> sig
 | `tests/test_paths.py` | `safe_name`, per-account folders, numeric ids | 〃 |
 | `tests/test_grouping.py` | 3D linking never changes a score | 〃 |
 | `tests/test_mesh.py` | mesh geometry, orientation, PLY round-trip (needs scikit-image) | 〃 |
+| `tests/test_report.py` | one-page report and CSV: totals equal `run.json`, disagreements reported, zero-calcium case, HTML escaping, CSV formula defusing (runs `tests/report_check.mjs` in Node; skipped without Node) | 〃 |
 
 ---
 

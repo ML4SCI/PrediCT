@@ -13,7 +13,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <!-- ?v= forces browsers to fetch the new files after an update (the server
        sends no cache headers). Bump it whenever app.css / app.js / view3d.js change. -->
-  <link rel="stylesheet" href="app.css?v=14">
+  <link rel="stylesheet" href="app.css?v=15">
 
   <script type="importmap">
   { "imports": {
@@ -192,6 +192,11 @@
   <div id="d1" class="dir">
     <div class="a-prov">
       <span style="font-weight: 500;">PrediCT Studio · Study Argument Analysis</span>
+      <!-- Export buttons live here, not in the header: the header is already full at 100% zoom (see report.js) -->
+      <span style="display: flex; gap: 4px;">
+        <button id="report-csv-btn" class="material-symbols-outlined icon-btn" title="Download the slice table as CSV">table_view</button>
+        <button id="report-btn" class="material-symbols-outlined icon-btn" title="Export a one-page report (print or save as PDF)">summarize</button>
+      </span>
     </div>
 
     <div class="a-body">
@@ -500,6 +505,7 @@
   </div>
   <script src="app.js?v=4"></script>
   <script type="module" src="view3d.js?v=4"></script>
+  <script src="report.js?v=1"></script>
 </body>
 
 </html>
