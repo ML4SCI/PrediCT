@@ -664,16 +664,21 @@ Two icons at the top-right of the **01 Argument** title bar (not in the header: 
 already full at a 100 % browser zoom and would push Sign out off screen) work on the
 result that is already open:
 
-* **Report** (`summarize` icon) builds a one-page A4 report: score and tier, the
-  two highest-scoring slices as CT + prediction thumbnails, a slice-by-slice table,
-  short conclusions and the method. The user prints it or chooses *Save as PDF* in
-  the browser's print dialog. There is no extra dialog: the title is "PrediCT
-  Studio", the study line is the name the user gave the scan at upload, and the
-  reader is the signed-in username.
-* **CSV** (`table_view` icon) downloads the same slice table as
-  `PrediCT_<study>_<model>_slices.csv`: one row per calcium slice plus a `TOTAL` row,
-  with `study` and `model` on every row. A study name starting with `= + - @` is
-  defused against spreadsheet formulas, and commas or quotes are quoted.
+* **Report** (`summarize` icon) builds a modern one-page A4 clinical report card:
+  prominent **PrediCT Studio** header with study/model/run metadata, a hero score
+  card with a **4-tier risk spectrum bar and marker pin**, a key-metrics summary
+  card, the two highest-scoring slices as CT + prediction thumbnails, an **axial
+  cranio-caudal (Z) calcium distribution bar** across all slices, a **lesion-wise
+  slice breakdown table** (all detected components grouped by 3D lesion `L001…` as
+  in `02 Instrument`, including withheld components shown as `—`, with columns
+  `Slice`, `z (mm)`, `Lesions`, `Area (mm²)`, `Peak HU`, `Weight`, `Agatston`),
+  concise clinical findings, and pipeline provenance. The user prints it or
+  chooses *Save as PDF* in the browser's print dialog.
+* **CSV** (`table_view` icon) downloads the same lesion-wise table as
+  `PrediCT_<study>_<model>_lesions.csv`: one row per detected lesion component
+  plus a `TOTAL` row, with `study` and `model` on every row. A study name starting
+  with `= + - @` is defused against spreadsheet formulas, and commas or quotes are
+  quoted.
 
 ```text
   state (run.json · slices.json · lesions.csv · lesions_3d.csv,
@@ -702,7 +707,7 @@ result that is already open:
 | **Same authorisation as the viewer** | The two key-slice images come through `/files/{study}/{model}/…` with the session cookie (§5). |
 | **Numbers are copied, not recomputed** | Per-slice values come from `slices.json` / `lesions.csv`; tier from `run.json` (`risk_category`) plus the 6-tier reading from the UI's own scheme. |
 | **Disagreements are printed** | The table is summed only to *check* it. If a slice, the total, the component count or the tier disagrees between files, a red box on the report lists it (principle: no silent wrong number). |
-| **One page** | Table rows are the slices with calcium (the rest are summarised as a count). More than 18 rows are split into two side-by-side tables. If the page still overflows, a toast says it will print on two pages. |
+| **One page** | Table rows list all detected lesion components (grouped by 3D lesion, with withheld components marked `withheld` / `—`). More than 12 rows split into two side-by-side tables so even 35+ lesion studies fit on one A4 page. If the page still overflows, a toast says it will print on two pages. |
 | **Missing data shows `—`** | A field an older `run.json` lacks is never guessed. |
 | **Conclusions** | Generated from the numbers only: score and tier, lesions and slice span, largest slice and lesion with share of the total, peak density, withheld ledger, and what the area means for this model (coverage or binary). No treatment advice; the footer states it is automated output for clinician review. |
 | **Method block** | The same `paramGroups()` the Pipeline Parameters panel uses, so the report describes the run that produced the numbers, not today's settings. |

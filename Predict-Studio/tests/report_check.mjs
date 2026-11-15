@@ -32,10 +32,10 @@ const build = (run, slices, lesions, lesions3d) =>
 
 // ── 1. synthetic result ──
 {
-  const les = (slice_idx, lesion_id, area_mm2, peak_hu, density_weight, included, key) =>
-    ({ slice_idx, lesion_id, area_mm2, peak_hu, density_weight, included, agatston: included ? area_mm2 * density_weight : 0, lesion_3d_key: key });
-  const lesions = [les(1, 1, 4, 250, 2, true, 'L001'), les(1, 2, 2, 410, 4, true, 'L002'),
-    les(2, 3, 5, 300, 3, true, 'L001'), les(2, 4, 0.5, 200, 2, false, 'L003')];
+  const les = (slice_idx, lesion_id, area_mm2, peak_hu, density_weight, included, id3d, key) =>
+    ({ slice_idx, z_mm: slice_idx * 3, lesion_id, area_mm2, peak_hu, density_weight, included, agatston: included ? area_mm2 * density_weight : 0, lesion_3d_id: id3d, lesion_3d_key: key });
+  const lesions = [les(1, 1, 4, 250, 2, true, 1, 'L001'), les(1, 2, 2, 410, 4, true, 2, 'L002'),
+    les(2, 3, 5, 300, 3, true, 1, 'L001'), les(2, 4, 0.5, 200, 2, false, 3, 'L003')];
   const slices = [0, 1, 2, 3].map(i => ({ idx: i, z_mm: i * 3, has_calcium: i === 1 || i === 2,
     slice_score: i === 1 ? 16 : i === 2 ? 15 : 0 }));
   const l3 = [{ lesion_3d_key: 'L001', included: true, n_slices: 2, total_agatston: 23 },
@@ -43,25 +43,27 @@ const build = (run, slices, lesions, lesions3d) =>
   const run = { agatston_total: 31, risk_category: 'mild', model_id: 'm', n_lesions: 3, output: 'coverage', min_area_mm2: 1 };
   const m = build(run, slices, lesions, l3);
   assert.deepEqual(m.warnings, []);
-  assert.equal(m.rows.length, 2);
+  assert.equal(m.rows.length, 4);               // all 4 lesion components (3 scored + 1 withheld)
+  assert.deepEqual(m.rows.map(r => `${r.lesion_3d_key}:${r.idx}`), ['L001:1', 'L001:2', 'L002:1', 'L003:2']);
+  assert.equal(m.rows[0].first_in_3d, true);
+  assert.equal(m.rows[1].first_in_3d, false);
+  assert.equal(m.rows[3].included, false);
   assert.equal(m.totals.agatston, 31);
   assert.equal(m.totals.n_included, 3);
+  assert.equal(m.totals.n_all, 4);
   assert.equal(m.totals.peak_hu, 410);
-  assert.equal(m.rows[0].n_all, 2);
-  assert.equal(m.rows[1].n_included, 1);        // the withheld one is counted in n_all only
-  assert.equal(m.rows[1].n_all, 2);
   assert.equal(m.withheld.n, 1);
   assert.equal(m.tier6, 'MILD');
   assert.deepEqual(m.key_slices, [1, 2]);       // both calcium slices, in slice order
   const html = renderReportHtml(m, { aspect: '1', slices: m.key_slices.map(i => ({ idx: i, ct: 'a.png', mask: 'b.png' })) });
   assert.equal(html.split('class="key"').length - 1, 2);
-  assert.ok(html.includes('Coronary Calcium Report') && html.includes('31.0'));
+  assert.ok(html.includes('Predi<span>CT</span> Studio') && html.includes('31.0') && html.includes('L003'));
 
-  // CSV: header + one row per slice + TOTAL, total equals the report total
+  // CSV: header + one row per lesion component + TOTAL, total equals the report total
   const csv = buildCsv(m).trim().split('\r\n');
   assert.equal(csv.length, 1 + m.rows.length + 1);
   assert.equal(csv[0].split(',').length, 10);
-  assert.ok(csv[csv.length - 1].startsWith('s,m,TOTAL,,3,4,'));
+  assert.ok(csv[csv.length - 1].startsWith('s,m,TOTAL,,3/4,true,'));
   assert.ok(csv[csv.length - 1].endsWith(',31.00'));
   // a study name that is a spreadsheet formula, or holds a comma or quote, is defused / quoted
   const fm = buildReportModel({ run, slices, lesions, lesions3d: l3, tierSchemes: TIERS, params: [],
@@ -77,7 +79,7 @@ const build = (run, slices, lesions, lesions3d) =>
   const zero = build({ agatston_total: 0, risk_category: 'zero', model_id: 'm', n_lesions: 0 },
     slices.map(s => ({ ...s, has_calcium: false, slice_score: 0 })), [], []);
   assert.equal(zero.rows.length, 0);
-  assert.ok(zero.conclusions[0].startsWith('No calcium was scored'));
+  assert.ok(zero.conclusions[0].startsWith('No coronary calcium was scored'));
   assert.doesNotThrow(() => renderReportHtml(zero, null));
 
   // user-typed study names are never parsed as HTML
